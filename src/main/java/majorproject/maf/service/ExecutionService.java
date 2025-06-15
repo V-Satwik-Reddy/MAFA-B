@@ -75,13 +75,13 @@ public class ExecutionService {
     )
     public TransactionDto sellShares(ExecuteRequest request, int id) {
         User user = userRepository.getReferenceById(id);
+        double price=priceFetch.fetchCurrentPrice(request.getSymbol());
+        double totalAmount=request.getQuantity()*price;
+        userProfileRepository.creditBalance(id,totalAmount);
         int res= stockRepository.decrementIfSufficientShares(id, request.getSymbol(), request.getQuantity());
         if(res==0){
             throw new InsufficientSharesException("Insufficient shares to execute the sell order.");
         }
-        double price=priceFetch.fetchCurrentPrice(request.getSymbol());
-        double totalAmount=request.getQuantity()*price;
-        userProfileRepository.creditBalance(id,totalAmount);
         Transaction t=new Transaction();
         t.setAsset(request.getSymbol());
         t.setType(TransactionType.SELL);
