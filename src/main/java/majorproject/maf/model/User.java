@@ -1,8 +1,8 @@
 package majorproject.maf.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,11 +16,13 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @Column(updatable = false, nullable = false)
-    private final String id= UUID.randomUUID().toString();
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
-    private String username;
-    private String password;
-    @NonNull private String email;
+    @NotBlank private String username;
+    @Email
+    @NotBlank private String email;
+    @NotBlank private String password;
+
 
 }

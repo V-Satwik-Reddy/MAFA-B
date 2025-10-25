@@ -1,4 +1,4 @@
-package majorproject.maf.model;
+package majorproject.maf.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
