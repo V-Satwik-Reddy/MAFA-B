@@ -1,19 +1,25 @@
 package majorproject.maf.model;
 
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class user {
+@Entity
+public class User {
 
+    @Id
+    @Column(updatable = false, nullable = false)
     private final String id= UUID.randomUUID().toString();
 
     private String username;
