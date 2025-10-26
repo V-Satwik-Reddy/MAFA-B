@@ -6,23 +6,30 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
+
 import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "user",
+        uniqueConstraints = {@UniqueConstraint(columnNames = "email")})
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private int id;
 
-    @NotBlank private String username;
+    @NotBlank
+    private String username;
+
     @Email
-    @NotBlank private String email;
-    @NotBlank private String password;
+    @NotBlank
+    @Column(nullable = false, unique = true) // ensures DB-level uniqueness
+    private String email;
 
+    @NotBlank
+    private String password;
 
 }

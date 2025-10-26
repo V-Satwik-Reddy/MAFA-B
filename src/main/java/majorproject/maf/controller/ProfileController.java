@@ -1,20 +1,34 @@
 package majorproject.maf.controller;
 
 
+import majorproject.maf.dto.UserDto;
 import majorproject.maf.model.ApiResponse;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import majorproject.maf.service.ProfileService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/profile")
-public class Profile {
+public class ProfileController {
 
-    @GetMapping("/getuser")
-    public ApiResponse getProfile(@RequestParam String email){
+    ProfileService pS;
 
+    public ProfileController(ProfileService pS) {
+        this.pS = pS;
+    }
+    @GetMapping("/getuser/{email}")
+    public ResponseEntity<ApiResponse<?>> getProfile(@PathVariable String email){
 
-        return new ApiResponse<>(true,"Profile ","Profile data does contain email or password");
+        UserDto user=pS.getProfile(email);
+        return new ResponseEntity<>(new ApiResponse<>(true,"User found",user), HttpStatus.OK);
+    }
+
+    @GetMapping("/allusers")
+    public ResponseEntity<ApiResponse<?>> getAllUsers() {
+        List<UserDto> users= pS.getUsers();
+        return new ResponseEntity<>(new ApiResponse<>(true,"Userz found",users), HttpStatus.OK);
     }
 }
