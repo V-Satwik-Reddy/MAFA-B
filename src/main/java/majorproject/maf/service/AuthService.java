@@ -31,7 +31,7 @@ public class AuthService {
         user.setUsername(req.getUsername());
         user.setPassword(passEnc.encode(req.getPassword()));
         userRepo.save(user);
-
+        System.out.println(user);
         return new UserDto(user.getUsername(), user.getEmail());
     }
 
