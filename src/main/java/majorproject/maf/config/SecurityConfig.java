@@ -15,12 +15,17 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+
+    @Autowired
+    private JWTFilter jwt;
 
     @Autowired
     private UserDetailsService userDetailsService;
@@ -32,6 +37,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(cors -> cors.configurationSource(request -> {
             var config = new org.springframework.web.cors.CorsConfiguration();
@@ -41,12 +47,13 @@ public class SecurityConfig {
             config.setAllowCredentials(true);
             return config;
         }));
-
+//        System.out.println(http);
         http.authorizeHttpRequests(authorizeRequests ->authorizeRequests.requestMatchers("/auth/login","/auth/signup","/profile/verify")
                 .permitAll()
                 .anyRequest().authenticated());
         http.formLogin(Customizer.withDefaults());
         http.httpBasic(Customizer.withDefaults());
+        http.addFilterAfter(jwt, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

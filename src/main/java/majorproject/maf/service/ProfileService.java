@@ -78,7 +78,7 @@ public class ProfileService {
             String token= jwt.generateToken(user);
 
             if(authentication.isAuthenticated()) {
-                return user.toString()+token;
+                return token;
             }
             else
                 return "fail";

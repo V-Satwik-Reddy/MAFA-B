@@ -29,6 +29,7 @@ public class ProfileController {
 
     @GetMapping("/allusers")
     public ResponseEntity<ApiResponse<?>> getAllUsers() {
+        System.out.println("Fetching all users");
         List<UserDto> users= pS.getUsers();
         return new ResponseEntity<>(new ApiResponse<>(true,"Users found",users), HttpStatus.OK);
     }
