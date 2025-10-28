@@ -30,9 +30,11 @@ public class AuthService {
         user.setEmail(req.getEmail());
         user.setUsername(req.getUsername());
         user.setPassword(passEnc.encode(req.getPassword()));
+        user.setBalance(req.getBalance());
+        user.setPhone(req.getPhone());
         userRepo.save(user);
         System.out.println(user);
-        return new UserDto(user.getUsername(), user.getEmail());
+        return new UserDto(user.getUsername(), user.getEmail(),user.getPhone(), user.getBalance());
     }
 
     public UserDto login(LoginRequest req) {
@@ -46,6 +48,6 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid password");
         }
 
-        return new UserDto(dbUser.getUsername(), dbUser.getEmail());
+        return new UserDto(dbUser.getUsername(), dbUser.getEmail(),dbUser.getPhone(),dbUser.getBalance());
     }
 }

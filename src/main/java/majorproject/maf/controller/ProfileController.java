@@ -29,6 +29,13 @@ public class ProfileController {
     @GetMapping("/allusers")
     public ResponseEntity<ApiResponse<?>> getAllUsers() {
         List<UserDto> users= pS.getUsers();
-        return new ResponseEntity<>(new ApiResponse<>(true,"Userz found",users), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse<>(true,"Users found",users), HttpStatus.OK);
+    }
+
+    @PutMapping("/user")
+    public ResponseEntity<ApiResponse<?>> updateUser(@RequestBody UserDto user) {
+        System.out.println(user);
+        UserDto dto=pS.updateProfile(user);
+        return new ResponseEntity<>(new ApiResponse<>(true,"User updated",user), HttpStatus.OK);
     }
 }

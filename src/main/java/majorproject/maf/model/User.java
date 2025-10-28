@@ -32,4 +32,7 @@ public class User {
     @NotBlank
     private String password;
 
+    private Long phone;
+
+    private int balance;
 }
