@@ -21,7 +21,6 @@ public class User {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private int id;
 
-    @NotBlank
     private String username;
 
     @Email
@@ -35,4 +34,7 @@ public class User {
     private Long phone;
 
     private int balance;
+
+    public User(@Email @NotBlank String email, @NotBlank String username, String encode, Long phone, int balance) {
+    }
 }

@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -51,8 +52,10 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authorizeRequests ->authorizeRequests.requestMatchers("/auth/login","/auth/signup","/profile/verify")
                 .permitAll()
                 .anyRequest().authenticated());
-        http.formLogin(Customizer.withDefaults());
-        http.httpBasic(Customizer.withDefaults());
+
+        http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+//        http.formLogin(Customizer.withDefaults());
+//        http.httpBasic(Customizer.withDefaults());
         http.addFilterAfter(jwt, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
