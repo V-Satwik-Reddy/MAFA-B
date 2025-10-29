@@ -10,10 +10,11 @@ import lombok.Data;
 public class SignUpRequest {
     @NotBlank
     private String username;
-    @NotBlank private String password;
-
+    @NotBlank
+    private String password;
     @Email
-    @NotBlank private String email;
+    @NotBlank
+    private String email;
 
     private Long phone;
 
