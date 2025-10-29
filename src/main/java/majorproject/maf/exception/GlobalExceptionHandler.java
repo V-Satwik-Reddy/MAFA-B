@@ -6,6 +6,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import majorproject.maf.exception.auth.*;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -38,6 +43,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(
                 new ApiResponse<>(false, "Internal Error", ex.getMessage()),
                 HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+
+    @ExceptionHandler(JwtValidationException.class)
+    public ResponseEntity<?> handleJwtValidationException(JwtValidationException ex) {
+        return new ResponseEntity<>(
+                new ApiResponse<>(false, "Invalid jwt token sent", ex.getMessage()),
+                HttpStatus.UNAUTHORIZED
         );
     }
 }

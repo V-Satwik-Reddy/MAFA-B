@@ -29,7 +29,12 @@ public class AuthService {
             throw new UserAlreadyExistsException("User already registered");
         }
         User user = new User(req.getEmail(), req.getUsername(), passEnc.encode(req.getPassword()), req.getPhone(), req.getBalance());
-        userRepo.save(user);
+        try{
+            userRepo.save(user);
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException("Error occurred while registering user");
+        }
         String token=jwt.generateToken(user);
         UserDto dto=new UserDto(user.getUsername(), user.getEmail(),user.getPhone(), user.getBalance());
         return new ApiResponse(token,true, "User registered successfully", dto);

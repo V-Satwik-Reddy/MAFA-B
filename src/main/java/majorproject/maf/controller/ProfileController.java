@@ -41,7 +41,6 @@ public class ProfileController {
 
     @PutMapping("/user")
     public ResponseEntity<ApiResponse<?>> updateUser(@RequestBody UserDto user) {
-        System.out.println(user);
         UserDto dto=pS.updateProfile(user);
         return new ResponseEntity<>(new ApiResponse<>(true,"User updated",user), HttpStatus.OK);
     }

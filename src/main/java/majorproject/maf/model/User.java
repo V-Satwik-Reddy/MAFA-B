@@ -36,5 +36,10 @@ public class User {
     private int balance;
 
     public User(@Email @NotBlank String email, @NotBlank String username, String encode, Long phone, int balance) {
+        this.email = email;
+        this.username = username;
+        this.password = encode;
+        this.phone = phone;
+        this.balance = balance;
     }
 }

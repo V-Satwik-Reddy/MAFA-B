@@ -50,7 +50,6 @@ public class ProfileService {
         if (existingUser == null) {
             throw new UserNotFoundException("User not found with email: " + userDto.getEmail());
         }
-        System.out.println(existingUser);
         existingUser.setUsername(userDto.getUsername());
         existingUser.setPhone(userDto.getPhone());
         existingUser.setBalance(userDto.getBalance());
