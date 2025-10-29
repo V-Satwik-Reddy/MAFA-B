@@ -5,6 +5,7 @@ import majorproject.maf.dto.SignUpRequest;
 import majorproject.maf.exception.auth.InvalidCredentialsException;
 import majorproject.maf.exception.auth.UserAlreadyExistsException;
 import majorproject.maf.exception.auth.UserNotFoundException;
+import majorproject.maf.model.ApiResponse;
 import majorproject.maf.model.User;
 import majorproject.maf.dto.UserDto;
 import majorproject.maf.repository.UserRepository;
@@ -16,28 +17,25 @@ public class AuthService {
 
     private final UserRepository userRepo;
     private final PasswordEncoder passEnc;
-
-    public AuthService(UserRepository userRepo, PasswordEncoder passEnc) {
+    private final JWTService jwt;
+    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt) {
         this.userRepo = userRepo;
         this.passEnc = passEnc;
+        this.jwt = jwt;
     }
 
-    public UserDto signUp(SignUpRequest req) {
+    public ApiResponse signUp(SignUpRequest req) {
         if (userRepo.findByEmail(req.getEmail()) != null) {
             throw new UserAlreadyExistsException("User already registered");
         }
-        User user = new User();
-        user.setEmail(req.getEmail());
-        user.setUsername(req.getUsername());
-        user.setPassword(passEnc.encode(req.getPassword()));
-        user.setBalance(req.getBalance());
-        user.setPhone(req.getPhone());
+        User user = new User(req.getEmail(), req.getUsername(), passEnc.encode(req.getPassword()), req.getPhone(), req.getBalance());
         userRepo.save(user);
-        System.out.println(user);
-        return new UserDto(user.getUsername(), user.getEmail(),user.getPhone(), user.getBalance());
+        String token=jwt.generateToken(user);
+        UserDto dto=new UserDto(user.getUsername(), user.getEmail(),user.getPhone(), user.getBalance());
+        return new ApiResponse(token,true, "User registered successfully", dto);
     }
 
-    public UserDto login(LoginRequest req) {
+    public ApiResponse login(LoginRequest req) {
         User dbUser = userRepo.findByEmail(req.getEmail());
         if (dbUser == null) {
             throw new UserNotFoundException("User not found with given email");
@@ -47,7 +45,8 @@ public class AuthService {
         if (!isCorrect) {
             throw new InvalidCredentialsException("Invalid password");
         }
-
-        return new UserDto(dbUser.getUsername(), dbUser.getEmail(),dbUser.getPhone(),dbUser.getBalance());
+        String token=jwt.generateToken(dbUser);
+        UserDto dto=new UserDto(dbUser.getUsername(), dbUser.getEmail(),dbUser.getPhone(),dbUser.getBalance());
+        return new ApiResponse(token,true, "User logged in successfully", dto);
     }
 }

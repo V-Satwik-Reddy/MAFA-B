@@ -4,9 +4,11 @@ package majorproject.maf.controller;
 import majorproject.maf.dto.UserDto;
 import majorproject.maf.model.ApiResponse;
 import majorproject.maf.model.User;
+import majorproject.maf.model.UserPrinciple;
 import majorproject.maf.service.ProfileService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,7 +31,10 @@ public class ProfileController {
 
     @GetMapping("/allusers")
     public ResponseEntity<ApiResponse<?>> getAllUsers() {
-        System.out.println("Fetching all users");
+//        UserPrinciple principal = (UserPrinciple) SecurityContextHolder.getContext()
+//                .getAuthentication()
+//                .getPrincipal();
+//        System.out.println(principal.getUser());
         List<UserDto> users= pS.getUsers();
         return new ResponseEntity<>(new ApiResponse<>(true,"Users found",users), HttpStatus.OK);
     }
@@ -39,12 +44,5 @@ public class ProfileController {
         System.out.println(user);
         UserDto dto=pS.updateProfile(user);
         return new ResponseEntity<>(new ApiResponse<>(true,"User updated",user), HttpStatus.OK);
-    }
-
-    @PostMapping("/verify")
-    public String verify(@RequestBody User user) {
-
-        String gen=pS.verify(user);
-        return gen;
     }
 }

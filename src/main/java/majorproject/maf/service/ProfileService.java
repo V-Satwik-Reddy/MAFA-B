@@ -38,7 +38,8 @@ public class ProfileService {
             List<User> users = userRepo.findAll();
             List<UserDto> userDtos = new ArrayList<>();
             for(User user : users) {
-                userDtos.add(new UserDto(user.getUsername(), user.getEmail(),user.getPhone(),user.getBalance()));
+                UserDto dto = new UserDto(user.getUsername(), user.getEmail(),user.getPhone(),user.getBalance());
+                userDtos.add(dto);
             }
             return userDtos;
         }
@@ -73,14 +74,4 @@ public class ProfileService {
         );
     }
 
-    public String verify(User user) {
-            Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(),user.getPassword()));
-            String token= jwt.generateToken(user);
-
-            if(authentication.isAuthenticated()) {
-                return token;
-            }
-            else
-                return "fail";
-    }
 }
