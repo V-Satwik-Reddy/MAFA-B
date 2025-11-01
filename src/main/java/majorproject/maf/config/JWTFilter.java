@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import majorproject.maf.exception.auth.JwtValidationException;
 import majorproject.maf.service.JWTService;
 import majorproject.maf.service.MyUserDetailService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,16 +17,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @Component
 public class JWTFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JWTService jwt;
-
-    @Autowired
+    private final JWTService jwt;
     ApplicationContext context;
 
+    public JWTFilter(JWTService jwt, ApplicationContext context) {
+        this.jwt = jwt;
+        this.context = context;
+    }
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String header= request.getHeader("Authorization");
@@ -39,7 +40,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 token = header.substring(7);
                 username=jwt.extractUserName(token);
             }
-            if(username!=""&& SecurityContextHolder.getContext().getAuthentication()==null ) {
+            if(!Objects.equals(username, "") && SecurityContextHolder.getContext().getAuthentication()==null ) {
                 UserDetails userDetails=context.getBean(MyUserDetailService.class).loadUserByUsername(username);
                 if(jwt.validateToken(token,userDetails)){
                     UsernamePasswordAuthenticationToken authToken=new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
@@ -59,7 +60,6 @@ public class JWTFilter extends OncePerRequestFilter {
         }
     """.formatted(ex.getMessage()));
             response.getWriter().flush();
-            return; // ✅ VERY IMPORTANT - stops further filters
         } catch (Exception ex) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.setContentType("application/json");
@@ -71,7 +71,6 @@ public class JWTFilter extends OncePerRequestFilter {
         }
     """.formatted(ex.getMessage()));
             response.getWriter().flush();
-            return; // ✅ also stop here
         }
 
     }
