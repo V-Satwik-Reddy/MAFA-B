@@ -11,7 +11,7 @@ public class Home {
 
     @GetMapping
     public ResponseEntity<ApiResponse<String>> home() {
-        ApiResponse<String> response = new ApiResponse<>(true,"Welcome",new String("Welcome to the Multi Agent Financial Assitant "));
+        ApiResponse<String> response = new ApiResponse<>(true,"Welcome", "Welcome to the Multi Agent Financial Assistant ");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

@@ -4,21 +4,18 @@ import jakarta.validation.Valid;
 import majorproject.maf.dto.LoginRequest;
 import majorproject.maf.dto.SignUpRequest;
 import majorproject.maf.model.ApiResponse;
-import majorproject.maf.dto.UserDto;
-import majorproject.maf.model.UserPrinciple;
 import majorproject.maf.service.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
     AuthService auth;
-
+    public AuthController(AuthService auth) {
+        this.auth = auth;
+    }
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<?>> signUp(@Valid @RequestBody SignUpRequest req) {
         System.out.println(req);
@@ -27,11 +24,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<?>> login(@Valid @RequestBody LoginRequest req) {
-//        System.out.println(req);
+    public ResponseEntity login(@Valid @RequestBody LoginRequest req) {
 
-        ApiResponse apiResponse=auth.login(req);
-        return ResponseEntity.ok(apiResponse);
+        return ResponseEntity.ok(auth.login(req));
     }
 
     @GetMapping("/verify")
