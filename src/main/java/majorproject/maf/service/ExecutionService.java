@@ -2,7 +2,6 @@ package majorproject.maf.service;
 
 import majorproject.maf.dto.BuyRequest;
 import majorproject.maf.model.Coin;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -11,7 +10,7 @@ import reactor.core.publisher.Mono;
 @Service
 public class ExecutionService {
 
-    private WebClient webClient;
+    private final WebClient webClient;
 
     public ExecutionService(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.baseUrl("http://localhost:8081").build();
