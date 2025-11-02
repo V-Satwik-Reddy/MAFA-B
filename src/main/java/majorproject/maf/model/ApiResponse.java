@@ -3,7 +3,6 @@ package majorproject.maf.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import majorproject.maf.dto.UserDto;
 
 @Data
 @AllArgsConstructor
