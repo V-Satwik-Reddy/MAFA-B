@@ -4,10 +4,6 @@ import majorproject.maf.dto.UserDto;
 import majorproject.maf.exception.auth.UserNotFoundException;
 import majorproject.maf.model.User;
 import majorproject.maf.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,13 +13,9 @@ import java.util.List;
 public class ProfileService {
 
         private final UserRepository userRepo;
-        private final AuthenticationManager authManager;
-        private final JWTService jwt;
 
-        public ProfileService(AuthenticationManager authManager,UserRepository userRepo,JWTService jwt) {
+        public ProfileService(UserRepository userRepo) {
             this.userRepo = userRepo;
-            this.authManager = authManager;
-            this.jwt = jwt;
         }
 
         public UserDto getProfile(String email) {
