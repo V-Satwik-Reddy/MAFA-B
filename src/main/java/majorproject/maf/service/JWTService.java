@@ -23,9 +23,10 @@ public class JWTService {
 
     @Value("${jwt.secret:}")
     private String base64Secret;
-
     private SecretKey key;
 
+    private static final long ACCESS_TOKEN_EXPIRY = 15 * 60 * 1000; // 15 min
+    private static final long REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
 
     @PostConstruct
     private void initKey() {
@@ -49,6 +50,29 @@ public class JWTService {
                 .compact();
     }
 
+    public String generateAccessToken(User user) {
+        return Jwts.builder()
+                .subject(user.getEmail())
+                .claim("type", "ACCESS")
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRY))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateRefreshToken(User user) {
+        return Jwts.builder()
+                .subject(user.getEmail())
+                .claim("type", "REFRESH")
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRY))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String extractTokenType(String token) {
+        return extractClaim(token, claims -> claims.get("type", String.class));
+    }
 
     public String extractUserName(String token) {
         // extract the username from jwt token
@@ -68,9 +92,15 @@ public class JWTService {
                 .getPayload();
     }
 
-    public boolean validateToken(String token, UserDetails userDetails) {
-        final String userName = extractUserName(token);
-        return (userName.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    public boolean validateAccessToken(String token, UserDetails userDetails) {
+        return extractUserName(token).equals(userDetails.getUsername())
+                && "ACCESS".equals(extractTokenType(token))
+                && !isTokenExpired(token);
+    }
+
+    public boolean validateRefreshToken(String token) {
+        return "REFRESH".equals(extractTokenType(token))
+                && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
