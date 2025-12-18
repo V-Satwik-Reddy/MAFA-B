@@ -30,49 +30,54 @@ public class JWTFilter extends OncePerRequestFilter {
         this.context = context;
     }
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String header= request.getHeader("Authorization");
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
-        String token="";
-        String username="";
-        try{
-            if(header!=null && header.startsWith("Bearer ")) {
-                token = header.substring(7);
-                username=jwt.extractUserName(token);
+        String header = request.getHeader("Authorization");
+
+        if (header == null || !header.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        try {
+            String token = header.substring(7);
+            String username = jwt.extractUserName(token);
+
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = context
+                        .getBean(MyUserDetailService.class)
+                        .loadUserByUsername(username);
+
+                if (jwt.validateAccessToken(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails, null, userDetails.getAuthorities()
+                            );
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
             }
-            if(!Objects.equals(username, "") && SecurityContextHolder.getContext().getAuthentication()==null ) {
-                UserDetails userDetails=context.getBean(MyUserDetailService.class).loadUserByUsername(username);
-                if(jwt.validateAccessToken(token,userDetails)){
-                    UsernamePasswordAuthenticationToken authToken=new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                    }
-            }
-            filterChain.doFilter(request,response);
-        } catch (JwtValidationException ex) {
+
+            filterChain.doFilter(request, response);
+
+        } catch (Exception ex) {
+            SecurityContextHolder.clearContext();
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("""
-        {
-            "success": false,
-            "message": "Invalid jwt token sent",
-            "data": "%s"
-        }
-    """.formatted(ex.getMessage()));
+            {
+                "success": false,
+                "message": "Unauthorized",
+                "data": "%s"
+            }
+        """.formatted(ex.getMessage()));
             response.getWriter().flush();
-        } catch (Exception ex) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.setContentType("application/json");
-            response.getWriter().write("""
-        {
-            "success": false,
-            "message": "Unexpected authentication error",
-            "data": "%s"
+            return;
         }
-    """.formatted(ex.getMessage()));
-            response.getWriter().flush();
-        }
-
     }
+
 }
 

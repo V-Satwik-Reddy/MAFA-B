@@ -7,6 +7,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import majorproject.maf.exception.auth.JwtValidationException;
 import majorproject.maf.model.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -93,10 +94,15 @@ public class JWTService {
     }
 
     public boolean validateAccessToken(String token, UserDetails userDetails) {
-        return extractUserName(token).equals(userDetails.getUsername())
-                && "ACCESS".equals(extractTokenType(token))
-                && !isTokenExpired(token);
+        final String username = extractUserName(token);
+
+        if (isTokenExpired(token)) {
+            throw new JwtValidationException("Access token expired");
+        }
+
+        return username.equals(userDetails.getUsername());
     }
+
 
     public boolean validateRefreshToken(String token) {
         return "REFRESH".equals(extractTokenType(token))
