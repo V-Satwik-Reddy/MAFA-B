@@ -6,6 +6,9 @@ import majorproject.maf.model.ApiResponse;
 import majorproject.maf.service.ProfileService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,21 +23,11 @@ public class ProfileController {
         this.pS = pS;
     }
 
-    @GetMapping("/getuser/{email}")
-    public ResponseEntity<ApiResponse<?>> getProfile(@PathVariable String email){
-
-        UserDto user=pS.getProfile(email);
-        return new ResponseEntity<>(new ApiResponse<>(true,"User found",user), HttpStatus.OK);
-    }
-
-    @GetMapping("/allusers")
-    public ResponseEntity<ApiResponse<?>> getAllUsers() {
-//        UserPrinciple principal = (UserPrinciple) SecurityContextHolder.getContext()
-//                .getAuthentication()
-//                .getPrincipal();
-//        System.out.println(principal.getUser());
-        List<UserDto> users= pS.getUsers();
-        return new ResponseEntity<>(new ApiResponse<>(true,"Users found",users), HttpStatus.OK);
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<?>> getProfile(Authentication authentication) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        UserDto user = pS.getProfile(userDetails.getUsername()); // username/email
+        return ResponseEntity.ok(new ApiResponse<>(true, "User found", user));
     }
 
     @PutMapping("/user")

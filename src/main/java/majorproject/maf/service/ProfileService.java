@@ -25,17 +25,6 @@ public class ProfileService {
             }
             return new UserDto(user.getUsername(), user.getEmail(),user.getPhone(),user.getBalance());
         }
-
-        public List<UserDto> getUsers() {
-            List<User> users = userRepo.findAll();
-            List<UserDto> userDtos = new ArrayList<>();
-            for(User user : users) {
-                UserDto dto = new UserDto(user.getUsername(), user.getEmail(),user.getPhone(),user.getBalance());
-                userDtos.add(dto);
-            }
-            return userDtos;
-        }
-
     public UserDto updateProfile(UserDto userDto) {
         User existingUser = userRepo.findByEmail(userDto.getEmail());
 
