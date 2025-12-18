@@ -1,5 +1,6 @@
 package majorproject.maf.service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import majorproject.maf.dto.LoginRequest;
 import majorproject.maf.dto.SignUpRequest;
 import majorproject.maf.exception.auth.InvalidCredentialsException;
@@ -9,8 +10,16 @@ import majorproject.maf.model.ApiResponse;
 import majorproject.maf.model.User;
 import majorproject.maf.dto.UserDto;
 import majorproject.maf.repository.UserRepository;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.CookieValue;
+
+import java.time.Duration;
+import java.util.Map;
 
 @Service
 public class AuthService {
@@ -24,7 +33,7 @@ public class AuthService {
         this.jwt = jwt;
     }
 
-    public ApiResponse signUp(SignUpRequest req) {
+    public ApiResponse signUp(SignUpRequest req, HttpServletResponse response) {
         if (userRepo.findByEmail(req.getEmail()) != null) {
             throw new UserAlreadyExistsException("User already registered");
         }
@@ -35,23 +44,69 @@ public class AuthService {
             e.printStackTrace();
             throw new RuntimeException("Error occurred while registering user");
         }
-        String token=jwt.generateToken(user);
-        UserDto dto=new UserDto(user.getUsername(), user.getEmail(),user.getPhone(), user.getBalance());
-        return new ApiResponse(token,true, "User registered successfully", dto);
+        return getResponse(response,user);
     }
 
-    public ApiResponse login(LoginRequest req) {
+    public ApiResponse<?> login(LoginRequest req, HttpServletResponse response) {
+
         User dbUser = userRepo.findByEmail(req.getEmail());
         if (dbUser == null) {
-            throw new UserNotFoundException("User not found with given email");
+            throw new UserNotFoundException("User not found");
         }
 
-        boolean isCorrect = passEnc.matches(req.getPassword(), dbUser.getPassword());
-        if (!isCorrect) {
+        if (!passEnc.matches(req.getPassword(), dbUser.getPassword())) {
             throw new InvalidCredentialsException("Invalid password");
         }
-        String token=jwt.generateToken(dbUser);
-        UserDto dto=new UserDto(dbUser.getUsername(), dbUser.getEmail(),dbUser.getPhone(),dbUser.getBalance());
-        return new ApiResponse(token,true, "User logged in successfully", dto);
+
+        return getResponse(response, dbUser);
     }
+
+    private ApiResponse<Map<String, Object>> getResponse(HttpServletResponse response, User dbUser) {
+        String accessToken = jwt.generateAccessToken(dbUser);
+        String refreshToken = jwt.generateRefreshToken(dbUser);
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", refreshToken)
+                .httpOnly(true)
+                .secure(true)          // false only for local HTTP testing
+                .sameSite("Strict")
+                .path("/auth/refresh")
+                .maxAge(Duration.ofDays(7))
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+        UserDto dto = new UserDto(
+                dbUser.getUsername(),
+                dbUser.getEmail(),
+                dbUser.getPhone(),
+                dbUser.getBalance()
+        );
+
+        return new ApiResponse<>(true, "Login successful", Map.of(
+                "accessToken", accessToken,
+                "user", dto
+        ));
+    }
+
+    public ResponseEntity<?> refresh(
+            @CookieValue(name = "refresh_token", required = false) String refreshToken) {
+
+        if (refreshToken == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        if (!jwt.validateRefreshToken(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        String email = jwt.extractUserName(refreshToken);
+        User user = userRepo.findByEmail(email);
+
+        String newAccessToken = jwt.generateAccessToken(user);
+
+        return ResponseEntity.ok(Map.of(
+                "accessToken", newAccessToken
+        ));
+    }
+
 }
