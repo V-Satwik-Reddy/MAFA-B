@@ -47,7 +47,7 @@ public class SecurityConfig {
             return config;
         }));
 //        System.out.println(http);
-        http.authorizeHttpRequests(authorizeRequests ->authorizeRequests.requestMatchers("/auth/login","/auth/signup","/profile/verify")
+        http.authorizeHttpRequests(authorizeRequests ->authorizeRequests.requestMatchers("/auth/login","/auth/signup","/profile/verify","/auth/refresh")
                 .permitAll()
                 .anyRequest().authenticated());
 
