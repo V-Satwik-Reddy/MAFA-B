@@ -1,5 +1,6 @@
 package majorproject.maf.controller;
 
+import majorproject.maf.dto.TransactionDto;
 import majorproject.maf.model.Transaction;
 import majorproject.maf.service.TransactionService;
 import org.springframework.http.ResponseEntity;
@@ -24,8 +25,7 @@ public class TransactionController {
     public ResponseEntity<?> getTransactions(Authentication auth) {
 
         String email = auth.getName(); // from JWT
-        List<Transaction> txns = transactionService.getUserTransactions(email);
-
+        List<TransactionDto> txns = transactionService.getUserTransactions(email);
         return ResponseEntity.ok(txns);
     }
 

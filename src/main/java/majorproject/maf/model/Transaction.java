@@ -35,4 +35,16 @@ public class Transaction {
         this.createdAt = LocalDateTime.now();
     }
 
+    @Override
+    public String toString() {
+        return "Transaction{" +
+                "id=" + id +
+                ", type='" + type + '\'' +
+                ", user=" + user +
+                ", assetQuantity=" + assetQuantity +
+                ", createdAt=" + createdAt +
+                ", asset='" + asset + '\'' +
+                ", amount=" + amount +
+                '}';
+    }
 }

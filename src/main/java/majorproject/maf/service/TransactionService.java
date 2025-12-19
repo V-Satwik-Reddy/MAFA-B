@@ -1,5 +1,6 @@
 package majorproject.maf.service;
 
+import majorproject.maf.dto.TransactionDto;
 import majorproject.maf.model.Transaction;
 import majorproject.maf.model.User;
 import org.springframework.stereotype.Service;
@@ -17,12 +18,22 @@ public class TransactionService {
         this.userRepo = userRepo;
     }
 
-    public List<Transaction> getUserTransactions(String email) {
+    public List<TransactionDto> getUserTransactions(String email) {
         User user = userRepo.findByEmail(email);
         if (user == null) {
             throw new RuntimeException("User not found");
         }
-        return transactionRepo.findByUserIdOrderByCreatedAtDesc(user.getId());
+        return transactionRepo.findByUserIdOrderByCreatedAtDesc(user.getId())
+                .stream()
+                .map(txn -> new TransactionDto(
+                        txn.getId(),
+                        txn.getType(),
+                        txn.getAsset(),
+                        txn.getAssetQuantity(),
+                        txn.getAmount(),
+                        txn.getCreatedAt()
+                ))
+                .toList();
     }
 
     public Transaction createTransaction(Transaction transaction) {
