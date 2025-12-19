@@ -12,6 +12,6 @@ public class UserDto {
     private String username;
     private String email;
     private Long phone;
-    private int balance;
+    private double balance;
 
 }
