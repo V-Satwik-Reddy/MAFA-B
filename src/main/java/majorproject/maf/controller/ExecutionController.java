@@ -17,7 +17,8 @@ public class ExecutionController {
     public ExecutionController(ExecutionService executionService) {
         this.executionService = executionService;
     }
-    @PostMapping("/binance/buy")
+
+    @PostMapping("/buy")
     public Coin binanceBuy(@RequestBody BuyRequest request) {
         return executionService.buyCoin(request, "binance");
     }
