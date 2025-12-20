@@ -2,13 +2,13 @@ package majorproject.maf.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
+
 @Entity
 @Table(name = "transactions")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class Transaction {
 
     @Id

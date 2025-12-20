@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
     List<Transaction> findByUserIdOrderByCreatedAtDesc(Integer userId);
+
+    List<Transaction> findByUserIdAndAssetOrderByCreatedAtDesc(Integer userId, String asset);
 }
