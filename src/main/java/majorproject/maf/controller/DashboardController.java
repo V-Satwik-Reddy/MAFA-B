@@ -1,32 +1,36 @@
 package majorproject.maf.controller;
 
+import majorproject.maf.dto.StockDto;
 import majorproject.maf.dto.TransactionDto;
-import majorproject.maf.model.Transaction;
-import majorproject.maf.service.TransactionService;
+import majorproject.maf.service.DashboardService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
-public class TransactionController {
+public class DashboardController {
 
-    TransactionService transactionService;
+    DashboardService dashboardService;
 
-    public TransactionController(TransactionService transactionService) {
-        this.transactionService = transactionService;
+    public DashboardController(DashboardService dashboardService) {
+        this.dashboardService = dashboardService;
     }
     @GetMapping("/transactions")
     public ResponseEntity<?> getTransactions(Authentication auth) {
 
         String email = auth.getName(); // from JWT
-        List<TransactionDto> txns = transactionService.getUserTransactions(email);
+        List<TransactionDto> txns = dashboardService.getUserTransactions(email);
         return ResponseEntity.ok(txns);
     }
 
+    @GetMapping("/dashboard")
+    public ResponseEntity<?> getDashboardData(Authentication auth) {
+        String email = auth.getName(); // from JWT
+        List<StockDto> holdings =  dashboardService.getHoldingsDetails(email);
+        System.out.println();
+        return ResponseEntity.ok(holdings);
+    }
 }
