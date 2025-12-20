@@ -54,4 +54,11 @@ public class ProfileService {
         );
     }
 
+    public double getBalance(String email) {
+        User user = userRepo.findByEmail(email);
+        if(user == null) {
+            throw new UserNotFoundException("No such user found with email: " + email);
+        }
+        return user.getBalance();
+    }
 }

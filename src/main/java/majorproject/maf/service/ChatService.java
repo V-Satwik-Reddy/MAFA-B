@@ -71,7 +71,7 @@ public class ChatService {
             String jsonBody = objectMapper.writeValueAsString(requestBody);
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(
-                            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="
+                            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="
                                     + GEMINI_API_KEY))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
@@ -102,7 +102,7 @@ public class ChatService {
             return answer;
 
         } catch (Exception e) {
-            throw new RuntimeException("Chat service failed", e);
+            throw new RuntimeException(e+" "+"Chat service failed");
         }
     }
 }
