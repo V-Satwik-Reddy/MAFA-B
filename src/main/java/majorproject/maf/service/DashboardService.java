@@ -66,7 +66,6 @@ public class DashboardService {
                 }
             }
             avgBuyPrice=totalAmount/buyQty;
-            stockDto.setTotalAmount(totalAmount);
             stockDto.setAvgBuyPrice(avgBuyPrice);
             double currentPrice;
             try {
@@ -74,7 +73,7 @@ public class DashboardService {
             } catch (Exception e) {
                 currentPrice = 0.0; // or last known price
             }
-
+            stockDto.setTotalAmount(stock.getShares()*currentPrice);
             stockDto.setCurrentPrice(currentPrice);
             double gainLoss=(currentPrice - avgBuyPrice)*stock.getShares();
             stockDto.setGainLoss(gainLoss);

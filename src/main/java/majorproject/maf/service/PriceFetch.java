@@ -8,6 +8,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.math.*;
 @Service
@@ -27,7 +29,7 @@ public class PriceFetch {
             "72HGUXFWCNPMDDAW",
             "JLD7PUGED1CFJLXE."
     };
-
+    private static Map<String,Double> cache= new HashMap<>();
     private static final AtomicInteger keyIndex = new AtomicInteger(0);
 
     private final HttpClient httpClient;
@@ -40,6 +42,9 @@ public class PriceFetch {
 
     public double fetchCurrentPrice(String symbol) {
         try {
+            if(cache.containsKey(symbol)){
+                return cache.get(symbol);
+            }
             String apiKey = getNextApiKey();
             String url = String.format(BASE_URL, symbol, apiKey);
 
@@ -65,7 +70,7 @@ public class PriceFetch {
             if (priceStr == null || priceStr.isBlank()) {
                 throw new RuntimeException("Missing price for symbol: " + symbol);
             }
-
+            cache.put(symbol, Double.parseDouble(priceStr));
             return Double.parseDouble(priceStr);
 
         } catch (Exception e) {

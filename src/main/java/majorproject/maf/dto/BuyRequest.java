@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BuyRequest {
-    private int price;
-    private String coinName;
+    private double price;
+    private String symbol;
 }

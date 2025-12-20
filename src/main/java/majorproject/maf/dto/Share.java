@@ -1,8 +1,7 @@
-package majorproject.maf.model;
+package majorproject.maf.dto;
 
 
 import lombok.Data;
-import java.util.List;
 
 @Data
 public class Share {
