@@ -41,7 +41,6 @@ public class ExecutionService {
                 .bodyToMono(Share.class)
                 .block(); // block() makes it synchronous
         if(s==null) return null;
-//        System.out.println(s);
         userRepository.debitBalance(u.getEmail(),s.getPrice());
         Transaction t=new Transaction();
         t.setAsset(s.getSymbol());
@@ -50,7 +49,6 @@ public class ExecutionService {
         t.setAssetQuantity(s.getQuantity());
         t.setUser(u);
         ds.createTransaction(t);
-//        System.out.println(t);
         if (stockRepository.findByUserIdAndSymbol(u.getId(), s.getSymbol()) == null) {
             stockRepository.save(new Stock(s.getSymbol(), 0.0, u));
         }
