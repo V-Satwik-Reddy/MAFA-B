@@ -6,7 +6,7 @@ public record TransactionDto(
         Long id,
         String type,
         String asset,
-        Double assetQuantity,
+        long assetQuantity,
         Double amount,
         LocalDateTime createdAt
 ) {

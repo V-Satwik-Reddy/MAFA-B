@@ -27,7 +27,6 @@ public class ExecutionController {
     @PostMapping("/buy")
     public ResponseEntity<?> binanceBuy(@RequestBody BuyRequest request, Authentication authentication) {
         Share s=executionService.buyShares(request,authentication.getName());
-        System.out.println(s);
         return ResponseEntity.ok(s);
     }
 

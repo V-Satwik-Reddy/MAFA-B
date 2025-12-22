@@ -23,7 +23,7 @@ public class Stock {
                 '}';
     }
 
-    private Double shares;
+    private long shares;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

@@ -21,7 +21,7 @@ public class Transaction {
 
     private Double amount;
 
-    private Double assetQuantity;
+    private long assetQuantity;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

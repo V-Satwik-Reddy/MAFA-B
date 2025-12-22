@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class StockDto {
     private String symbol;
-    private double shares;
+    private long shares;
     private double totalAmount;
     private double currentPrice;
     private double avgBuyPrice;

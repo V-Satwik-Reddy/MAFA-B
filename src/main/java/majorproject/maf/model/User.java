@@ -43,7 +43,7 @@ public class User {
     )
     private List<Transaction> transactions = new ArrayList<>();
 
-    public User(@Email @NotBlank String email, @NotBlank String username, String encode, Long phone, int balance) {
+    public User(@Email @NotBlank String email, @NotBlank String username, String encode, Long phone, double balance) {
         this.email = email;
         this.username = username;
         this.password = encode;

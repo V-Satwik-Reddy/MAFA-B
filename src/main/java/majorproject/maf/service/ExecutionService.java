@@ -50,9 +50,9 @@ public class ExecutionService {
         t.setUser(u);
         ds.createTransaction(t);
         if (stockRepository.findByUserIdAndSymbol(u.getId(), s.getSymbol()) == null) {
-            stockRepository.save(new Stock(s.getSymbol(), 0.0, u));
-        }
-        stockRepository.incrementShares(u.getId(), s.getSymbol(), s.getQuantity());
+            stockRepository.save(new Stock(s.getSymbol(), s.getQuantity(), u));
+        }else
+            stockRepository.incrementShares(u.getId(), s.getSymbol(), s.getQuantity());
         return s;
     }
 
@@ -83,7 +83,6 @@ public class ExecutionService {
 //        System.out.println(t);
         stockRepository.decrementShares(u.getId(), s.getSymbol(), s.getQuantity());
         Stock updatedStock=stockRepository.findByUserIdAndSymbol(u.getId(), s.getSymbol());
-        System.out.println(updatedStock.getShares());
         if(updatedStock.getShares()<=0){
             stockRepository.deleteByUserIdAndSymbol(u.getId(),s.getSymbol());
         }

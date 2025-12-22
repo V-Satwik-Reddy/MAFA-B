@@ -19,7 +19,7 @@ public interface StockRepository extends JpaRepository<Stock, String> {
         SET h.shares = h.shares + :delta
         WHERE h.user.id = :userId AND h.symbol = :symbol
     """)
-    void incrementShares(int userId, String symbol, double delta);
+    void incrementShares(int userId, String symbol, long delta);
 
     @Modifying
     @Query("""
@@ -27,7 +27,7 @@ public interface StockRepository extends JpaRepository<Stock, String> {
         SET h.shares = h.shares - :delta
         WHERE h.user.id = :userId AND h.symbol = :symbol
     """)
-    void decrementShares(int userId, String symbol, double delta);
+    void decrementShares(int userId, String symbol, long delta);
 
     void deleteByUserIdAndSymbol(int id, String symbol);
 }
