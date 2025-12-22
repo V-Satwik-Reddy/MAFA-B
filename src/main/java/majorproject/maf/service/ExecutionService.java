@@ -82,6 +82,11 @@ public class ExecutionService {
         ds.createTransaction(t);
 //        System.out.println(t);
         stockRepository.decrementShares(u.getId(), s.getSymbol(), s.getQuantity());
+        Stock updatedStock=stockRepository.findByUserIdAndSymbol(u.getId(), s.getSymbol());
+        System.out.println(updatedStock.getShares());
+        if(updatedStock.getShares()<=0){
+            stockRepository.deleteByUserIdAndSymbol(u.getId(),s.getSymbol());
+        }
         return s;
     }
 
