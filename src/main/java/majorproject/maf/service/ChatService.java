@@ -46,7 +46,7 @@ public class ChatService {
             String jsonBody = objectMapper.writeValueAsString(body);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:5000/executeagent"))
+                    .uri(URI.create("http://localhost:5000/market-research-agent"))
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + token) // ✅ forward JWT
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
