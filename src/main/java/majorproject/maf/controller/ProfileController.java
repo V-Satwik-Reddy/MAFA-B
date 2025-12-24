@@ -1,5 +1,6 @@
 package majorproject.maf.controller;
 
+import majorproject.maf.dto.Share;
 import majorproject.maf.dto.UserDto;
 import majorproject.maf.model.ApiResponse;
 import majorproject.maf.service.ProfileService;
@@ -8,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -35,5 +38,11 @@ public class ProfileController {
     public ResponseEntity<ApiResponse<?>> getBalance(Authentication authentication) {
         double balance = pS.getBalance(authentication.getName());
         return ResponseEntity.ok(new ApiResponse<>(true, "Balance fetched", balance));
+    }
+
+    @GetMapping("/holdings")
+    public ResponseEntity<ApiResponse<?>> getHoldings(Authentication authentication) {
+        List<Share> holdings = pS.getUserHoldings(authentication.getName());
+        return ResponseEntity.ok(new ApiResponse<>(true, "Holdings fetched", holdings));
     }
 }

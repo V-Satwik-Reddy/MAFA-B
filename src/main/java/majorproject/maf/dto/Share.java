@@ -6,7 +6,12 @@ import lombok.Data;
 @Data
 public class Share {
     private String symbol;
-    private long quantity;
-    private double price;
+    private Long quantity;
+    private Double price;
     private String id;
+
+    public Share(String symbol, Long quantity) {
+        this.symbol = symbol;
+        this.quantity = quantity;
+    }
 }

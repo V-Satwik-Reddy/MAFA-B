@@ -1,8 +1,11 @@
 package majorproject.maf.service;
 
+import majorproject.maf.dto.Share;
 import majorproject.maf.dto.UserDto;
 import majorproject.maf.exception.auth.UserNotFoundException;
+import majorproject.maf.model.Stock;
 import majorproject.maf.model.User;
+import majorproject.maf.repository.StockRepository;
 import majorproject.maf.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -13,8 +16,9 @@ import java.util.List;
 public class ProfileService {
 
         private final UserRepository userRepo;
-
-        public ProfileService(UserRepository userRepo) {
+        private StockRepository stockRepo;
+        public ProfileService(UserRepository userRepo, StockRepository stockRepo) {
+            this.stockRepo = stockRepo;
             this.userRepo = userRepo;
         }
 
@@ -25,6 +29,7 @@ public class ProfileService {
             }
             return new UserDto(user.getUsername(), user.getEmail(),user.getPhone(),user.getBalance());
         }
+
     public UserDto updateProfile(UserDto userDto) {
         User existingUser = userRepo.findByEmail(userDto.getEmail());
 
@@ -34,7 +39,6 @@ public class ProfileService {
         existingUser.setUsername(userDto.getUsername());
         existingUser.setPhone(userDto.getPhone());
         existingUser.setBalance(userDto.getBalance());
-        // Don't modify email or password unless explicitly updated
         try {
             userRepo.save(existingUser);
         } catch (Exception e) {
@@ -60,5 +64,12 @@ public class ProfileService {
             throw new UserNotFoundException("No such user found with email: " + email);
         }
         return user.getBalance();
+    }
+
+    public List<Share> getUserHoldings(String email) {
+        User user = userRepo.findByEmail(email);
+        return stockRepo.findByUserId(user.getId()).stream().map(
+                stock -> new Share(stock.getSymbol(), stock.getShares())
+        ).toList();
     }
 }
