@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class Chat {
+
     ChatService chatService;
     public Chat(ChatService chatService) {
         this.chatService = chatService;
@@ -16,8 +17,6 @@ public class Chat {
 
     @PostMapping("/chat")
     public ResponseEntity<String> chat(@RequestBody ChatRequest request, Authentication auth) {
-        // Friendly, informative message while chat features are being implemented
-        String responseMessage = "Chat module is currently under development. We're building intelligent chat features — please check back soon.";
         String basicresponse =chatService.generalChat(request.getQuery(),auth.getName());
         return ResponseEntity.ok(basicresponse);
     }

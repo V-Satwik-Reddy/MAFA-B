@@ -1,8 +1,8 @@
 package majorproject.maf.service;
 
-import majorproject.maf.dto.SellRequest;
+import majorproject.maf.dto.ExecuteRequest;
+import majorproject.maf.dto.TransactionDto;
 import org.springframework.transaction.annotation.Transactional;
-import majorproject.maf.dto.BuyRequest;
 import majorproject.maf.dto.Share;
 import majorproject.maf.model.Stock;
 import majorproject.maf.model.Transaction;
@@ -21,72 +21,63 @@ public class ExecutionService {
     private final DashboardService ds;
     private final StockRepository stockRepository;
     private final UserRepository userRepository;
-    public ExecutionService(WebClient.Builder webClientBuilder, DashboardService ds, StockRepository stockRepository, UserRepository userRepository) {
+    private final PriceFetch priceFetch;
+
+    public ExecutionService(WebClient.Builder webClientBuilder, DashboardService ds, StockRepository stockRepository, UserRepository userRepository, PriceFetch priceFetch) {
         this.webClient = webClientBuilder.baseUrl("http://localhost:8081").build();
         this.ds = ds;
         this.stockRepository = stockRepository;
         this.userRepository = userRepository;
+        this.priceFetch = priceFetch;
     }
 
     @Transactional
-    public Share buyShares(BuyRequest request,String email) {
+    public TransactionDto buyShares(ExecuteRequest request, String email) {
         User u=userRepository.findByEmail(email);
-        if(u.getBalance()< request.getPrice()){
+        double price=priceFetch.fetchCurrentPrice(request.getSymbol());
+        double totalCost=request.getQuantity()*price;
+        if(u.getBalance()< totalCost){
             return null;
         }
-        Share s=webClient.post()
-                .uri("/vanguard/buy")
-                .body(Mono.just(request), BuyRequest.class)
-                .retrieve()
-                .bodyToMono(Share.class)
-                .block(); // block() makes it synchronous
-        if(s==null) return null;
-        userRepository.debitBalance(u.getEmail(),s.getPrice());
+        userRepository.debitBalance(u.getEmail(),totalCost);
         Transaction t=new Transaction();
-        t.setAsset(s.getSymbol());
+        t.setAsset(request.getSymbol());
         t.setType("buy");
-        t.setAmount(request.getPrice());
-        t.setAssetQuantity(s.getQuantity());
+        t.setAmount(totalCost);
+        t.setAssetQuantity(request.getQuantity());
         t.setUser(u);
         ds.createTransaction(t);
-        if (stockRepository.findByUserIdAndSymbol(u.getId(), s.getSymbol()) == null) {
-            stockRepository.save(new Stock(s.getSymbol(), s.getQuantity(), u));
+        if (stockRepository.findByUserIdAndSymbol(u.getId(), request.getSymbol()) == null) {
+            stockRepository.save(new Stock(request.getSymbol(), request.getQuantity(), u));
         }else
-            stockRepository.incrementShares(u.getId(), s.getSymbol(), s.getQuantity());
-        return s;
+            stockRepository.incrementShares(u.getId(), request.getSymbol(), request.getQuantity());
+
+        return new TransactionDto(t.getId(),t.getType(),t.getAsset(),t.getAssetQuantity(),t.getAmount(),t.getCreatedAt());
     }
 
     @Transactional
-    public Share sellShares(SellRequest request, String email) {
+    public TransactionDto sellShares(ExecuteRequest request, String email) {
         User u=userRepository.findByEmail(email);
         Stock stock=stockRepository.findByUserIdAndSymbol(u.getId(), request.getSymbol());
         if(stock==null||request.getQuantity()>stock.getShares()){
             return null;
         }
-//        System.out.println(request);
-        Share s=webClient.post()
-                .uri("/vanguard/sell")
-                .body(Mono.just(request), SellRequest.class)
-                .retrieve()
-                .bodyToMono(Share.class)
-                .block(); // block() makes it synchronous
-        if(s==null) return null;
-//        System.out.println(s);
-        userRepository.creditBalance(u.getEmail(),s.getPrice());
+        double price=priceFetch.fetchCurrentPrice(request.getSymbol());
+        double totalAmount=request.getQuantity()*price;
+        userRepository.creditBalance(u.getEmail(),totalAmount);
         Transaction t=new Transaction();
-        t.setAsset(s.getSymbol());
+        t.setAsset(request.getSymbol());
         t.setType("sell");
-        t.setAmount(s.getPrice());
-        t.setAssetQuantity(s.getQuantity());
+        t.setAmount(totalAmount);
+        t.setAssetQuantity(request.getQuantity());
         t.setUser(u);
         ds.createTransaction(t);
-//        System.out.println(t);
-        stockRepository.decrementShares(u.getId(), s.getSymbol(), s.getQuantity());
-        Stock updatedStock=stockRepository.findByUserIdAndSymbol(u.getId(), s.getSymbol());
-        if(updatedStock.getShares()<=0){
-            stockRepository.deleteByUserIdAndSymbol(u.getId(),s.getSymbol());
+        stockRepository.decrementShares(u.getId(), request.getSymbol(), request.getQuantity());
+        if(stock.getShares()-request.getQuantity()<=0){
+            stockRepository.deleteByUserIdAndSymbol(u.getId(),request.getSymbol());
         }
-        return s;
+
+        return new TransactionDto(t.getId(),t.getType(),t.getAsset(),t.getAssetQuantity(),t.getAmount(),t.getCreatedAt());
     }
 
 }
