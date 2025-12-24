@@ -1,25 +1,19 @@
 package majorproject.maf.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 import java.time.LocalDateTime;
 
-public record TransactionDto(
-        Long id,
-        String type,
-        String asset,
-        long assetQuantity,
-        Double amount,
-        LocalDateTime createdAt
-) {
-    @Override
-    public String toString() {
-        return "TransactionDto{" +
-                "amount=" + amount +
-                ", id=" + id +
-                ", type='" + type + '\'' +
-                ", asset='" + asset + '\'' +
-                ", assetQuantity=" + assetQuantity +
-                ", createdAt=" + createdAt +
-                '}';
-    }
+@Data
+@AllArgsConstructor
+public class TransactionDto{
+
+    private Long id;
+    private String type;
+    private String asset;
+    private Long assetQuantity;
+    private Double amount;
+    private LocalDateTime createdAt;
 }
 

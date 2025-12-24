@@ -57,15 +57,21 @@ public class DashboardService {
             stockDto.setSymbol(stock.getSymbol());
             stockDto.setShares(stock.getShares());
             double totalAmount=0.0;
-            double avgBuyPrice=0.0;
-            double buyQty = 0.0;
+            long buyQty = stock.getShares();
             for(TransactionDto txn:alltxns){
-                if(txn.asset().equals(stock.getSymbol()) && txn.type().equalsIgnoreCase("BUY")){
-                    totalAmount+=txn.amount();
-                    buyQty+=txn.assetQuantity();
+                if(txn.getAsset().equals(stock.getSymbol()) && txn.getType().equalsIgnoreCase("BUY")){
+                    long q=txn.getAssetQuantity();
+                    if(buyQty>=q){
+                        totalAmount+=txn.getAmount();
+                        buyQty-=q;
+                    }else {
+                        totalAmount += (txn.getAmount() / q) * buyQty;
+                        buyQty = 0;
+                    }
                 }
+                if(buyQty<=0) break;
             }
-            avgBuyPrice=totalAmount/buyQty;
+            double avgBuyPrice=totalAmount/stock.getShares();
             stockDto.setAvgBuyPrice(avgBuyPrice);
             double currentPrice;
             try {

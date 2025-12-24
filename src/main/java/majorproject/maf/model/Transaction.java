@@ -14,14 +14,10 @@ public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String asset;
-
     private String type;
-
     private Double amount;
-
-    private long assetQuantity;
+    private Long assetQuantity;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

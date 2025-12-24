@@ -14,7 +14,7 @@ public class PriceFetchController {
         this.priceFetch = priceFetch;
     }
 
-    @GetMapping("stockprice")
+    @GetMapping("/stockprice")
     public ResponseEntity<Double> getStockPrice(@RequestParam String symbol) {
         double stockPrice = priceFetch.fetchCurrentPrice(symbol);
         return ResponseEntity.ok(stockPrice);
