@@ -1,6 +1,6 @@
 package majorproject.maf.exception;
 
-import majorproject.maf.model.ApiResponse;
+import majorproject.maf.dto.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

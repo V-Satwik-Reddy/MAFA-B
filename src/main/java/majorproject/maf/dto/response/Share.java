@@ -1,4 +1,4 @@
-package majorproject.maf.dto;
+package majorproject.maf.dto.response;
 
 
 import lombok.Data;

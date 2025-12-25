@@ -1,7 +1,7 @@
 package majorproject.maf.controller;
 
-import majorproject.maf.dto.ExecuteRequest;
-import majorproject.maf.dto.TransactionDto;
+import majorproject.maf.dto.request.ExecuteRequest;
+import majorproject.maf.dto.response.TransactionDto;
 import majorproject.maf.service.ExecutionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

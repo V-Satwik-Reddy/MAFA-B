@@ -1,14 +1,14 @@
 package majorproject.maf.service;
 
 import jakarta.servlet.http.HttpServletResponse;
-import majorproject.maf.dto.LoginRequest;
-import majorproject.maf.dto.SignUpRequest;
+import majorproject.maf.dto.request.LoginRequest;
+import majorproject.maf.dto.request.SignUpRequest;
 import majorproject.maf.exception.auth.InvalidCredentialsException;
 import majorproject.maf.exception.auth.UserAlreadyExistsException;
 import majorproject.maf.exception.auth.UserNotFoundException;
-import majorproject.maf.model.ApiResponse;
+import majorproject.maf.dto.response.ApiResponse;
 import majorproject.maf.model.User;
-import majorproject.maf.dto.UserDto;
+import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.repository.UserRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

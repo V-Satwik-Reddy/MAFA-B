@@ -1,4 +1,4 @@
-package majorproject.maf.dto;
+package majorproject.maf.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

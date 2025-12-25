@@ -1,7 +1,7 @@
 package majorproject.maf.service;
 
-import majorproject.maf.dto.StockDto;
-import majorproject.maf.dto.TransactionDto;
+import majorproject.maf.dto.response.StockDto;
+import majorproject.maf.dto.response.TransactionDto;
 import majorproject.maf.model.Stock;
 import majorproject.maf.model.Transaction;
 import majorproject.maf.model.User;

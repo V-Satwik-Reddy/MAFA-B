@@ -1,7 +1,6 @@
 package majorproject.maf.controller;
 
-import majorproject.maf.dto.ChatDto;
-import majorproject.maf.model.ChatRequest;
+import majorproject.maf.dto.response.ChatDto;
 import majorproject.maf.service.ChatService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -21,15 +20,15 @@ public class ChatController {
     }
 
     @PostMapping("/ea-chat")
-    public ResponseEntity<String> eaChat(@RequestBody ChatRequest request, Authentication auth) {
-        String basicresponse =chatService.executeAgentChat(request.getQuery(),auth.getName());
-        return ResponseEntity.ok(basicresponse);
+    public ResponseEntity<String> eaChat(@RequestBody ChatDto request, Authentication auth) {
+        String response =chatService.executeAgentChat(request.getUserQuery(),auth.getName());
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/mra-chat")
-    public ResponseEntity<String> mraChat(@RequestBody ChatRequest request, Authentication auth) {
-        String basicresponse =chatService.marketResearchAgentChat(request.getQuery(),auth.getName());
-        return ResponseEntity.ok(basicresponse);
+    public ResponseEntity<String> mraChat(@RequestBody ChatDto request, Authentication auth) {
+        String response =chatService.marketResearchAgentChat(request.getUserQuery(),auth.getName());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/chats")

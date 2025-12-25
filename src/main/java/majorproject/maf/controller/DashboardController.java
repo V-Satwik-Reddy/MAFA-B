@@ -1,7 +1,7 @@
 package majorproject.maf.controller;
 
-import majorproject.maf.dto.StockDto;
-import majorproject.maf.dto.TransactionDto;
+import majorproject.maf.dto.response.StockDto;
+import majorproject.maf.dto.response.TransactionDto;
 import majorproject.maf.service.DashboardService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

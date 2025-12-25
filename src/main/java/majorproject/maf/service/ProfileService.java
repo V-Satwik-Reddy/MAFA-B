@@ -1,15 +1,13 @@
 package majorproject.maf.service;
 
-import majorproject.maf.dto.Share;
-import majorproject.maf.dto.UserDto;
+import majorproject.maf.dto.response.Share;
+import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.exception.auth.UserNotFoundException;
-import majorproject.maf.model.Stock;
 import majorproject.maf.model.User;
 import majorproject.maf.repository.StockRepository;
 import majorproject.maf.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service

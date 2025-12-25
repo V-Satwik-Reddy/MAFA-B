@@ -1,7 +1,7 @@
 package majorproject.maf.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import majorproject.maf.dto.ChatDto;
+import majorproject.maf.dto.response.ChatDto;
 import majorproject.maf.model.Chat;
 import majorproject.maf.model.User;
 import majorproject.maf.repository.ChatRepository;

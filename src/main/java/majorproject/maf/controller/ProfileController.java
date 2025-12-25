@@ -1,8 +1,8 @@
 package majorproject.maf.controller;
 
-import majorproject.maf.dto.Share;
-import majorproject.maf.dto.UserDto;
-import majorproject.maf.model.ApiResponse;
+import majorproject.maf.dto.response.Share;
+import majorproject.maf.dto.response.UserDto;
+import majorproject.maf.dto.response.ApiResponse;
 import majorproject.maf.service.ProfileService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -2,9 +2,9 @@ package majorproject.maf.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import majorproject.maf.dto.LoginRequest;
-import majorproject.maf.dto.SignUpRequest;
-import majorproject.maf.model.ApiResponse;
+import majorproject.maf.dto.request.LoginRequest;
+import majorproject.maf.dto.request.SignUpRequest;
+import majorproject.maf.dto.response.ApiResponse;
 import majorproject.maf.service.AuthService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
