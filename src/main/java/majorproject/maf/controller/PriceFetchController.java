@@ -1,7 +1,10 @@
 package majorproject.maf.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import majorproject.maf.model.ApiResponse;
 import majorproject.maf.service.PriceFetch;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,5 +21,12 @@ public class PriceFetchController {
     public ResponseEntity<Double> getStockPrice(@RequestParam String symbol) {
         double stockPrice = priceFetch.fetchCurrentPrice(symbol);
         return ResponseEntity.ok(stockPrice);
+    }
+
+    @GetMapping("/stockdailyprices")
+    public ResponseEntity<ApiResponse<?>> getAllPrices(@RequestParam String symbol) {
+        JsonNode allPrices = priceFetch.fetchLast100DailyPrice(symbol);
+        ApiResponse<JsonNode> response = new ApiResponse<>(true, "Fetched last 30 days prices", allPrices);
+        return ResponseEntity.ok(response);
     }
 }
