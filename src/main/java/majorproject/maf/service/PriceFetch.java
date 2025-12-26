@@ -2,6 +2,7 @@ package majorproject.maf.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import majorproject.maf.dto.response.StockChange;
 import majorproject.maf.model.StockPrice;
 import majorproject.maf.repository.StockPriceRepository;
 import org.springframework.stereotype.Service;
@@ -106,5 +107,14 @@ public class PriceFetch {
         int index = counter++;
         counter=counter%API_KEYS.length;
         return API_KEYS[index];
+    }
+
+    public StockChange fetchPriceChange(String symbol) {
+        List<StockPrice> prices= fetchLast100DailyPrice(symbol);
+        Double latestPrice= prices.get(0).getClose();
+        Double previousPrice= prices.get(1).getClose();
+        Double change= latestPrice - previousPrice;
+        Double changePercent= (change/previousPrice)*100;
+        return new StockChange(symbol,latestPrice,change,changePercent);
     }
 }

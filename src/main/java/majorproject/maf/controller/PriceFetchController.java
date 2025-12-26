@@ -2,6 +2,7 @@ package majorproject.maf.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import majorproject.maf.dto.response.ApiResponse;
+import majorproject.maf.dto.response.StockChange;
 import majorproject.maf.model.StockPrice;
 import majorproject.maf.service.PriceFetch;
 import org.springframework.http.ResponseEntity;
@@ -30,5 +31,11 @@ public class PriceFetchController {
         List<StockPrice> allPrices = priceFetch.fetchLast100DailyPrice(symbol);
         ApiResponse<List<StockPrice>> response = new ApiResponse<>(true, "Fetched last 30 days prices", allPrices);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/stockchange")
+    public ResponseEntity<?> getStockChange(@RequestParam String symbol) {
+        StockChange stockChange = priceFetch.fetchPriceChange(symbol);
+        return ResponseEntity.ok(stockChange);
     }
 }

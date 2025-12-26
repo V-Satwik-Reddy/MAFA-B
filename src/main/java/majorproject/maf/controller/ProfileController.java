@@ -21,6 +21,7 @@ public class ProfileController {
     public ProfileController(ProfileService pS) {
         this.pS = pS;
     }
+
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<?>> getProfile(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
