@@ -19,6 +19,12 @@ public class ChatController {
         this.chatService = chatService;
     }
 
+    @PostMapping("/general-chat")
+    public ResponseEntity<String> generalChat(@RequestBody ChatDto request, Authentication auth) {
+        String response =chatService.generalChat(request.getUserQuery(),auth.getName());
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/ea-chat")
     public ResponseEntity<String> eaChat(@RequestBody ChatDto request, Authentication auth) {
         String response =chatService.executeAgentChat(request.getUserQuery(),auth.getName());

@@ -33,86 +33,16 @@ public class ChatService {
         this.chatRepo = chatRepo;
     }
 
+    public String generalChat(String query, String name) {
+        return callAgentService(query,name,"general-agent");
+    }
+
     public String executeAgentChat(String query, String email) {
-        try {
-            User u=userRepo.findByEmail(email);
-            int userId = u.getId();
-
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String token = (String) auth.getCredentials();
-
-            Map<String, Object> body = Map.of(
-                    "query", query,
-                    "userId", userId
-            );
-            String jsonBody = objectMapper.writeValueAsString(body);
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:5000/execute-agent"))
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", "Bearer " + token) // ✅ forward JWT
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .build();
-            HttpResponse<String> response =
-                    httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() != 200) {
-                throw new RuntimeException(
-                        "Agent service error: " + response.statusCode() + " " + response.body()
-                );
-            }
-            Map<?, ?> parsed = objectMapper.readValue(response.body(), Map.class);
-
-            Object data = parsed.get("data");
-            if (data == null) {
-                throw new RuntimeException("Agent response missing 'data' field");
-            }
-            saveChat(u,query,data.toString());
-            return data.toString();
-        } catch (Exception e) {
-            throw new RuntimeException("Chat service failed", e);
-        }
+        return callAgentService(query,email,"execute-agent");
     }
 
     public String marketResearchAgentChat(String query, String email) {
-        try {
-            User u=userRepo.findByEmail(email);
-            int userId = u.getId();
-
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String token = (String) auth.getCredentials();
-
-            Map<String, Object> body = Map.of(
-                    "query", query,
-                    "userId", userId
-            );
-            String jsonBody = objectMapper.writeValueAsString(body);
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:5000/market-research-agent"))
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", "Bearer " + token) // ✅ forward JWT
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .build();
-            HttpResponse<String> response =
-                    httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() != 200) {
-                throw new RuntimeException(
-                        "Agent service error: " + response.statusCode() + " " + response.body()
-                );
-            }
-            Map<?, ?> parsed = objectMapper.readValue(response.body(), Map.class);
-
-            Object data = parsed.get("data");
-            if (data == null) {
-                throw new RuntimeException("Agent response missing 'data' field");
-            }
-            saveChat(u,query,data.toString());
-            return data.toString();
-        } catch (Exception e) {
-            throw new RuntimeException("Chat service failed", e);
-        }
+        return callAgentService(query,email,"market-research-agent");
     }
 
     public void saveChat(User u, String userQuery, String agentResponse) {
@@ -122,9 +52,50 @@ public class ChatService {
 
     public List<ChatDto> getUserChats(String email) {
         User u=userRepo.findByEmail(email);
-        List<Chat> chats=chatRepo.findAllByUserIdOrderByCreatedAtDesc(u.getId());
+        List<Chat> chats=chatRepo.findAllByUserIdOrderByCreatedAtAsc(u.getId());
         return chats.stream()
                 .map(chat -> new ChatDto(chat.getUserQuery(), chat.getAgentResponse()))
                 .collect(Collectors.toList());
+    }
+
+    public String callAgentService(String query, String email, String agentEndpoint) {
+        try {
+            User u=userRepo.findByEmail(email);
+            int userId = u.getId();
+
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String token = (String) auth.getCredentials();
+
+            Map<String, Object> body = Map.of(
+                    "query", query,
+                    "userId", userId
+            );
+            String jsonBody = objectMapper.writeValueAsString(body);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:5000/"+agentEndpoint))
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + token) // ✅ forward JWT
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .build();
+            HttpResponse<String> response =
+                    httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200) {
+                throw new RuntimeException(
+                        "Agent service error: " + response.statusCode() + " " + response.body()
+                );
+            }
+            Map<?, ?> parsed = objectMapper.readValue(response.body(), Map.class);
+
+            Object data = parsed.get("data");
+            if (data == null) {
+                throw new RuntimeException("Agent response missing 'data' field");
+            }
+            saveChat(u,query,data.toString());
+            return data.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Chat service failed", e);
+        }
     }
 }
