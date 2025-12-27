@@ -117,4 +117,43 @@ public class PriceFetch {
         Double changePercent= (change/previousPrice)*100;
         return new StockChange(symbol,latestPrice,change,changePercent);
     }
+
+    public void addPreviousDayPrices(){
+        try {
+            List<String> symbols = stockPriceRepository.findAllSymbols();
+            for (String symbol : symbols) {
+                Thread.sleep(1500); // To respect API rate limits
+                String apiKey = getNextApiKey();
+                String url = String.format(BASE_URL, "GLOBAL_QUOTE", symbol, apiKey);
+
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(url))
+                        .GET()
+                        .build();
+                HttpResponse<String> response =
+                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+                JsonNode root = objectMapper.readTree(response.body());
+                if (root.has("Note") || root.has("Information") || root.has("Error Message")) {
+                    throw new RuntimeException("Alpha Vantage limit hit for symbol: " + symbol);
+                }
+                JsonNode globalQuote = root.path("Global Quote");
+                if (globalQuote.isMissingNode() || globalQuote.isEmpty()) {
+                    throw new RuntimeException("Invalid global quote data for symbol: " + symbol);
+                }
+                StockPrice stockPrice = new StockPrice();
+                stockPrice.setSymbol(symbol);
+                stockPrice.setDate(java.time.LocalDate.parse(globalQuote.get("07. latest trading day").asText()));
+                stockPrice.setOpen(globalQuote.get("02. open").asDouble());
+                stockPrice.setHigh(globalQuote.get("03. high").asDouble());
+                stockPrice.setLow(globalQuote.get("04. low").asDouble());
+                stockPrice.setClose(globalQuote.get("05. price").asDouble());
+                stockPrice.setVolume(globalQuote.get("06. volume").asLong());
+
+                stockPriceRepository.save(stockPrice);
+            }
+        }catch (Exception e){
+            throw new RuntimeException("Failed to fetch previous day prices", e);
+        }
+    }
 }

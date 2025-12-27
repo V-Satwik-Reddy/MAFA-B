@@ -7,6 +7,7 @@ import majorproject.maf.model.StockPrice;
 import majorproject.maf.service.PriceFetch;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,5 +38,11 @@ public class PriceFetchController {
     public ResponseEntity<?> getStockChange(@RequestParam String symbol) {
         StockChange stockChange = priceFetch.fetchPriceChange(symbol);
         return ResponseEntity.ok(stockChange);
+    }
+
+    @PostMapping("/updateprices")
+    public ResponseEntity<?> updatePrices(){
+        priceFetch.addPreviousDayPrices();
+        return ResponseEntity.ok("Prices Updated Successfully");
     }
 }

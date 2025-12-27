@@ -18,6 +18,7 @@ public class DashboardService {
     private final UserRepository userRepo;
     private final StockRepository stockRepo;
     private final PriceFetch priceFetch;
+
     public DashboardService(TransactionRepository transactionRepo, UserRepository userRepo, StockRepository stockRepo, PriceFetch priceFetch) {
         this.transactionRepo = transactionRepo;
         this.userRepo = userRepo;
@@ -43,8 +44,8 @@ public class DashboardService {
                 .toList();
     }
 
-    public Transaction createTransaction(Transaction transaction) {
-        return transactionRepo.save(transaction);
+    public void createTransaction(Transaction transaction) {
+        transactionRepo.save(transaction);
     }
 
     public List<StockDto> getHoldingsDetails(String email) {
@@ -84,9 +85,7 @@ public class DashboardService {
             double gainLoss=(currentPrice - avgBuyPrice)*stock.getShares();
             stockDto.setGainLoss(gainLoss);
             ans.add(stockDto);
-//            System.out.println(stockDto);
         }
-//        System.out.println(ans);
         return ans;
     }
 }
