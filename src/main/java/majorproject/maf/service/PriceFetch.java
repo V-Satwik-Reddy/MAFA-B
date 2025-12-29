@@ -123,11 +123,11 @@ public class PriceFetch {
             List<String> symbols = stockPriceRepository.findAllSymbols();
             int c=0;
             for (String symbol : symbols) {
-                c++;
                 if(c==10){
                     Thread.sleep(60000);
                     c=0;
                 }
+                c++;
                 String apiKey = getNextApiKey();
                 String url = String.format(BASE_URL, "GLOBAL_QUOTE", symbol, apiKey);
 
@@ -149,12 +149,15 @@ public class PriceFetch {
                 StockPrice stockPrice = new StockPrice();
                 stockPrice.setSymbol(symbol);
                 stockPrice.setDate(java.time.LocalDate.parse(globalQuote.get("07. latest trading day").asText()));
+                if(stockPriceRepository.findTopBySymbolOrderByDateDesc(symbol).getDate().equals(stockPrice.getDate())){
+                    continue;
+                }
                 stockPrice.setOpen(globalQuote.get("02. open").asDouble());
                 stockPrice.setHigh(globalQuote.get("03. high").asDouble());
                 stockPrice.setLow(globalQuote.get("04. low").asDouble());
                 stockPrice.setClose(globalQuote.get("05. price").asDouble());
                 stockPrice.setVolume(globalQuote.get("06. volume").asLong());
-
+                System.out.println("Saving price for "+symbol+" on "+stockPrice.getDate());
                 stockPriceRepository.save(stockPrice);
             }
         }catch (Exception e){

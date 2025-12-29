@@ -13,8 +13,9 @@ public class DailyPricesJob {
         this.priceFetch = priceFetch;
     }
 
-    @Scheduled(cron = "0 0 9 * * *")
+    @Scheduled(cron = "0 40 22 * * *")
     public void updateDailyPrices() {
+        System.out.println("Running Daily Prices Job...");
         priceFetch.addPreviousDayPrices();
     }
 }
