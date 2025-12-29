@@ -121,8 +121,13 @@ public class PriceFetch {
     public void addPreviousDayPrices(){
         try {
             List<String> symbols = stockPriceRepository.findAllSymbols();
+            int c=0;
             for (String symbol : symbols) {
-                Thread.sleep(1500); // To respect API rate limits
+                c++;
+                if(c==10){
+                    Thread.sleep(60000);
+                    c=0;
+                }
                 String apiKey = getNextApiKey();
                 String url = String.format(BASE_URL, "GLOBAL_QUOTE", symbol, apiKey);
 
