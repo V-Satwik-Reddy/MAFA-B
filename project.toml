@@ -1,0 +1,3 @@
+[[build.env]]
+name = "BP_MAVEN_BUILD_ARGUMENTS"
+value = "clean package -DskipTests"
