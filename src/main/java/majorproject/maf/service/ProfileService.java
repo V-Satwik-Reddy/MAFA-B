@@ -14,7 +14,8 @@ import java.util.List;
 public class ProfileService {
 
         private final UserRepository userRepo;
-        private StockRepository stockRepo;
+        private final StockRepository stockRepo;
+
         public ProfileService(UserRepository userRepo, StockRepository stockRepo) {
             this.stockRepo = stockRepo;
             this.userRepo = userRepo;
@@ -28,7 +29,7 @@ public class ProfileService {
             return new UserDto(user.getUsername(), user.getEmail(),user.getPhone(),user.getBalance());
         }
 
-    public UserDto updateProfile(UserDto userDto) {
+        public UserDto updateProfile(UserDto userDto) {
         User existingUser = userRepo.findByEmail(userDto.getEmail());
 
         if (existingUser == null) {
@@ -56,7 +57,7 @@ public class ProfileService {
         );
     }
 
-    public double getBalance(String email) {
+        public double getBalance(String email) {
         User user = userRepo.findByEmail(email);
         if(user == null) {
             throw new UserNotFoundException("No such user found with email: " + email);
@@ -64,10 +65,10 @@ public class ProfileService {
         return user.getBalance();
     }
 
-    public List<Share> getUserHoldings(String email) {
-        User user = userRepo.findByEmail(email);
-        return stockRepo.findByUserId(user.getId()).stream().map(
-                stock -> new Share(stock.getSymbol(), stock.getShares())
-        ).toList();
-    }
+        public List<Share> getUserHoldings(String email) {
+            User user = userRepo.findByEmail(email);
+            return stockRepo.findByUserId(user.getId()).stream().map(
+                    stock -> new Share(stock.getSymbol(), stock.getShares())
+            ).toList();
+        }
 }

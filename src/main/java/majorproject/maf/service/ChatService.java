@@ -6,6 +6,7 @@ import majorproject.maf.model.Chat;
 import majorproject.maf.model.User;
 import majorproject.maf.repository.ChatRepository;
 import majorproject.maf.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+
 @Service
 public class ChatService {
 
@@ -26,6 +28,8 @@ public class ChatService {
     private final ObjectMapper objectMapper;
     private final ChatRepository chatRepo;
 
+    @Value("${agents_endpoint:}")
+    String url;
     public ChatService(UserRepository userRepo, ChatRepository chatRepo) {
         this.userRepo = userRepo;
         this.httpClient = HttpClient.newHttpClient();
@@ -73,7 +77,7 @@ public class ChatService {
             String jsonBody = objectMapper.writeValueAsString(body);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:5000/"+agentEndpoint))
+                    .uri(URI.create(url +agentEndpoint))
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + token) // ✅ forward JWT
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))

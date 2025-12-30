@@ -9,20 +9,17 @@ import majorproject.maf.model.User;
 import majorproject.maf.repository.StockRepository;
 import majorproject.maf.repository.UserRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
 
 @Service
 public class ExecutionService {
 
-    private final WebClient webClient;
     private final DashboardService ds;
     private final StockRepository stockRepository;
     private final UserRepository userRepository;
     private final PriceFetch priceFetch;
 
-    public ExecutionService(WebClient.Builder webClientBuilder, DashboardService ds, StockRepository stockRepository, UserRepository userRepository, PriceFetch priceFetch) {
-        this.webClient = webClientBuilder.baseUrl("http://localhost:8081").build();
+    public ExecutionService( DashboardService ds, StockRepository stockRepository, UserRepository userRepository, PriceFetch priceFetch) {
         this.ds = ds;
         this.stockRepository = stockRepository;
         this.userRepository = userRepository;
