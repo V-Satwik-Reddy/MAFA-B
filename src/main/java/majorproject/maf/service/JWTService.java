@@ -26,7 +26,7 @@ public class JWTService {
     private String base64Secret;
     private SecretKey key;
 
-    private static final long ACCESS_TOKEN_EXPIRY = 24*60 * 60 * 1000; // 60 min
+    private static final long ACCESS_TOKEN_EXPIRY = 60 * 60 * 1000; // 60 min
     private static final long REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
 
     @PostConstruct

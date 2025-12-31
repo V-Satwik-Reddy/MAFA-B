@@ -68,7 +68,7 @@ public class AuthService {
         ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
                 .secure(true)          // false only for local HTTP testing
-                .sameSite("Strict")
+                .sameSite("None")
                 .path("/auth/refresh")
                 .maxAge(Duration.ofDays(7))
                 .build();
