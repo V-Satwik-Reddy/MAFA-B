@@ -29,6 +29,7 @@ public class JWTFilter extends OncePerRequestFilter {
         this.jwt = jwt;
         this.context = context;
     }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,

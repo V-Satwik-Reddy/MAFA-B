@@ -19,6 +19,7 @@ public class AuthController {
     public AuthController(AuthService auth) {
         this.auth = auth;
     }
+
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<?>> signUp(@Valid @RequestBody SignUpRequest req,
                                                  HttpServletResponse response) {
@@ -28,22 +29,15 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(
-            @Valid @RequestBody LoginRequest req,
+    public ResponseEntity<?> login( @Valid @RequestBody LoginRequest req,
             HttpServletResponse response) {
 
         return ResponseEntity.ok(auth.login(req, response));
     }
 
-    @GetMapping("/verify")
-    public ResponseEntity<String> verify() {
-        return ResponseEntity.ok("User is verified");
-    }
-
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(
             @CookieValue(name = "refresh_token", required = false) String refreshToken) {
-
         return auth.refresh(refreshToken);
     }
 

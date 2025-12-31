@@ -30,6 +30,7 @@ public class ChatService {
 
     @Value("${agents_endpoint:}")
     String url;
+
     public ChatService(UserRepository userRepo, ChatRepository chatRepo) {
         this.userRepo = userRepo;
         this.httpClient = HttpClient.newHttpClient();
@@ -75,7 +76,6 @@ public class ChatService {
                     "userId", userId
             );
             String jsonBody = objectMapper.writeValueAsString(body);
-
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url +agentEndpoint))
                     .header("Content-Type", "application/json")
@@ -84,7 +84,6 @@ public class ChatService {
                     .build();
             HttpResponse<String> response =
                     httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
             if (response.statusCode() != 200) {
                 throw new RuntimeException(
                         "Agent service error: " + response.statusCode() + " " + response.body()

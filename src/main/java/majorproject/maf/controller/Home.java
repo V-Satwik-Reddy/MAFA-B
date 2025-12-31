@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class Home {
 
-    @GetMapping
+    @GetMapping("/")
     public ResponseEntity<ApiResponse<String>> home() {
-        ApiResponse<String> response = new ApiResponse<>(true,"Welcome", "Welcome to the Multi Agent Financial Assistant ");
+        ApiResponse<String> response = new ApiResponse<>(true,"Hello", "Welcome to the Multi Agent Financial Assistant ");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

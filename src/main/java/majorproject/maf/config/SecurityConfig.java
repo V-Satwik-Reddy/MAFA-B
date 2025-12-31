@@ -15,7 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
+import org.springframework.beans.factory.annotation.Value;
 import java.util.List;
 
 @Configuration
@@ -24,11 +24,14 @@ public class SecurityConfig {
 
     private final JWTFilter jwt;
     private final UserDetailsService userDetailsService;
+    @Value("${allowed_origins}")
+    private String allowedOrigins;
 
     public SecurityConfig(JWTFilter jwt, UserDetailsService userDetailsService) {
         this.jwt = jwt;
         this.userDetailsService = userDetailsService;
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
@@ -40,14 +43,13 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(cors -> cors.configurationSource(request -> {
             var config = new org.springframework.web.cors.CorsConfiguration();
-            config.setAllowedOrigins(List.of("http://localhost:3000")); // your frontend URL
+            config.setAllowedOrigins(List.of(allowedOrigins.split(","))); // your frontend URL
             config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
             config.setAllowedHeaders(List.of("*"));
             config.setAllowCredentials(true);
             return config;
         }));
-//        System.out.println(http);
-        http.authorizeHttpRequests(authorizeRequests ->authorizeRequests.requestMatchers("/auth/login","/auth/signup","/profile/verify","/auth/refresh")
+        http.authorizeHttpRequests(authorizeRequests ->authorizeRequests.requestMatchers("/auth/login","/auth/signup","/profile/verify","/auth/refresh","/")
                 .permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated());
