@@ -49,9 +49,10 @@ public class SecurityConfig {
             config.setAllowCredentials(true);
             return config;
         }));
-        http.authorizeHttpRequests(authorizeRequests ->authorizeRequests.requestMatchers("/auth/login","/auth/signup","/profile/verify","/auth/refresh","/")
-                .permitAll()
+        http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                .requestMatchers("/auth/**","/").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/jobs/**").permitAll()
                 .anyRequest().authenticated());
 
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

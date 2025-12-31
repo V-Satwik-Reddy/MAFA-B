@@ -40,7 +40,7 @@ public class PriceFetchController {
         return ResponseEntity.ok(stockChange);
     }
 
-    @PostMapping("/updateprices")
+    @PostMapping("/jobs/updateprices")
     public ResponseEntity<?> updatePrices(){
         priceFetch.addPreviousDayPrices();
         return ResponseEntity.ok("Prices Updated Successfully");
