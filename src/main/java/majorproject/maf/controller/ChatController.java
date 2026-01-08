@@ -37,6 +37,12 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/pa-chat")
+    public ResponseEntity<String> paChat(@RequestBody ChatDto request, Authentication auth) {
+        String response =chatService.portfolioManagerAgentChat(request.getUserQuery(),auth.getName());
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/chats")
     public ResponseEntity<?> getChats(Authentication auth) {
         List<ChatDto> res=chatService.getUserChats(auth.getName());

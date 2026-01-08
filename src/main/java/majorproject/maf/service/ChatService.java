@@ -49,6 +49,9 @@ public class ChatService {
     public String marketResearchAgentChat(String query, String email) {
         return callAgentService(query,email,"market-research-agent");
     }
+    public String portfolioManagerAgentChat(String userQuery, String email) {
+        return callAgentService(userQuery,email,"portfolio-manager-agent");
+    }
 
     public void saveChat(User u, String userQuery, String agentResponse) {
         Chat c=new Chat(u,userQuery,agentResponse);
@@ -101,4 +104,5 @@ public class ChatService {
             throw new RuntimeException("Chat service failed", e);
         }
     }
+
 }
