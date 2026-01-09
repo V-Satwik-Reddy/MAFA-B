@@ -38,19 +38,6 @@ public class JWTService {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(User user) {
-        Map<String,Object> claims=new HashMap<>();
-        return Jwts.builder()
-                .claims()
-                .add(claims)
-                .subject(user.getEmail())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis()+ 60*60*1000))
-                .and()
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
-    }
-
     public String generateAccessToken(User user) {
         return Jwts.builder()
                 .subject(user.getEmail())
@@ -93,16 +80,12 @@ public class JWTService {
                 .getPayload();
     }
 
-    public boolean validateAccessToken(String token, UserDetails userDetails) {
-        final String username = extractUserName(token);
-
+    public boolean validateAccessToken(String token) {
         if (isTokenExpired(token)) {
             throw new JwtValidationException("Access token expired");
         }
-
-        return username.equals(userDetails.getUsername());
+        return true;
     }
-
 
     public boolean validateRefreshToken(String token) {
         return "REFRESH".equals(extractTokenType(token))
