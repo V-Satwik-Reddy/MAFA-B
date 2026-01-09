@@ -10,6 +10,7 @@ import majorproject.maf.dto.response.ApiResponse;
 import majorproject.maf.model.User;
 import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.repository.UserRepository;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -27,22 +28,22 @@ public class AuthService {
     private final UserRepository userRepo;
     private final PasswordEncoder passEnc;
     private final JWTService jwt;
+
     public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt) {
         this.userRepo = userRepo;
         this.passEnc = passEnc;
         this.jwt = jwt;
     }
 
-    public ApiResponse signUp(SignUpRequest req, HttpServletResponse response) {
+    public ApiResponse<?> signUp(SignUpRequest req, HttpServletResponse response) {
         if (userRepo.findByEmail(req.getEmail()) != null) {
-            throw new UserAlreadyExistsException("User already registered");
+            throw new UserAlreadyExistsException("User already registered with same Email");
         }
         User user = new User(req.getEmail(), req.getUsername(), passEnc.encode(req.getPassword()), req.getPhone(), req.getBalance());
         try{
             userRepo.save(user);
         }catch(Exception e){
-            e.printStackTrace();
-            throw new RuntimeException("Error occurred while registering user");
+            throw new RuntimeException("Error occurred while registering user",e);
         }
         return getResponse(response,user);
     }
@@ -53,11 +54,9 @@ public class AuthService {
         if (dbUser == null) {
             throw new UserNotFoundException("User not found");
         }
-
         if (!passEnc.matches(req.getPassword(), dbUser.getPassword())) {
-            throw new InvalidCredentialsException("Invalid password");
+            throw new InvalidCredentialsException("Invalid Credentials");
         }
-
         return getResponse(response, dbUser);
     }
 
@@ -75,26 +74,30 @@ public class AuthService {
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-        UserDto dto = new UserDto(
-                dbUser.getUsername(),
-                dbUser.getEmail(),
-                dbUser.getPhone(),
-                dbUser.getBalance()
-        );
+        UserDto dto = fillUserDto(dbUser);
 
-        return new ApiResponse<>(true, "Login successful", Map.of(
+        return ApiResponse.success( "Login successful", Map.of(
                 "accessToken", accessToken,
                 "user", dto
         ));
     }
 
-    public ResponseEntity<?> refresh(
-            @CookieValue(name = "refresh_token", required = false) String refreshToken) {
+    @CachePut(value="USERS_CACHE", key="#dbUser.email")
+    public UserDto fillUserDto(User dbUser) {
+        return new UserDto(
+                dbUser.getUsername(),
+                dbUser.getEmail(),
+                dbUser.getPhone(),
+                dbUser.getBalance(),
+                dbUser.getId()
+        );
+    }
+
+    public ResponseEntity<?> refresh( @CookieValue(name = "refresh_token", required = false) String refreshToken) {
 
         if (refreshToken == null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-
         if (!jwt.validateRefreshToken(refreshToken)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -104,7 +107,7 @@ public class AuthService {
 
         String newAccessToken = jwt.generateAccessToken(user);
 
-        return ResponseEntity.ok(Map.of(
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                 "accessToken", newAccessToken
         ));
     }
