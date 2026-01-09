@@ -20,7 +20,6 @@ public class DashboardController {
     }
     @GetMapping("/transactions")
     public ResponseEntity<?> getTransactions(Authentication auth) {
-
         String email = auth.getName(); // from JWT
         List<TransactionDto> txns = dashboardService.getUserTransactions(email);
         return ResponseEntity.ok(txns);
@@ -30,7 +29,6 @@ public class DashboardController {
     public ResponseEntity<?> getDashboardData(Authentication auth) {
         String email = auth.getName(); // from JWT
         List<StockDto> holdings =  dashboardService.getHoldingsDetails(email);
-        System.out.println();
         return ResponseEntity.ok(holdings);
     }
 }
