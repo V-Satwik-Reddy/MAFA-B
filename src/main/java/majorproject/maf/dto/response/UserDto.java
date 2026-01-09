@@ -13,5 +13,5 @@ public class UserDto {
     private String email;
     private Long phone;
     private double balance;
-
+    private int id;
 }
