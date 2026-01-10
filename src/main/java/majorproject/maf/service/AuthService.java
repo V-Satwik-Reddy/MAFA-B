@@ -48,7 +48,7 @@ public class AuthService {
         }
         UserDto dto =new UserDto(user.getUsername(),user.getEmail(),user.getPhone(),user.getBalance(),user.getId());
         userCacheService.cacheUser(dto);
-        return getResponse(response,dto);
+        return ApiResponse.success( "Signup successful",getResponse(response, dto));
     }
 
     public ApiResponse<?> login(LoginRequest req, HttpServletResponse response) {
@@ -63,10 +63,10 @@ public class AuthService {
 
         UserDto dto =new UserDto(user.getUsername(),user.getEmail(),user.getPhone(),user.getBalance(),user.getId());
         userCacheService.cacheUser(dto);
-        return getResponse(response, dto);
+        return ApiResponse.success( "Login successful",getResponse(response, dto));
     }
 
-    private ApiResponse<Map<String, Object>> getResponse(HttpServletResponse response, UserDto dbUser) {
+    private Map<String, Object> getResponse(HttpServletResponse response, UserDto dbUser) {
         String accessToken = jwt.generateAccessToken(dbUser);
         String refreshToken = jwt.generateRefreshToken(dbUser);
 
@@ -80,10 +80,10 @@ public class AuthService {
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-        return ApiResponse.success( "Login successful", Map.of(
+        return Map.of(
                 "accessToken", accessToken,
                 "user", dbUser
-        ));
+        );
     }
 
     public ResponseEntity<?> refresh( @CookieValue(name = "refresh_token", required = false) String refreshToken) {

@@ -53,7 +53,7 @@ public class AuthController {
                 .build();
         userCacheService.evictCachedUser(authentication.getName());
         response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.OK).body("Logged out successfully");
     }
 
 }
