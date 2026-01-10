@@ -99,12 +99,7 @@ public class AuthService {
 
         UserDto user = userCacheService.getCachedUser(email);
         if(user==null){
-            User db= userRepo.findByEmail(email);
-            if(db==null) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-            user=new UserDto(db.getUsername(),db.getEmail(),db.getPhone(),db.getBalance(),db.getId());
-            userCacheService.cacheUser(user);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         String newAccessToken = jwt.generateAccessToken(user);
 

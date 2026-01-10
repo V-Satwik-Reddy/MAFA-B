@@ -17,7 +17,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("""
         UPDATE User u
         SET u.balance = u.balance - :delta
-        WHERE u.email = :email 
+        WHERE u.email = :email
     """)
     void debitBalance(String email, double delta);
 
@@ -25,7 +25,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("""
         UPDATE User u
         SET u.balance = u.balance + :delta
-        WHERE u.email = :email 
+        WHERE u.email = :email
     """)
     void creditBalance(String email, double delta);
 }

@@ -15,8 +15,7 @@ import java.util.*;
 @Service
 public class PriceFetch {
     static int counter = 0;
-    private static final String BASE_URL =
-            "https://www.alphavantage.co/query?function=%s&symbol=%s&apikey=%s";
+    private static final String BASE_URL = "https://www.alphavantage.co/query?function=%s&symbol=%s&apikey=%s";
 
     private static final String[] API_KEYS = {
             "UD1GU1VAGIUPJJJ8",
@@ -163,5 +162,9 @@ public class PriceFetch {
         }catch (Exception e){
             throw new RuntimeException("Failed to fetch previous day prices", e);
         }
+    }
+
+    public List<Double> batchFetchPrices(List<String> symbols) {
+        return stockPriceRepository.batchFind(symbols);
     }
 }
