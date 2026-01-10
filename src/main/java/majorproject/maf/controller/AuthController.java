@@ -6,7 +6,7 @@ import majorproject.maf.dto.request.LoginRequest;
 import majorproject.maf.dto.request.SignUpRequest;
 import majorproject.maf.dto.response.ApiResponse;
 import majorproject.maf.service.AuthService;
-import org.springframework.cache.annotation.CacheEvict;
+import majorproject.maf.service.UserCacheService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     AuthService auth;
-    public AuthController(AuthService auth) {
+    UserCacheService userCacheService;
+    public AuthController(AuthService auth, UserCacheService userCacheService) {
+        this.userCacheService = userCacheService;
         this.auth = auth;
     }
 
@@ -41,7 +43,6 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    @CacheEvict(value="USERS_CACHE", key="#authentication.getPrincipal().toString()")
     public ResponseEntity<?> logout(HttpServletResponse response, Authentication authentication) {
         ResponseCookie deleteCookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
@@ -50,7 +51,7 @@ public class AuthController {
                 .path("/auth/refresh")
                 .maxAge(0)
                 .build();
-
+        userCacheService.evictCachedUser(authentication.getName());
         response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

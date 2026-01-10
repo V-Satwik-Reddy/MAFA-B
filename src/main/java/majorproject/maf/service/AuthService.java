@@ -10,7 +10,6 @@ import majorproject.maf.dto.response.ApiResponse;
 import majorproject.maf.model.User;
 import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.repository.UserRepository;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -28,11 +27,13 @@ public class AuthService {
     private final UserRepository userRepo;
     private final PasswordEncoder passEnc;
     private final JWTService jwt;
+    private final UserCacheService userCacheService;
 
-    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt) {
+    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt, UserCacheService userCacheService) {
         this.userRepo = userRepo;
         this.passEnc = passEnc;
         this.jwt = jwt;
+        this.userCacheService = userCacheService;
     }
 
     public ApiResponse<?> signUp(SignUpRequest req, HttpServletResponse response) {
@@ -45,22 +46,27 @@ public class AuthService {
         }catch(Exception e){
             throw new RuntimeException("Error occurred while registering user",e);
         }
-        return getResponse(response,user);
+        UserDto dto =new UserDto(user.getUsername(),user.getEmail(),user.getPhone(),user.getBalance(),user.getId());
+        userCacheService.cacheUser(dto);
+        return getResponse(response,dto);
     }
 
     public ApiResponse<?> login(LoginRequest req, HttpServletResponse response) {
 
-        User dbUser = userRepo.findByEmail(req.getEmail());
-        if (dbUser == null) {
+        User user = userRepo.findByEmail(req.getEmail());
+        if (user == null) {
             throw new UserNotFoundException("User not found");
         }
-        if (!passEnc.matches(req.getPassword(), dbUser.getPassword())) {
+        if (!passEnc.matches(req.getPassword(), user.getPassword())) {
             throw new InvalidCredentialsException("Invalid Credentials");
         }
-        return getResponse(response, dbUser);
+
+        UserDto dto =new UserDto(user.getUsername(),user.getEmail(),user.getPhone(),user.getBalance(),user.getId());
+        userCacheService.cacheUser(dto);
+        return getResponse(response, dto);
     }
 
-    private ApiResponse<Map<String, Object>> getResponse(HttpServletResponse response, User dbUser) {
+    private ApiResponse<Map<String, Object>> getResponse(HttpServletResponse response, UserDto dbUser) {
         String accessToken = jwt.generateAccessToken(dbUser);
         String refreshToken = jwt.generateRefreshToken(dbUser);
 
@@ -74,23 +80,10 @@ public class AuthService {
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-        UserDto dto = fillUserDto(dbUser);
-
         return ApiResponse.success( "Login successful", Map.of(
                 "accessToken", accessToken,
-                "user", dto
+                "user", dbUser
         ));
-    }
-
-    @CachePut(value="USERS_CACHE", key="#dbUser.email")
-    public UserDto fillUserDto(User dbUser) {
-        return new UserDto(
-                dbUser.getUsername(),
-                dbUser.getEmail(),
-                dbUser.getPhone(),
-                dbUser.getBalance(),
-                dbUser.getId()
-        );
     }
 
     public ResponseEntity<?> refresh( @CookieValue(name = "refresh_token", required = false) String refreshToken) {
@@ -103,8 +96,16 @@ public class AuthService {
         }
 
         String email = jwt.extractUserName(refreshToken);
-        User user = userRepo.findByEmail(email);
 
+        UserDto user = userCacheService.getCachedUser(email);
+        if(user==null){
+            User db= userRepo.findByEmail(email);
+            if(db==null) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            user=new UserDto(db.getUsername(),db.getEmail(),db.getPhone(),db.getBalance(),db.getId());
+            userCacheService.cacheUser(user);
+        }
         String newAccessToken = jwt.generateAccessToken(user);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
