@@ -12,30 +12,37 @@ import majorproject.maf.exception.auth.*;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<ApiResponse<?>> handleUserExists(UserAlreadyExistsException ex) {
+    public ResponseEntity<ApiResponse<?>> handleUserExists() {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error("User already registered with same Email"));
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ApiResponse<?>> handleUserNotFound(UserNotFoundException ex) {
+    public ResponseEntity<ApiResponse<?>> handleUserNotFound() {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("User Does Not Exist"));
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<ApiResponse<?>> handleInvalidCredentials(InvalidCredentialsException ex) {
+    public ResponseEntity<ApiResponse<?>> handleInvalidCredentials() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Invalid Credentials"));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<?>> handleOtherExceptions(Exception ex) {
+    public ResponseEntity<ApiResponse<?>> handleOtherExceptions() {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
     }
 
     @ExceptionHandler(JwtValidationException.class)
-    public ResponseEntity<?> handleJwtValidationException(JwtValidationException ex) {
-        return new ResponseEntity<>(
-                new ApiResponse<>(false, "Invalid jwt token sent", ex.getMessage()),
-                HttpStatus.UNAUTHORIZED
-        );
+    public ResponseEntity<?> handleJwtValidationException() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Invalid Token"));
+    }
+
+    @ExceptionHandler(JwtAccessTokenExpiredException.class)
+    public ResponseEntity<?> handleJwtAccessTokenExpiredException() {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Access Token Expired"));
+    }
+
+    @ExceptionHandler(JwtRefreshTokenExpiredException.class)
+    public ResponseEntity<?> handleJwtRefreshTokenExpiredException() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Refresh Token Expired Please Login Again"));
     }
 }
