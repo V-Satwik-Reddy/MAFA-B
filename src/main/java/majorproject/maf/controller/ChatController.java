@@ -2,6 +2,7 @@ package majorproject.maf.controller;
 
 import majorproject.maf.dto.response.ChatDto;
 import majorproject.maf.service.ChatService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,6 +47,6 @@ public class ChatController {
     @GetMapping("/chats")
     public ResponseEntity<?> getChats(Authentication auth) {
         List<ChatDto> res=chatService.getUserChats(auth.getName());
-        return ResponseEntity.ok(res);
+        return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 }

@@ -2,6 +2,7 @@ package majorproject.maf.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import majorproject.maf.dto.response.ChatDto;
+import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.model.Chat;
 import majorproject.maf.model.User;
 import majorproject.maf.repository.ChatRepository;
@@ -23,16 +24,18 @@ import java.util.stream.Collectors;
 @Service
 public class ChatService {
 
-    private final UserRepository userRepo;
+    private final UserCacheService userCacheService;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final ChatRepository chatRepo;
+    private final UserRepository userRepo;
 
     @Value("${agents_endpoint:}")
     String url;
 
-    public ChatService(UserRepository userRepo, ChatRepository chatRepo) {
+    public ChatService(ChatRepository chatRepo, UserCacheService userCacheService, UserRepository userRepo) {
         this.userRepo = userRepo;
+        this.userCacheService = userCacheService;
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = new ObjectMapper();
         this.chatRepo = chatRepo;
@@ -49,6 +52,7 @@ public class ChatService {
     public String marketResearchAgentChat(String query, String email) {
         return callAgentService(query,email,"market-research-agent");
     }
+
     public String portfolioManagerAgentChat(String userQuery, String email) {
         return callAgentService(userQuery,email,"portfolio-manager-agent");
     }
@@ -59,7 +63,7 @@ public class ChatService {
     }
 
     public List<ChatDto> getUserChats(String email) {
-        User u=userRepo.findByEmail(email);
+        UserDto u=userCacheService.getCachedUser(email);
         List<Chat> chats=chatRepo.findAllByUserIdOrderByCreatedAtAsc(u.getId());
         return chats.stream()
                 .map(chat -> new ChatDto(chat.getUserQuery(), chat.getAgentResponse()))
@@ -68,7 +72,7 @@ public class ChatService {
 
     public String callAgentService(String query, String email, String agentEndpoint) {
         try {
-            User u=userRepo.findByEmail(email);
+            UserDto u=userCacheService.getCachedUser(email);
             int userId = u.getId();
 
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -98,7 +102,7 @@ public class ChatService {
             if (data == null) {
                 throw new RuntimeException("Agent response missing 'data' field");
             }
-            saveChat(u,query,data.toString());
+            saveChat(userRepo.findByEmail(email),query,data.toString());
             return data.toString();
         } catch (Exception e) {
             throw new RuntimeException("Chat service failed", e);
