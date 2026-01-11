@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import majorproject.maf.exception.auth.*;
+import org.springframework.web.bind.annotation.RequestBody;
 
 
 @ControllerAdvice
@@ -34,8 +35,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<?>> handleException(RuntimeException ex, HttpServletRequest request) {
-        System.out.println(request.getRequestURI()+" "+request.getContextPath());
+    public ResponseEntity<ApiResponse<?>> handleException(RuntimeException ex, HttpServletRequest request, @RequestBody(required = false) Object body) {
+        System.out.println(request.getRequestURI()+" "+request.getContextPath()+" "+body.toString());
         System.out.println("An unexpected error occurred." +ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
     }
