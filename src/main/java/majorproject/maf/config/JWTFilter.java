@@ -1,6 +1,7 @@
 package majorproject.maf.config;
 
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,7 +45,9 @@ public class JWTFilter extends OncePerRequestFilter {
         try {
             String token = header.substring(7);
             String username = jwt.extractUserName(token);
-
+            if(token.equals("NOT_FOUND")){
+                throw new JwtException("Invalid token");
+            }
             if (SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwt.validateAccessToken(token)) {
                     UsernamePasswordAuthenticationToken auth =
