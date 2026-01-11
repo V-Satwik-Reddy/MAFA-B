@@ -1,0 +1,17 @@
+#logging:
+#  level:
+#    org.springframework.web: Trace
+#    org.springframework.web.servlet.DispatcherServlet: DEBUG
+#management:
+#  metrics:
+#    tags:
+#      application: maf-app
+#  endpoints:
+#    web:
+#      exposure:
+#        include: "health,info,prometheus,metrics"
+#  endpoint:
+#    metrics:
+#      enabled: true
+#    prometheus:
+#      enabled: true
