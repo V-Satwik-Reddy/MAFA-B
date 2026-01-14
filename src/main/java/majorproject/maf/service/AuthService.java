@@ -48,12 +48,15 @@ public class AuthService {
         }
         if(!req.getPassword().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,32}$"))
             throw new InvalidEmailOrPasswordFormatException("Invalid password. Password must be 8-32 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.");
-        String otp = generateOtp();
-        simpleRedisCache.opsForValue().set("otp:email:" + req.getEmail(), otp, Duration.ofMinutes(5));
-        emailService.sendOtpEmail(req.getEmail(),otp);
+        String otp = sendOtpEmail(req.getEmail());
         return ApiResponse.successMessage("User email verified successfully. Verify OTP sent to email");
     }
-
+    public String sendOtpEmail(String email){
+        String otp = generateOtp();
+        simpleRedisCache.opsForValue().set("otp:email:" + email, otp, Duration.ofMinutes(5));
+        emailService.sendOtpEmail(email,otp);
+        return otp;
+    }
     public ApiResponse<?> verifyEmail(EmailVerifyRequest e,HttpServletResponse resp) {
         String savedOtp = simpleRedisCache.opsForValue().get("otp:email:" + e.getEmail());
         if(savedOtp == null) {
@@ -65,7 +68,7 @@ public class AuthService {
         User newUser = new User(e.getEmail(), passEnc.encode(e.getPassword()));
         userRepo.save(newUser);
         simpleRedisCache.delete("otp:email:" + e.getEmail());
-        UserDto dto =new UserDto(newUser.getEmail(),newUser.getId());
+        UserDto dto =new UserDto(newUser.getId(), newUser.getEmail());
         userCacheService.cacheUser(dto);
         return ApiResponse.success( "Email verified and user registered successfully",getResponse(resp, dto));
     }
@@ -80,7 +83,7 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid Credentials");
         }
 
-        UserDto dto =new UserDto(user.getEmail(),user.getId());
+        UserDto dto =new UserDto(user.getId(),user.getEmail());
         userCacheService.cacheUser(dto);
         return ApiResponse.success( "Login successful",getResponse(response, dto));
     }

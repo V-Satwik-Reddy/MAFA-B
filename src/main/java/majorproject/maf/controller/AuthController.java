@@ -32,6 +32,12 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
 
+    @PostMapping("/resend-otp")
+    public ResponseEntity<ApiResponse<?>> resendOtp(@Valid @RequestBody SignUpRequest req) {
+        auth.sendOtpEmail(req.getEmail());
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.successMessage("OTP resent successfully"));
+    }
+
     @PostMapping("/verify-email")
     public ResponseEntity<ApiResponse<?>> verifyEmail(@Valid @RequestBody EmailVerifyRequest req, HttpServletResponse resp) {
         ApiResponse<?> apiResponse = auth.verifyEmail(req,resp);
