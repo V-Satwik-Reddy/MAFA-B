@@ -2,6 +2,7 @@ package majorproject.maf.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import majorproject.maf.dto.request.EmailVerifyRequest;
 import majorproject.maf.dto.request.LoginRequest;
 import majorproject.maf.dto.request.SignUpRequest;
 import majorproject.maf.dto.response.ApiResponse;
@@ -26,9 +27,15 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<?>> signUp(@Valid @RequestBody SignUpRequest req, HttpServletResponse response) {
-        ApiResponse<?> apiResponse = auth.signUp(req,response);
+    public ResponseEntity<ApiResponse<?>> signUp(@Valid @RequestBody SignUpRequest req) {
+        ApiResponse<?> apiResponse = auth.signUp(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<ApiResponse<?>> verifyEmail(@Valid @RequestBody EmailVerifyRequest req, HttpServletResponse resp) {
+        ApiResponse<?> apiResponse = auth.verifyEmail(req,resp);
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
     @PostMapping("/login")

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,40 +15,50 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "user", uniqueConstraints = {@UniqueConstraint(columnNames = "email")})
+@Table(name = "users")
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private int id;
 
-    private String username;
-
-    @Email
-    @NotBlank
-    @Column(nullable = false, unique = true) // ensures DB-level uniqueness
+    @Email @NotBlank @Column(nullable = false, unique = true)
     private String email;
 
     @NotBlank
     private String password;
 
-    private Long phone;
+    @Column
+    private LocalDateTime createdAt;
 
-    private double balance;
+    @Column
+    private boolean isEmailVerified;
 
-    @OneToMany(
-            mappedBy = "user",
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    @Column
+    private boolean isPhoneVerified=false;
+
+    @Enumerated(EnumType.STRING)
+    private UserStatus status;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Transaction> transactions = new ArrayList<>();
 
-    public User(@Email @NotBlank String email, @NotBlank String username, String encode, Long phone, double balance) {
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Stock> stocks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Chat> chats = new ArrayList<>();
+
+    public User(@Email @NotBlank String email, String password) {
         this.email = email;
-        this.username = username;
-        this.password = encode;
-        this.phone = phone;
-        this.balance = balance;
+        this.password = password;
+        this.createdAt = LocalDateTime.now();
+        this.isEmailVerified = false;
+        this.status= UserStatus.ACTIVE;
     }
+}
+enum UserStatus {
+    ACTIVE,
+    INACTIVE,
+    BLOCKED,
+    PENDING
 }

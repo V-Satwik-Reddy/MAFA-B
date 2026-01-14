@@ -14,32 +14,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<ApiResponse<?>> handleUserExists() {
+    public ResponseEntity<?> handleUserExists() {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error("User already registered with same Email"));
     }
 
+    @ExceptionHandler(InvalidEmailOrPasswordFormatException.class)
+    public ResponseEntity<?> handleInvalidEmailOrPassword() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("Invalid Email or Password Format"));
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ApiResponse<?>> handleUserNotFound() {
+    public ResponseEntity<?> handleUserNotFound() {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("User Does Not Exist"));
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<ApiResponse<?>> handleInvalidCredentials() {
+    public ResponseEntity<?> handleInvalidCredentials() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Invalid Credentials"));
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<?>> handleOtherExceptions(Exception ex) {
-        System.out.println("An unexpected error occurred." +ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
-    }
-
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<?>> handleException(RuntimeException ex, HttpServletRequest request, @RequestBody(required = false) Object body) {
-        System.out.println(request.getRequestURI()+" "+request.getContextPath()+" "+body.toString());
-        System.out.println("An unexpected error occurred." +ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
-    }
     @ExceptionHandler(JwtValidationException.class)
     public ResponseEntity<?> handleJwtValidationException() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Invalid Token"));
@@ -54,4 +47,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleJwtRefreshTokenExpiredException() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Refresh Token Expired Please Login Again"));
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleOtherExceptions(Exception ex) {
+        System.out.println("An unexpected error occurred." +ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<?> handleException(RuntimeException ex, HttpServletRequest request, @RequestBody(required = false) Object body) {
+        System.out.println(request.getRequestURI()+" "+request.getContextPath()+" "+body.toString());
+        System.out.println("An unexpected error occurred." +ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
+    }
+
 }

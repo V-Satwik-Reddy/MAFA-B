@@ -1,15 +1,15 @@
 package majorproject.maf.service;
 
 import jakarta.servlet.http.HttpServletResponse;
+import majorproject.maf.dto.request.EmailVerifyRequest;
 import majorproject.maf.dto.request.LoginRequest;
 import majorproject.maf.dto.request.SignUpRequest;
-import majorproject.maf.exception.auth.InvalidCredentialsException;
-import majorproject.maf.exception.auth.UserAlreadyExistsException;
-import majorproject.maf.exception.auth.UserNotFoundException;
+import majorproject.maf.exception.auth.*;
 import majorproject.maf.dto.response.ApiResponse;
 import majorproject.maf.model.User;
 import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.repository.UserRepository;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CookieValue;
 
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Map;
 
@@ -28,27 +29,45 @@ public class AuthService {
     private final PasswordEncoder passEnc;
     private final JWTService jwt;
     private final UserCacheService userCacheService;
+    private final EmailService emailService;
+    private static final SecureRandom secureRandom = new SecureRandom();
+    private final StringRedisTemplate simpleRedisCache;
 
-    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt, UserCacheService userCacheService) {
+    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt, UserCacheService userCacheService, EmailService emailService, StringRedisTemplate simpleRedisCache) {
+        this.userCacheService = userCacheService;
+        this.emailService = emailService;
         this.userRepo = userRepo;
         this.passEnc = passEnc;
         this.jwt = jwt;
-        this.userCacheService = userCacheService;
+        this.simpleRedisCache = simpleRedisCache;
     }
 
-    public ApiResponse<?> signUp(SignUpRequest req, HttpServletResponse response) {
+    public ApiResponse<?> signUp(SignUpRequest req) {
         if (userRepo.findByEmail(req.getEmail()) != null) {
             throw new UserAlreadyExistsException("User already registered with same Email");
         }
-        User user = new User(req.getEmail(), req.getUsername(), passEnc.encode(req.getPassword()), req.getPhone(), req.getBalance());
-        try{
-            userRepo.save(user);
-        }catch(Exception e){
-            throw new RuntimeException("Error occurred while registering user",e);
+        if(!req.getPassword().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,32}$"))
+            throw new InvalidEmailOrPasswordFormatException("Invalid password. Password must be 8-32 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.");
+        String otp = generateOtp();
+        simpleRedisCache.opsForValue().set("otp:email:" + req.getEmail(), otp, Duration.ofMinutes(5));
+        emailService.sendOtpEmail(req.getEmail(),otp);
+        return ApiResponse.successMessage("User email verified successfully. Verify OTP sent to email");
+    }
+
+    public ApiResponse<?> verifyEmail(EmailVerifyRequest e,HttpServletResponse resp) {
+        String savedOtp = simpleRedisCache.opsForValue().get("otp:email:" + e.getEmail());
+        if(savedOtp == null) {
+            throw new OtpExpiredException("OTP has expired. Please request a new one.");
         }
-        UserDto dto =new UserDto(user.getUsername(),user.getEmail(),user.getPhone(),user.getBalance(),user.getId());
+        if(!savedOtp.equals(e.getOtp())) {
+            throw new InvalidOtpException("Invalid OTP. Please try again.");
+        }
+        User newUser = new User(e.getEmail(), passEnc.encode(e.getPassword()));
+        userRepo.save(newUser);
+        simpleRedisCache.delete("otp:email:" + e.getEmail());
+        UserDto dto =new UserDto(newUser.getEmail(),newUser.getId());
         userCacheService.cacheUser(dto);
-        return ApiResponse.success( "Signup successful",getResponse(response, dto));
+        return ApiResponse.success( "Email verified and user registered successfully",getResponse(resp, dto));
     }
 
     public ApiResponse<?> login(LoginRequest req, HttpServletResponse response) {
@@ -61,7 +80,7 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid Credentials");
         }
 
-        UserDto dto =new UserDto(user.getUsername(),user.getEmail(),user.getPhone(),user.getBalance(),user.getId());
+        UserDto dto =new UserDto(user.getEmail(),user.getId());
         userCacheService.cacheUser(dto);
         return ApiResponse.success( "Login successful",getResponse(response, dto));
     }
@@ -106,6 +125,11 @@ public class AuthService {
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                 "accessToken", newAccessToken
         ));
+    }
+
+    public String generateOtp() {
+        int otp = secureRandom.nextInt(1_000_000); // 0 to 999999
+        return String.format("%06d", otp); // zero-pad to 6 digits
     }
 
 }

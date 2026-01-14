@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class SignUpRequest {
+public class EmailVerifyRequest {
 
     @Email
     @NotBlank
@@ -16,4 +16,6 @@ public class SignUpRequest {
     @NotBlank
     private String password;
 
+    @NotBlank
+    private String otp;
 }
