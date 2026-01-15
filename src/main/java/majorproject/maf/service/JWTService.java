@@ -13,6 +13,7 @@ import majorproject.maf.exception.auth.JwtValidationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
+import java.sql.SQLOutput;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -39,6 +40,7 @@ public class JWTService {
         return Jwts.builder()
                 .subject(user.getEmail())
                 .claim("type", "ACCESS")
+                .claim("userId", user.getId())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRY))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -49,6 +51,7 @@ public class JWTService {
         return Jwts.builder()
                 .subject(user.getEmail())
                 .claim("type", "REFRESH")
+                .claim("userId", user.getId())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRY))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -59,9 +62,11 @@ public class JWTService {
         return extractClaim(token, claims -> claims.get("type", String.class));
     }
 
-    public String extractUserName(String token) {
-        // extract the username from jwt token
-        return extractClaim(token, Claims::getSubject);
+    public UserDto extractUser(String token) {
+        Claims claims = extractAllClaims(token);
+        String email = claims.getSubject();
+        Integer userId = claims.get("userId", Integer.class);
+        return new UserDto(userId, email);
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimResolver) {

@@ -51,12 +51,14 @@ public class AuthService {
         String otp = sendOtpEmail(req.getEmail());
         return ApiResponse.successMessage("User email verified successfully. Verify OTP sent to email");
     }
+
     public String sendOtpEmail(String email){
         String otp = generateOtp();
         simpleRedisCache.opsForValue().set("otp:email:" + email, otp, Duration.ofMinutes(5));
         emailService.sendOtpEmail(email,otp);
         return otp;
     }
+
     public ApiResponse<?> verifyEmail(EmailVerifyRequest e,HttpServletResponse resp) {
         String savedOtp = simpleRedisCache.opsForValue().get("otp:email:" + e.getEmail());
         if(savedOtp == null) {
@@ -69,7 +71,6 @@ public class AuthService {
         userRepo.save(newUser);
         simpleRedisCache.delete("otp:email:" + e.getEmail());
         UserDto dto =new UserDto(newUser.getId(), newUser.getEmail());
-        userCacheService.cacheUser(dto);
         return ApiResponse.success( "Email verified and user registered successfully",getResponse(resp, dto));
     }
 
@@ -84,7 +85,6 @@ public class AuthService {
         }
 
         UserDto dto =new UserDto(user.getId(),user.getEmail());
-        userCacheService.cacheUser(dto);
         return ApiResponse.success( "Login successful",getResponse(response, dto));
     }
 
@@ -117,16 +117,14 @@ public class AuthService {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        String email = jwt.extractUserName(refreshToken);
-
-        UserDto user = userCacheService.getCachedUser(email);
+        UserDto user= jwt.extractUser(refreshToken);
         if(user==null){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         String newAccessToken = jwt.generateAccessToken(user);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "accessToken", newAccessToken
+                "accessToken", newAccessToken,"user", user
         ));
     }
 
