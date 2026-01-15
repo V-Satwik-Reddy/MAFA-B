@@ -1,11 +1,11 @@
 package majorproject.maf.controller;
 
 import majorproject.maf.dto.request.ProfileRequest;
+import majorproject.maf.dto.response.Profile;
 import majorproject.maf.dto.response.Share;
 import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.dto.response.ApiResponse;
 import majorproject.maf.service.ProfileService;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -25,19 +25,29 @@ public class ProfileController {
 
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<?>> createProfile(@RequestBody ProfileRequest request,Authentication authentication) {
-        pS.createProfile(request,(int) authentication.getDetails());
+        UserDto u= (UserDto) authentication.getPrincipal();
+        pS.createProfile(request,u.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.successMessage("Profile created successfully"));
+    }
+
+    @GetMapping("/check-username")
+    public ResponseEntity<ApiResponse<?>> checkUsernameAvailability(@RequestParam String username) {
+        boolean isAvailable = pS.isUsernameAvailable(username);
+        String message = isAvailable ? "Username is available" : "Username is already taken";
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(message, isAvailable));
     }
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<?>> getProfile(Authentication authentication) {
-        ProfileRequest user = pS.getProfile((int) authentication.getDetails());
+        UserDto u= (UserDto) authentication.getPrincipal();
+        Profile user = pS.getProfile(u);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("User profile fetched", user));
     }
 
-    @PutMapping("/me")
+    @PutMapping("/update")
     public ResponseEntity<ApiResponse<?>> updateUser(@RequestBody ProfileRequest request,Authentication authentication) {
-        pS.createProfile(request,(int) authentication.getDetails());
+        UserDto u= (UserDto) authentication.getPrincipal();
+        pS.updateProfile(request,u.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.successMessage("User profile updated successfully"));
     }
 

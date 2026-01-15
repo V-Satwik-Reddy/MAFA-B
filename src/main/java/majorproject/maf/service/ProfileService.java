@@ -1,9 +1,11 @@
 package majorproject.maf.service;
 
 import majorproject.maf.dto.request.ProfileRequest;
+import majorproject.maf.dto.response.Profile;
 import majorproject.maf.dto.response.Share;
 import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.exception.InvalidProfileDetailsException;
+import majorproject.maf.model.User;
 import majorproject.maf.model.UserProfile;
 import majorproject.maf.model.enums.EmploymentStatus;
 import majorproject.maf.model.enums.Gender;
@@ -29,10 +31,11 @@ public class ProfileService {
             this.userRepo = userRepo;
         }
 
-        public ProfileRequest getProfile(int usedId) {
-            UserProfile userProfile = userProfileRepository.findByUserId(usedId);
-            return new ProfileRequest(userProfile.getFirstName(), userProfile.getLastName(),
-                    userProfile.getDateOfBirth(), userProfile.getGender().toString(), userProfile.getUsername(),
+        public Profile getProfile(UserDto userDto) {
+            int userId = userDto.getId();
+            UserProfile userProfile = userProfileRepository.findByUserId(userId);
+            return new Profile(userDto.getEmail(), userProfile.getUsername(),"",null, userProfile.getFirstName(), userProfile.getLastName(),
+                    userProfile.getDateOfBirth(), userProfile.getGender().toString(),
                     userProfile.getAddressLine1(), userProfile.getAddressLine2(), userProfile.getCity(),
                     userProfile.getState(), userProfile.getPostalCode(), userProfile.getCountry(),
                     userProfile.getJobTitle(), userProfile.getCompanyName(), userProfile.getIndustry(),
@@ -54,30 +57,116 @@ public class ProfileService {
             }catch(Exception ex) {
                 throw new InvalidProfileDetailsException("Profile creation failed: " + ex.getMessage());
             }
-    }
+        }
+
+        public void updateProfile(ProfileRequest request, int userId) {
+            try {
+                UserProfile existingProfile = userProfileRepository.findByUserId(userId);
+                UserProfile userProfile = updateExistingProfile(existingProfile, request);
+                userProfileRepository.save(userProfile);
+            }catch(Exception ex) {
+                throw new InvalidProfileDetailsException("Profile creation failed: " + ex.getMessage());
+            }
+        }
 
         private UserProfile verifyAndBuildProfile(ProfileRequest request, int userId) {
-            Gender gender= switch (request.getGender().toLowerCase()) {
+
+            User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+            Gender gender = switch (request.getGender().toLowerCase()) {
                 case "male" -> Gender.MALE;
                 case "female" -> Gender.FEMALE;
                 default -> Gender.PREFER_NOT_TO_SAY;
             };
-            EmploymentStatus employmentStatus= switch (request.getEmploymentStatus().toLowerCase()) {
+
+            EmploymentStatus employmentStatus = switch (request.getEmploymentStatus().toLowerCase()) {
                 case "employed" -> EmploymentStatus.EMPLOYED;
                 case "self-employed" -> EmploymentStatus.SELF_EMPLOYED;
                 case "student" -> EmploymentStatus.STUDENT;
                 case "retired" -> EmploymentStatus.RETIRED;
                 default -> EmploymentStatus.UNEMPLOYED;
             };
-            SalaryRange salaryRange= switch (request.getSalaryRange().toLowerCase()) {
+
+            SalaryRange salaryRange = switch (request.getSalaryRange().toLowerCase()) {
                 case "50k_100k" -> SalaryRange.BETWEEN_50K_100K;
                 case "100k_150k" -> SalaryRange.BETWEEN_100K_200K;
                 case "150k_200k" -> SalaryRange.ABOVE_200K;
                 default -> SalaryRange.BELOW_50K;
             };
-        return new UserProfile(userId,userRepo.findById(userId),request.getFirstName(), request.getLastName(), request.getDateOfBirth(), gender, request.getUsername(),
-                request.getAddressLine1(), request.getAddressLine2(), request.getCity(), request.getState(), request.getPostalCode(), request.getCountry(),
-                request.getJobTitle(), request.getCompanyName(), request.getIndustry(), employmentStatus, salaryRange
-                );
+
+            UserProfile profile = new UserProfile();
+            profile.setUser(user);  // ← automatically sets profile.id = user.id
+
+            profile.setFirstName(request.getFirstName());
+            profile.setLastName(request.getLastName());
+            profile.setDateOfBirth(request.getDateOfBirth());
+            profile.setGender(gender);
+            profile.setUsername(request.getUsername());
+
+            profile.setAddressLine1(request.getAddressLine1());
+            profile.setAddressLine2(request.getAddressLine2());
+            profile.setCity(request.getCity());
+            profile.setState(request.getState());
+            profile.setPostalCode(request.getPostalCode());
+            profile.setCountry(request.getCountry());
+
+            profile.setJobTitle(request.getJobTitle());
+            profile.setCompanyName(request.getCompanyName());
+            profile.setIndustry(request.getIndustry());
+            profile.setEmploymentStatus(employmentStatus);
+            profile.setSalaryRange(salaryRange);
+
+            user.setUserProfile(profile); // sync both sides
+
+            return profile;
+        }
+
+        private UserProfile updateExistingProfile(UserProfile profile, ProfileRequest request) {
+            Gender gender = switch (request.getGender().toLowerCase()) {
+                case "male" -> Gender.MALE;
+                case "female" -> Gender.FEMALE;
+                default -> Gender.PREFER_NOT_TO_SAY;
+            };
+
+            EmploymentStatus employmentStatus = switch (request.getEmploymentStatus().toLowerCase()) {
+                case "employed" -> EmploymentStatus.EMPLOYED;
+                case "self-employed" -> EmploymentStatus.SELF_EMPLOYED;
+                case "student" -> EmploymentStatus.STUDENT;
+                case "retired" -> EmploymentStatus.RETIRED;
+                default -> EmploymentStatus.UNEMPLOYED;
+            };
+
+            SalaryRange salaryRange = switch (request.getSalaryRange().toLowerCase()) {
+                case "50k_100k" -> SalaryRange.BETWEEN_50K_100K;
+                case "100k_150k" -> SalaryRange.BETWEEN_100K_200K;
+                case "150k_200k" -> SalaryRange.ABOVE_200K;
+                default -> SalaryRange.BELOW_50K;
+            };
+
+            profile.setFirstName(request.getFirstName());
+            profile.setLastName(request.getLastName());
+            profile.setDateOfBirth(request.getDateOfBirth());
+            profile.setGender(gender);
+            profile.setUsername(request.getUsername());
+
+            profile.setAddressLine1(request.getAddressLine1());
+            profile.setAddressLine2(request.getAddressLine2());
+            profile.setCity(request.getCity());
+            profile.setState(request.getState());
+            profile.setPostalCode(request.getPostalCode());
+            profile.setCountry(request.getCountry());
+
+            profile.setJobTitle(request.getJobTitle());
+            profile.setCompanyName(request.getCompanyName());
+            profile.setIndustry(request.getIndustry());
+            profile.setEmploymentStatus(employmentStatus);
+            profile.setSalaryRange(salaryRange);
+
+            return profile;
+        }
+
+        public boolean isUsernameAvailable(String username) {
+        return userProfileRepository.findByUsername(username)==null;
     }
+
 }

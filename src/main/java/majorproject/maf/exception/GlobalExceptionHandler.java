@@ -23,6 +23,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("Invalid Email or Password Format"));
     }
 
+    @ExceptionHandler(InvalidOtpException.class)
+    public ResponseEntity<?> handleInvalidOtp() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("Invalid OTP"));
+    }
+
+    @ExceptionHandler(OtpExpiredException.class)
+    public ResponseEntity<?> handleOtpExpired() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("OTP Expired"));
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<?> handleUserNotFound() {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("User Does Not Exist"));

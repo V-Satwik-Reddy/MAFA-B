@@ -30,6 +30,29 @@ public class ProfileRequest {
     private String jobTitle;
     private String companyName;
     private String industry;
+
+    @Override
+    public String toString() {
+        return "ProfileRequest{" +
+                "addressLine1='" + addressLine1 + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", dateOfBirth=" + dateOfBirth +
+                ", gender='" + gender + '\'' +
+                ", username='" + username + '\'' +
+                ", addressLine2='" + addressLine2 + '\'' +
+                ", city='" + city + '\'' +
+                ", state='" + state + '\'' +
+                ", postalCode='" + postalCode + '\'' +
+                ", country='" + country + '\'' +
+                ", jobTitle='" + jobTitle + '\'' +
+                ", companyName='" + companyName + '\'' +
+                ", industry='" + industry + '\'' +
+                ", employmentStatus='" + employmentStatus + '\'' +
+                ", salaryRange='" + salaryRange + '\'' +
+                '}';
+    }
+
     private String employmentStatus;
     private String salaryRange;
 
