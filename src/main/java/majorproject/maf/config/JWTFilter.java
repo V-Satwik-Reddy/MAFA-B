@@ -1,11 +1,13 @@
 package majorproject.maf.config;
 
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.service.JWTService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -44,14 +46,14 @@ public class JWTFilter extends OncePerRequestFilter {
 
         try {
             String token = header.substring(7);
-            String username = jwt.extractUserName(token);
             if(token.equals("NOT_FOUND")){
                 throw new JwtException("Invalid token");
             }
+            UserDto userDto = jwt.extractUser(token);
             if (SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwt.validateAccessToken(token)) {
                     UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(username, token,Collections.singleton(new SimpleGrantedAuthority("USER")));
+                            new UsernamePasswordAuthenticationToken(userDto, token,Collections.singleton(new SimpleGrantedAuthority("USER")));
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }

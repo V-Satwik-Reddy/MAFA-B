@@ -31,7 +31,7 @@ public class UserProfile {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Gender gender = Gender.PREFER_NOT_TO_SAY;
-
+    private Double balance;
     @Column(unique = true)
     private String username;
 

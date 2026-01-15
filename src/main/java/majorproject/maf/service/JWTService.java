@@ -40,7 +40,7 @@ public class JWTService {
         return Jwts.builder()
                 .subject(user.getEmail())
                 .claim("type", "ACCESS")
-                .claim("userId", user.getId())
+                .claim("User",user)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRY))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -51,7 +51,7 @@ public class JWTService {
         return Jwts.builder()
                 .subject(user.getEmail())
                 .claim("type", "REFRESH")
-                .claim("userId", user.getId())
+                .claim("User",user)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRY))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -64,9 +64,7 @@ public class JWTService {
 
     public UserDto extractUser(String token) {
         Claims claims = extractAllClaims(token);
-        String email = claims.getSubject();
-        Integer userId = claims.get("userId", Integer.class);
-        return new UserDto(userId, email);
+        return claims.get("User", UserDto.class);
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimResolver) {

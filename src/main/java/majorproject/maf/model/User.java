@@ -30,6 +30,8 @@ public class User {
     @NotBlank
     private String password;
 
+    private String phone;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private boolean isEmailVerified = false;
@@ -38,7 +40,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserStatus status = UserStatus.PENDING;
+    private UserStatus status = UserStatus.INACTIVE;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Transaction> transactions = new ArrayList<>();
@@ -57,7 +59,7 @@ public class User {
         this.password = password;
         this.createdAt = LocalDateTime.now();
         this.isEmailVerified = true;
-        this.status = UserStatus.PENDING;
+        this.status = UserStatus.ProfilePENDING;
     }
 }
 

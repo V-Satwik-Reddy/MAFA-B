@@ -70,7 +70,7 @@ public class AuthService {
         User newUser = new User(e.getEmail(), passEnc.encode(e.getPassword()));
         userRepo.save(newUser);
         simpleRedisCache.delete("otp:email:" + e.getEmail());
-        UserDto dto =new UserDto(newUser.getId(), newUser.getEmail());
+        UserDto dto =new UserDto(newUser.getId(), newUser.getEmail(), newUser.getPhone(),newUser.getStatus());
         return ApiResponse.success( "Email verified and user registered successfully",getResponse(resp, dto));
     }
 
@@ -84,7 +84,7 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid Credentials");
         }
 
-        UserDto dto =new UserDto(user.getId(),user.getEmail());
+        UserDto dto =new UserDto(user.getId(),user.getEmail(),user.getPhone(),user.getStatus());
         return ApiResponse.success( "Login successful",getResponse(response, dto));
     }
 

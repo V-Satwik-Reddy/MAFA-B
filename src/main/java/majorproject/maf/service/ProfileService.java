@@ -10,6 +10,7 @@ import majorproject.maf.model.UserProfile;
 import majorproject.maf.model.enums.EmploymentStatus;
 import majorproject.maf.model.enums.Gender;
 import majorproject.maf.model.enums.SalaryRange;
+import majorproject.maf.model.enums.UserStatus;
 import majorproject.maf.repository.StockRepository;
 import majorproject.maf.repository.UserProfileRepository;
 import majorproject.maf.repository.UserRepository;
@@ -34,7 +35,7 @@ public class ProfileService {
         public Profile getProfile(UserDto userDto) {
             int userId = userDto.getId();
             UserProfile userProfile = userProfileRepository.findByUserId(userId);
-            return new Profile(userDto.getEmail(), userProfile.getUsername(),"",null, userProfile.getFirstName(), userProfile.getLastName(),
+            return new Profile(userDto.getEmail(), userProfile.getUsername(),userDto.getPhone(),userProfile.getBalance(), userProfile.getFirstName(), userProfile.getLastName(),
                     userProfile.getDateOfBirth(), userProfile.getGender().toString(),
                     userProfile.getAddressLine1(), userProfile.getAddressLine2(), userProfile.getCity(),
                     userProfile.getState(), userProfile.getPostalCode(), userProfile.getCountry(),
@@ -117,7 +118,7 @@ public class ProfileService {
             profile.setSalaryRange(salaryRange);
 
             user.setUserProfile(profile); // sync both sides
-
+            user.setStatus(UserStatus.PhoneVerificationPENDING);
             return profile;
         }
 
