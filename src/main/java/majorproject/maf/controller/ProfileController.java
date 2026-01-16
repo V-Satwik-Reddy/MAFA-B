@@ -1,5 +1,6 @@
 package majorproject.maf.controller;
 
+import majorproject.maf.dto.request.PreferenceRequest;
 import majorproject.maf.dto.request.ProfileRequest;
 import majorproject.maf.dto.response.Profile;
 import majorproject.maf.dto.response.Share;
@@ -35,6 +36,20 @@ public class ProfileController {
         boolean isAvailable = pS.isUsernameAvailable(username);
         String message = isAvailable ? "Username is available" : "Username is already taken";
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(message, isAvailable));
+    }
+
+    @PostMapping("/create-preferences")
+    public ResponseEntity<ApiResponse<?>> createPreferences(@RequestBody PreferenceRequest request, Authentication authentication) {
+        UserDto u= (UserDto) authentication.getPrincipal();
+        pS.createPreferences(request,u.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.successMessage("User preferences created successfully"));
+    }
+
+    @PutMapping("/update-preferences")
+    public ResponseEntity<ApiResponse<?>> updatePreferences(@RequestBody PreferenceRequest request, Authentication authentication) {
+        UserDto u= (UserDto) authentication.getPrincipal();
+        pS.updatePreferences(request,u.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.successMessage("User preferences updated successfully"));
     }
 
     @GetMapping("/me")
