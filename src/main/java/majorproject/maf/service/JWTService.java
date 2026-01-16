@@ -10,6 +10,7 @@ import jakarta.annotation.PostConstruct;
 import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.exception.auth.JwtAccessTokenExpiredException;
 import majorproject.maf.exception.auth.JwtValidationException;
+import majorproject.maf.model.enums.UserStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
@@ -37,10 +38,14 @@ public class JWTService {
     }
 
     public String generateAccessToken(UserDto user) {
+        String status= String.valueOf(user.getStatus());
         return Jwts.builder()
                 .subject(user.getEmail())
                 .claim("type", "ACCESS")
-                .claim("User",user)
+                .claim("email",user.getEmail())
+                .claim("id",user.getId())
+                .claim("status",status)
+                .claim("phone",user.getPhone())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRY))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -48,10 +53,14 @@ public class JWTService {
     }
 
     public String generateRefreshToken(UserDto user) {
+        String status= String.valueOf(user.getStatus());
         return Jwts.builder()
                 .subject(user.getEmail())
                 .claim("type", "REFRESH")
-                .claim("User",user)
+                .claim("email",user.getEmail())
+                .claim("id",user.getId())
+                .claim("status",status)
+                .claim("phone",user.getPhone())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRY))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -64,7 +73,13 @@ public class JWTService {
 
     public UserDto extractUser(String token) {
         Claims claims = extractAllClaims(token);
-        return claims.get("User", UserDto.class);
+        UserDto user = new UserDto();
+        user.setEmail(claims.getSubject());
+        user.setId(claims.get("id", Integer.class));
+        user.setPhone(claims.get("phone", String.class));
+        UserStatus status = UserStatus.valueOf(claims.get("status", String.class));
+        user.setStatus(status);
+        return user;
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimResolver) {

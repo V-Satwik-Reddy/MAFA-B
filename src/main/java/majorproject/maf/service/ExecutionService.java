@@ -31,10 +31,10 @@ public class ExecutionService {
         User u=userRepository.findByEmail(email);
         double price=priceFetch.fetchCurrentPrice(request.getSymbol());
         double totalCost=request.getQuantity()*price;
-        if(u.getBalance()< totalCost){
-            return null;
-        }
-        userRepository.debitBalance(u.getEmail(),totalCost);
+//        if(u.getBalance()< totalCost){
+//            return null;
+//        }
+//        userRepository.debitBalance(u.getEmail(),totalCost);
         Transaction t=new Transaction();
         t.setAsset(request.getSymbol());
         t.setType("buy");
@@ -44,8 +44,9 @@ public class ExecutionService {
         ds.createTransaction(t);
         if (stockRepository.findByUserIdAndSymbol(u.getId(), request.getSymbol()) == null) {
             stockRepository.save(new Stock(request.getSymbol(), request.getQuantity(), u));
-        }else
-            stockRepository.incrementShares(u.getId(), request.getSymbol(), request.getQuantity());
+        }
+//        else
+//            stockRepository.incrementShares(u.getId(), request.getSymbol(), request.getQuantity());
 
         return new TransactionDto(t.getId(),t.getType(),t.getAsset(),t.getAssetQuantity(),t.getAmount(),t.getCreatedAt());
     }
@@ -59,7 +60,7 @@ public class ExecutionService {
         }
         double price=priceFetch.fetchCurrentPrice(request.getSymbol());
         double totalAmount=request.getQuantity()*price;
-        userRepository.creditBalance(u.getEmail(),totalAmount);
+//        userRepository.creditBalance(u.getEmail(),totalAmount);
         Transaction t=new Transaction();
         t.setAsset(request.getSymbol());
         t.setType("sell");
@@ -67,7 +68,7 @@ public class ExecutionService {
         t.setAssetQuantity(request.getQuantity());
         t.setUser(u);
         ds.createTransaction(t);
-        stockRepository.decrementShares(u.getId(), request.getSymbol(), request.getQuantity());
+//        stockRepository.decrementShares(u.getId(), request.getSymbol(), request.getQuantity());
         if(stock.getShares()-request.getQuantity()<=0){
             stockRepository.deleteByUserIdAndSymbol(u.getId(),request.getSymbol());
         }

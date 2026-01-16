@@ -12,20 +12,19 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends JpaRepository<User, Integer> {
 
     User findByEmail(@NonNull String email);
+//    @Modifying
+//    @Query("""
+//        UPDATE User u
+//        SET u.balance = u.balance - :delta
+//        WHERE u.email = :email
+//    """)
+//    void debitBalance(String email, double delta);
 
-    @Modifying
-    @Query("""
-        UPDATE User u
-        SET u.balance = u.balance - :delta
-        WHERE u.email = :email
-    """)
-    void debitBalance(String email, double delta);
-
-    @Modifying
-    @Query("""
-        UPDATE User u
-        SET u.balance = u.balance + :delta
-        WHERE u.email = :email
-    """)
-    void creditBalance(String email, double delta);
+//    @Modifying
+//    @Query("""
+//        UPDATE User u
+//        SET u.balance = u.balance + :delta
+//        WHERE u.email = :email
+//    """)
+//    void creditBalance(String email, double delta);
 }

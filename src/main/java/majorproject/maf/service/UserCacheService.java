@@ -24,7 +24,7 @@ public class UserCacheService {
     @Cacheable(value="USERS_CACHE", key="#email")
     public UserDto getCachedUser(String email) {
         User user= userRepo.findByEmail(email);
-        return new UserDto(user.getUsername(), user.getEmail(), user.getPhone(), user.getBalance(), user.getId());
+        return new UserDto(user.getId(), user.getEmail(),user.getPhone(),user.getStatus());
     }
 
     @CacheEvict(value="USERS_CACHE", key="#email")

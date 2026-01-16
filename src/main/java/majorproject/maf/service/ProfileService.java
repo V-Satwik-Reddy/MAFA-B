@@ -37,25 +37,6 @@ public class ProfileService {
             this.userPreferencesRepository = userPreferencesRepository;
         }
 
-        public Profile getProfile(UserDto userDto) {
-            int userId = userDto.getId();
-            UserProfile userProfile = userProfileRepository.findByUserId(userId);
-            return new Profile(userDto.getEmail(), userProfile.getUsername(),userDto.getPhone(),userProfile.getBalance(), userProfile.getFirstName(), userProfile.getLastName(),
-                    userProfile.getDateOfBirth(), userProfile.getGender().toString(),
-                    userProfile.getAddressLine1(), userProfile.getAddressLine2(), userProfile.getCity(),
-                    userProfile.getState(), userProfile.getPostalCode(), userProfile.getCountry(),
-                    userProfile.getJobTitle(), userProfile.getCompanyName(), userProfile.getIndustry(),
-                    userProfile.getEmploymentStatus().toString(), userProfile.getSalaryRange().toString()
-            );
-        }
-
-        public List<Share> getUserHoldings(String email) {
-            UserDto user = userCacheService.getCachedUser(email);
-            return stockRepo.findByUserId(user.getId()).stream().map(
-                    stock -> new Share(stock.getSymbol(), stock.getShares())
-            ).toList();
-        }
-
         public void createProfile(ProfileRequest request, int userId) {
             try {
                 User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
@@ -78,6 +59,18 @@ public class ProfileService {
                 throw new InvalidProfileDetailsException("Profile creation failed: " + ex.getMessage());
             }
         }
+
+        public Profile getProfile(UserDto userDto) {
+        int userId = userDto.getId();
+        UserProfile userProfile = userProfileRepository.findByUserId(userId);
+        return new Profile(userDto.getEmail(), userProfile.getUsername(),userDto.getPhone(),userProfile.getBalance(), userProfile.getFirstName(), userProfile.getLastName(),
+                userProfile.getDateOfBirth(), userProfile.getGender().toString(),
+                userProfile.getAddressLine1(), userProfile.getAddressLine2(), userProfile.getCity(),
+                userProfile.getState(), userProfile.getPostalCode(), userProfile.getCountry(),
+                userProfile.getJobTitle(), userProfile.getCompanyName(), userProfile.getIndustry(),
+                userProfile.getEmploymentStatus().toString(), userProfile.getSalaryRange().toString()
+        );
+    }
 
         private UserProfile buildProfile(UserProfile profile, ProfileRequest request) {
             Gender gender = switch (request.getGender().toLowerCase()) {
@@ -123,10 +116,6 @@ public class ProfileService {
             return profile;
         }
 
-        public boolean isUsernameAvailable(String username) {
-        return userProfileRepository.findByUsername(username)==null;
-    }
-
         public void createPreferences(PreferenceRequest request, int id) {
             User user = userRepo.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
             UserPreferences preferences = new UserPreferences();
@@ -141,12 +130,27 @@ public class ProfileService {
             fillPreferences(request,userPreferences);
         }
 
+        public PreferenceRequest getPreferences(UserDto u) {
+        int userId = u.getId();
+        UserPreferences userPreferences = userPreferencesRepository.findByUserId(userId);
+        List<String> sectors = userPreferences.getSectors().stream().map(Sectors::getSectorName).toList();
+        List<String> companies = userPreferences.getCompanies().stream().map(Companies::getCompanyName).toList();
+        return new PreferenceRequest(
+                userPreferences.getInvestmentGoals(),
+                userPreferences.getRiskTolerance(),
+                userPreferences.getPreferredAsset(),
+                sectors,
+                companies
+        );
+    }
+
         private void fillPreferences(PreferenceRequest request,UserPreferences userPreferences) {
             userPreferences.setRiskTolerance(request.getRiskTolerance());
             userPreferences.setInvestmentGoals(request.getInvestmentGoals());
             userPreferences.setPreferredAsset(request.getPreferredAsset());
 
-            List<Sectors> sectors = new ArrayList<>();
+            List<Sectors> sectors = userPreferences.getSectors();
+            sectors.clear();
             for(String sectorName : request.getSectors()) {
                 Sectors sector = new Sectors();
                 sector.setUser(userPreferences);
@@ -155,7 +159,8 @@ public class ProfileService {
             }
             userPreferences.setSectors(sectors);
 
-            List<Companies> companies = new ArrayList<>();
+            List<Companies> companies = userPreferences.getCompanies();
+            companies.clear();
             for(String companyName : request.getCompanies()) {
                 Companies company = new Companies();
                 company.setUser(userPreferences);
@@ -164,5 +169,16 @@ public class ProfileService {
             }
             userPreferences.setCompanies(companies);
             userPreferencesRepository.save(userPreferences);
+        }
+
+        public boolean isUsernameAvailable(String username) {
+            return userProfileRepository.findByUsername(username)==null;
+        }
+
+        public List<Share> getUserHoldings(String email) {
+            UserDto user = userCacheService.getCachedUser(email);
+            return stockRepo.findByUserId(user.getId()).stream().map(
+                    stock -> new Share(stock.getSymbol(), stock.getShares())
+            ).toList();
         }
 }

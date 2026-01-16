@@ -52,6 +52,13 @@ public class ProfileController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.successMessage("User preferences updated successfully"));
     }
 
+    @GetMapping("/preferences")
+    public ResponseEntity<ApiResponse<?>> getPreferences(Authentication authentication) {
+        UserDto u= (UserDto) authentication.getPrincipal();
+        PreferenceRequest preferences = pS.getPreferences(u);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("User preferences fetched", preferences));
+    }
+
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<?>> getProfile(Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
