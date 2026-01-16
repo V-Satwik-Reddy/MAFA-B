@@ -54,12 +54,16 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserProfile userProfile;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserPreferences userPreferences;
+
     public User(String email, String password) {
         this.email = email;
         this.password = password;
         this.createdAt = LocalDateTime.now();
         this.isEmailVerified = true;
         this.status = UserStatus.ProfilePENDING;
+        this.phone="";
     }
 }
 
