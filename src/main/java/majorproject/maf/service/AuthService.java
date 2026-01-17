@@ -8,6 +8,8 @@ import majorproject.maf.exception.auth.*;
 import majorproject.maf.dto.response.ApiResponse;
 import majorproject.maf.model.User;
 import majorproject.maf.dto.response.UserDto;
+import majorproject.maf.model.UserOtp;
+import majorproject.maf.repository.UserOtpRepository;
 import majorproject.maf.repository.UserRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
@@ -28,18 +30,18 @@ public class AuthService {
     private final UserRepository userRepo;
     private final PasswordEncoder passEnc;
     private final JWTService jwt;
-    private final UserCacheService userCacheService;
     private final EmailService emailService;
     private static final SecureRandom secureRandom = new SecureRandom();
     private final StringRedisTemplate simpleRedisCache;
+    private final UserOtpRepository userOtpRepository;
 
-    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt, UserCacheService userCacheService, EmailService emailService, StringRedisTemplate simpleRedisCache) {
-        this.userCacheService = userCacheService;
+    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt, EmailService emailService, StringRedisTemplate simpleRedisCache, UserOtpRepository userOtpRepository) {
         this.emailService = emailService;
         this.userRepo = userRepo;
         this.passEnc = passEnc;
         this.jwt = jwt;
         this.simpleRedisCache = simpleRedisCache;
+        this.userOtpRepository = userOtpRepository;
     }
 
     public ApiResponse<?> signUp(SignUpRequest req) {
@@ -48,28 +50,35 @@ public class AuthService {
         }
         if(!req.getPassword().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,32}$"))
             throw new InvalidEmailOrPasswordFormatException("Invalid password. Password must be 8-32 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.");
-        String otp = sendOtpEmail(req.getEmail());
+        sendOtpEmail(req.getEmail());
         return ApiResponse.successMessage("User email verified successfully. Verify OTP sent to email");
     }
 
-    public String sendOtpEmail(String email){
+    public void sendOtpEmail(String email){
         String otp = generateOtp();
-        simpleRedisCache.opsForValue().set("otp:email:" + email, otp, Duration.ofMinutes(5));
+        userOtpRepository.save(new UserOtp(email,otp, System.currentTimeMillis() + Duration.ofMinutes(5).toMillis()));
+//        simpleRedisCache.opsForValue().set("otp:email:" + email, otp, Duration.ofMinutes(5));
         emailService.sendOtpEmail(email,otp);
-        return otp;
     }
 
     public ApiResponse<?> verifyEmail(EmailVerifyRequest e,HttpServletResponse resp) {
-        String savedOtp = simpleRedisCache.opsForValue().get("otp:email:" + e.getEmail());
-        if(savedOtp == null) {
+        UserOtp userOtp = userOtpRepository.findByEmail(e.getEmail());
+        String savedOtp = userOtp.getOtp();
+        if(userOtp.getExpiresAt()> System.currentTimeMillis()){
+            userOtpRepository.delete(userOtp);
             throw new OtpExpiredException("OTP has expired. Please request a new one.");
         }
+//        String savedOtp = simpleRedisCache.opsForValue().get("otp:email:" + e.getEmail());
+//        if(savedOtp == null) {
+//            throw new OtpExpiredException("OTP has expired. Please request a new one.");
+//        }
         if(!savedOtp.equals(e.getOtp())) {
             throw new InvalidOtpException("Invalid OTP. Please try again.");
         }
         User newUser = new User(e.getEmail(), passEnc.encode(e.getPassword()));
         userRepo.save(newUser);
-        simpleRedisCache.delete("otp:email:" + e.getEmail());
+        userOtpRepository.delete(userOtp);
+//        simpleRedisCache.delete("otp:email:" + e.getEmail());
         UserDto dto =new UserDto(newUser.getId(), newUser.getEmail(), newUser.getPhone(),newUser.getStatus());
         return ApiResponse.success( "Email verified and user registered successfully",getResponse(resp, dto));
     }
