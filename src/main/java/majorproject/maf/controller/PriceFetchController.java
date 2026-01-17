@@ -1,6 +1,5 @@
 package majorproject.maf.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import majorproject.maf.dto.response.ApiResponse;
 import majorproject.maf.dto.response.StockChange;
 import majorproject.maf.model.StockPrice;

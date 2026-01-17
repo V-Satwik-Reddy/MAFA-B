@@ -2,7 +2,6 @@ package majorproject.maf.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import majorproject.maf.dto.response.ChatDto;
-import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.model.Chat;
 import majorproject.maf.model.User;
 import majorproject.maf.repository.ChatRepository;
@@ -24,7 +23,6 @@ import java.util.stream.Collectors;
 @Service
 public class ChatService {
 
-    private final UserCacheService userCacheService;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final ChatRepository chatRepo;
@@ -33,28 +31,27 @@ public class ChatService {
     @Value("${agents_endpoint:}")
     String url;
 
-    public ChatService(ChatRepository chatRepo, UserCacheService userCacheService, UserRepository userRepo) {
+    public ChatService(ChatRepository chatRepo, UserRepository userRepo) {
         this.userRepo = userRepo;
-        this.userCacheService = userCacheService;
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = new ObjectMapper();
         this.chatRepo = chatRepo;
     }
 
-    public String generalChat(String query, String name) {
-        return callAgentService(query,name,"general-agent");
+    public String generalChat(String query, int id) {
+        return callAgentService(query,id,"general-agent");
     }
 
-    public String executeAgentChat(String query, String email) {
-        return callAgentService(query,email,"execute-agent");
+    public String executeAgentChat(String query, int id) {
+        return callAgentService(query,id,"execute-agent");
     }
 
-    public String marketResearchAgentChat(String query, String email) {
-        return callAgentService(query,email,"market-research-agent");
+    public String marketResearchAgentChat(String query, int id) {
+        return callAgentService(query,id,"market-research-agent");
     }
 
-    public String portfolioManagerAgentChat(String userQuery, String email) {
-        return callAgentService(userQuery,email,"portfolio-manager-agent");
+    public String portfolioManagerAgentChat(String userQuery, int id) {
+        return callAgentService(userQuery,id,"portfolio-manager-agent");
     }
 
     public void saveChat(User u, String userQuery, String agentResponse) {
@@ -62,19 +59,15 @@ public class ChatService {
         chatRepo.save(c);
     }
 
-    public List<ChatDto> getUserChats(String email) {
-        UserDto u=userCacheService.getCachedUser(email);
-        List<Chat> chats=chatRepo.findAllByUserIdOrderByCreatedAtAsc(u.getId());
+    public List<ChatDto> getUserChats(int id) {
+        List<Chat> chats=chatRepo.findAllByUserIdOrderByCreatedAtAsc(id);
         return chats.stream()
                 .map(chat -> new ChatDto(chat.getUserQuery(), chat.getAgentResponse()))
                 .collect(Collectors.toList());
     }
 
-    public String callAgentService(String query, String email, String agentEndpoint) {
+    public String callAgentService(String query, int userId, String agentEndpoint) {
         try {
-            UserDto u=userCacheService.getCachedUser(email);
-            int userId = u.getId();
-
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String token = (String) auth.getCredentials();
 
@@ -102,7 +95,8 @@ public class ChatService {
             if (data == null) {
                 throw new RuntimeException("Agent response missing 'data' field");
             }
-            saveChat(userRepo.findByEmail(email),query,data.toString());
+            User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+            saveChat(user,query,data.toString());
             return data.toString();
         } catch (Exception e) {
             throw new RuntimeException("Chat service failed", e);

@@ -2,6 +2,7 @@ package majorproject.maf.controller;
 
 import majorproject.maf.dto.request.ExecuteRequest;
 import majorproject.maf.dto.response.TransactionDto;
+import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.service.ExecutionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -21,13 +22,15 @@ public class ExecutionController {
 
     @PostMapping("/buy")
     public ResponseEntity<?> binanceBuy(@RequestBody ExecuteRequest request, Authentication authentication) throws Exception {
-        TransactionDto t =executionService.buyShares(request,authentication.getName());
+        UserDto u= (UserDto) authentication.getPrincipal();
+        TransactionDto t =executionService.buyShares(request,u.getId());
         return ResponseEntity.ok(t);
     }
 
     @PostMapping("/sell")
     public ResponseEntity<?> binanceSell(@RequestBody ExecuteRequest request, Authentication authentication) {
-        TransactionDto t=executionService.sellShares(request,authentication.getName());
+        UserDto u= (UserDto) authentication.getPrincipal();
+        TransactionDto t=executionService.sellShares(request,u.getId());
         return ResponseEntity.ok(t);
     }
 }

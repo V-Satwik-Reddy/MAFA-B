@@ -83,7 +83,8 @@ public class ProfileController {
 
     @GetMapping("/holdings")
     public ResponseEntity<ApiResponse<?>> getHoldings(Authentication authentication) {
-        List<Share> holdings = pS.getUserHoldings(authentication.getName());
+        UserDto u= (UserDto) authentication.getPrincipal();
+        List<Share> holdings = pS.getUserHoldings(u.getId());
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("User Holdings fetched", holdings));
     }
 }

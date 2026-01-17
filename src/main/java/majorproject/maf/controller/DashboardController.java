@@ -2,6 +2,7 @@ package majorproject.maf.controller;
 
 import majorproject.maf.dto.response.StockDto;
 import majorproject.maf.dto.response.TransactionDto;
+import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.service.DashboardService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,15 +23,15 @@ public class DashboardController {
 
     @GetMapping("/transactions")
     public ResponseEntity<?> getTransactions(Authentication auth) {
-        String email = auth.getName();
-        List<TransactionDto> txns = dashboardService.getUserTransactions(email);
+        UserDto u=(UserDto) auth.getPrincipal();
+        List<TransactionDto> txns = dashboardService.getUserTransactions(u.getId());
         return ResponseEntity.status(HttpStatus.OK).body(txns);
     }
 
     @GetMapping("/dashboard")
     public ResponseEntity<?> getDashboardData(Authentication auth) {
-        String email = auth.getName();
-        List<StockDto> holdings =  dashboardService.getHoldingsDetails(email);
+        UserDto u=(UserDto) auth.getPrincipal();
+        List<StockDto> holdings =  dashboardService.getHoldingsDetails(u.getId());
         return ResponseEntity.status(HttpStatus.OK).body(holdings);
     }
 }

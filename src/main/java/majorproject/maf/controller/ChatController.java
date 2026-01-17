@@ -1,6 +1,7 @@
 package majorproject.maf.controller;
 
 import majorproject.maf.dto.response.ChatDto;
+import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.service.ChatService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,31 +23,36 @@ public class ChatController {
 
     @PostMapping("/general-chat")
     public ResponseEntity<String> generalChat(@RequestBody ChatDto request, Authentication auth) {
-        String response =chatService.generalChat(request.getUserQuery(),auth.getName());
+        UserDto user= (UserDto) auth.getPrincipal();
+        String response =chatService.generalChat(request.getUserQuery(),user.getId());
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/ea-chat")
     public ResponseEntity<String> eaChat(@RequestBody ChatDto request, Authentication auth) {
-        String response =chatService.executeAgentChat(request.getUserQuery(),auth.getName());
+        UserDto user= (UserDto) auth.getPrincipal();
+        String response =chatService.executeAgentChat(request.getUserQuery(),user.getId());
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/mra-chat")
     public ResponseEntity<String> mraChat(@RequestBody ChatDto request, Authentication auth) {
-        String response =chatService.marketResearchAgentChat(request.getUserQuery(),auth.getName());
+        UserDto user= (UserDto) auth.getPrincipal();
+        String response =chatService.marketResearchAgentChat(request.getUserQuery(),user.getId());
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/pa-chat")
     public ResponseEntity<String> paChat(@RequestBody ChatDto request, Authentication auth) {
-        String response =chatService.portfolioManagerAgentChat(request.getUserQuery(),auth.getName());
+        UserDto user= (UserDto) auth.getPrincipal();
+        String response =chatService.portfolioManagerAgentChat(request.getUserQuery(),user.getId());
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/chats")
     public ResponseEntity<?> getChats(Authentication auth) {
-        List<ChatDto> res=chatService.getUserChats(auth.getName());
+        UserDto user= (UserDto) auth.getPrincipal();
+        List<ChatDto> res=chatService.getUserChats(user.getId());
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 }

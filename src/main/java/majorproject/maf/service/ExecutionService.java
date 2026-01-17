@@ -2,6 +2,8 @@ package majorproject.maf.service;
 
 import majorproject.maf.dto.request.ExecuteRequest;
 import majorproject.maf.dto.response.TransactionDto;
+import majorproject.maf.model.UserProfile;
+import majorproject.maf.repository.UserProfileRepository;
 import org.springframework.transaction.annotation.Transactional;
 import majorproject.maf.model.Stock;
 import majorproject.maf.model.Transaction;
@@ -18,8 +20,10 @@ public class ExecutionService {
     private final StockRepository stockRepository;
     private final UserRepository userRepository;
     private final PriceFetch priceFetch;
+    private final UserProfileRepository userProfileRepository;
 
-    public ExecutionService( DashboardService ds, StockRepository stockRepository, UserRepository userRepository, PriceFetch priceFetch) {
+    public ExecutionService( DashboardService ds, StockRepository stockRepository, UserRepository userRepository, PriceFetch priceFetch, UserProfileRepository userProfileRepository) {
+        this.userProfileRepository = userProfileRepository;
         this.ds = ds;
         this.stockRepository = stockRepository;
         this.userRepository = userRepository;
@@ -27,50 +31,51 @@ public class ExecutionService {
     }
 
     @Transactional
-    public TransactionDto buyShares(ExecuteRequest request, String email) {
-        User u=userRepository.findByEmail(email);
+    public TransactionDto buyShares(ExecuteRequest request, int id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        UserProfile userProfile = userProfileRepository.findByUserId(id);
         double price=priceFetch.fetchCurrentPrice(request.getSymbol());
         double totalCost=request.getQuantity()*price;
-//        if(u.getBalance()< totalCost){
-//            return null;
-//        }
-//        userRepository.debitBalance(u.getEmail(),totalCost);
+        if(userProfile.getBalance()< totalCost){
+            return null;
+        }
+        userProfileRepository.debitBalance(id,totalCost);
         Transaction t=new Transaction();
         t.setAsset(request.getSymbol());
         t.setType("buy");
         t.setAmount(totalCost);
         t.setAssetQuantity(request.getQuantity());
-        t.setUser(u);
+        t.setUser(user);
         ds.createTransaction(t);
-        if (stockRepository.findByUserIdAndSymbol(u.getId(), request.getSymbol()) == null) {
-            stockRepository.save(new Stock(request.getSymbol(), request.getQuantity(), u));
+        if (stockRepository.findByUserIdAndSymbol(id, request.getSymbol()) == null) {
+            stockRepository.save(new Stock(request.getSymbol(), request.getQuantity(), user));
         }
-//        else
-//            stockRepository.incrementShares(u.getId(), request.getSymbol(), request.getQuantity());
-
+        else {
+            stockRepository.incrementShares(id, request.getSymbol(), request.getQuantity());
+        }
         return new TransactionDto(t.getId(),t.getType(),t.getAsset(),t.getAssetQuantity(),t.getAmount(),t.getCreatedAt());
     }
 
     @Transactional
-    public TransactionDto sellShares(ExecuteRequest request, String email) {
-        User u=userRepository.findByEmail(email);
-        Stock stock=stockRepository.findByUserIdAndSymbol(u.getId(), request.getSymbol());
+    public TransactionDto sellShares(ExecuteRequest request, int id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        Stock stock=stockRepository.findByUserIdAndSymbol(id, request.getSymbol());
         if(stock==null||request.getQuantity()>stock.getShares()){
             return null;
         }
         double price=priceFetch.fetchCurrentPrice(request.getSymbol());
         double totalAmount=request.getQuantity()*price;
-//        userRepository.creditBalance(u.getEmail(),totalAmount);
+        userProfileRepository.creditBalance(id,totalAmount);
         Transaction t=new Transaction();
         t.setAsset(request.getSymbol());
         t.setType("sell");
         t.setAmount(totalAmount);
         t.setAssetQuantity(request.getQuantity());
-        t.setUser(u);
+        t.setUser(user);
         ds.createTransaction(t);
-//        stockRepository.decrementShares(u.getId(), request.getSymbol(), request.getQuantity());
+        stockRepository.decrementShares(id, request.getSymbol(), request.getQuantity());
         if(stock.getShares()-request.getQuantity()<=0){
-            stockRepository.deleteByUserIdAndSymbol(u.getId(),request.getSymbol());
+            stockRepository.deleteByUserIdAndSymbol(id,request.getSymbol());
         }
 
         return new TransactionDto(t.getId(),t.getType(),t.getAsset(),t.getAssetQuantity(),t.getAmount(),t.getCreatedAt());

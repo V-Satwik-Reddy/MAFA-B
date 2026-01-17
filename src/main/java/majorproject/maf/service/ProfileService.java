@@ -24,13 +24,11 @@ public class ProfileService {
 
         private final UserProfileRepository userProfileRepository;
         private final StockRepository stockRepo;
-        private final UserCacheService userCacheService;
         private final UserRepository userRepo;
         private final UserPreferencesRepository userPreferencesRepository;
 
-        public ProfileService(UserPreferencesRepository userPreferencesRepository,StockRepository stockRepo, UserCacheService userCacheService, UserRepository userRepo, UserProfileRepository userProfileRepository) {
+        public ProfileService(UserPreferencesRepository userPreferencesRepository,StockRepository stockRepo, UserRepository userRepo, UserProfileRepository userProfileRepository) {
             this.userProfileRepository = userProfileRepository;
-            this.userCacheService = userCacheService;
             this.stockRepo = stockRepo;
             this.userRepo = userRepo;
             this.userPreferencesRepository = userPreferencesRepository;
@@ -177,9 +175,8 @@ public class ProfileService {
             return userProfileRepository.findByUsername(username)==null;
         }
 
-        public List<Share> getUserHoldings(String email) {
-            UserDto user = userCacheService.getCachedUser(email);
-            return stockRepo.findByUserId(user.getId()).stream().map(
+        public List<Share> getUserHoldings(int id) {
+            return stockRepo.findByUserId(id).stream().map(
                     stock -> new Share(stock.getSymbol(), stock.getShares())
             ).toList();
         }
