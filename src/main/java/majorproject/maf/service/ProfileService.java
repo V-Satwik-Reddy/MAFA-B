@@ -184,4 +184,9 @@ public class ProfileService {
         public void addBalance(int id, double amount) {
             userProfileRepository.creditBalance(id, amount);
         }
+
+        public Double getBalance(int id) {
+            UserProfile userProfile = userProfileRepository.findByUserId(id);
+            return userProfile.getBalance();
+        }
 }

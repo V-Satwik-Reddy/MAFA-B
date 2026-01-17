@@ -81,6 +81,13 @@ public class ProfileController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.successMessage("Balance added successfully"));
     }
 
+    @GetMapping("/balance")
+    public ResponseEntity<ApiResponse<?>> getBalance(Authentication authentication) {
+        UserDto u= (UserDto) authentication.getPrincipal();
+        Double balance = pS.getBalance(u.getId());
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("User balance fetched", balance));
+    }
+
     @GetMapping("/holdings")
     public ResponseEntity<ApiResponse<?>> getHoldings(Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
