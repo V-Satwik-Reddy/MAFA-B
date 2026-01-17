@@ -32,15 +32,15 @@ public class AuthService {
     private final JWTService jwt;
     private final EmailService emailService;
     private static final SecureRandom secureRandom = new SecureRandom();
-    private final StringRedisTemplate simpleRedisCache;
+//    private final StringRedisTemplate simpleRedisCache;
     private final UserOtpRepository userOtpRepository;
 
-    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt, EmailService emailService, StringRedisTemplate simpleRedisCache, UserOtpRepository userOtpRepository) {
+    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt, EmailService emailService, UserOtpRepository userOtpRepository) {
         this.emailService = emailService;
         this.userRepo = userRepo;
         this.passEnc = passEnc;
         this.jwt = jwt;
-        this.simpleRedisCache = simpleRedisCache;
+//        this.simpleRedisCache = simpleRedisCache;
         this.userOtpRepository = userOtpRepository;
     }
 
