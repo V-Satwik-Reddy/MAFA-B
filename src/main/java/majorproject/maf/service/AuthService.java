@@ -64,7 +64,7 @@ public class AuthService {
     public ApiResponse<?> verifyEmail(EmailVerifyRequest e,HttpServletResponse resp) {
         UserOtp userOtp = userOtpRepository.findByEmail(e.getEmail());
         String savedOtp = userOtp.getOtp();
-        if(userOtp.getExpiresAt()> System.currentTimeMillis()){
+        if(userOtp.getExpiresAt()< System.currentTimeMillis()){
             userOtpRepository.delete(userOtp);
             throw new OtpExpiredException("OTP has expired. Please request a new one.");
         }
