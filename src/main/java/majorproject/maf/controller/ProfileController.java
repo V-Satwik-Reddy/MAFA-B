@@ -1,5 +1,6 @@
 package majorproject.maf.controller;
 
+import majorproject.maf.dto.request.AddBalance;
 import majorproject.maf.dto.request.PreferenceRequest;
 import majorproject.maf.dto.request.ProfileRequest;
 import majorproject.maf.dto.response.Profile;
@@ -71,6 +72,13 @@ public class ProfileController {
         UserDto u= (UserDto) authentication.getPrincipal();
         pS.updateProfile(request,u.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.successMessage("User profile updated successfully"));
+    }
+
+    @PostMapping("/add-balance")
+    public ResponseEntity<ApiResponse<?>> addBalance(@RequestBody AddBalance addBalance, Authentication authentication) {
+        UserDto u= (UserDto) authentication.getPrincipal();
+        pS.addBalance(u.getId(), addBalance.getAmount());
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.successMessage("Balance added successfully"));
     }
 
     @GetMapping("/holdings")

@@ -17,7 +17,6 @@ import majorproject.maf.repository.UserProfileRepository;
 import majorproject.maf.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -43,7 +42,10 @@ public class ProfileService {
                 UserProfile userProfile = buildProfile(new UserProfile(),request);
                 userProfile.setUser(user);
                 user.setUserProfile(userProfile); // sync both sides
-                user.setStatus(UserStatus.PhoneVerificationPENDING);
+                user.setPhone(request.getPhone());
+                user.setStatus(UserStatus.ACTIVE);
+                user.setPhoneVerified(true);
+                userProfile.setBalance(0.0);
                 userProfileRepository.save(userProfile);
             }catch(Exception ex) {
                 throw new InvalidProfileDetailsException("Profile creation failed: " + ex.getMessage());
@@ -180,5 +182,9 @@ public class ProfileService {
             return stockRepo.findByUserId(user.getId()).stream().map(
                     stock -> new Share(stock.getSymbol(), stock.getShares())
             ).toList();
+        }
+
+        public void addBalance(int id, double amount) {
+            userProfileRepository.creditBalance(id, amount);
         }
 }

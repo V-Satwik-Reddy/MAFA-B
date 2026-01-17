@@ -16,7 +16,7 @@ public class ProfileRequest {
     private String lastName;
     private LocalDate dateOfBirth;
     private String gender;
-
+    private String phone;
     @Column(unique = true)
     private String username;
 
