@@ -2,6 +2,7 @@ package majorproject.maf.service;
 
 import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.model.User;
+import majorproject.maf.repository.StockRepository;
 import majorproject.maf.repository.UserRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -12,7 +13,9 @@ import org.springframework.stereotype.Service;
 public class UserCacheService {
 
     private final UserRepository userRepo;
-    public UserCacheService(UserRepository userRepo) {
+    private final StockRepository stockRepo;
+    public UserCacheService(UserRepository userRepo, StockRepository stockRepo) {
+        this.stockRepo = stockRepo;
         this.userRepo = userRepo;
     }
 
@@ -30,4 +33,5 @@ public class UserCacheService {
     @CacheEvict(value="USERS_CACHE", key="#email")
     public void evictCachedUser(String email) {
     }
+
 }
