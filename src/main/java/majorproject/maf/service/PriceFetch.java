@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import majorproject.maf.dto.response.StockChange;
 import majorproject.maf.model.StockPrice;
 import majorproject.maf.repository.StockPriceRepository;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -16,7 +17,6 @@ import java.util.*;
 public class PriceFetch {
     static int counter = 0;
     private static final String BASE_URL = "https://www.alphavantage.co/query?function=%s&symbol=%s&apikey=%s";
-
     private static final String[] API_KEYS = {
             "UD1GU1VAGIUPJJJ8",
             "ALDBRKIZ0UVVWWLY",
@@ -33,20 +33,28 @@ public class PriceFetch {
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final StockPriceRepository stockPriceRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    public PriceFetch(StockPriceRepository stockPriceRepository) {
+    public PriceFetch(StockPriceRepository stockPriceRepository, RedisTemplate<String, Object> redisTemplate) {
         this.stockPriceRepository = stockPriceRepository;
+        this.redisTemplate = redisTemplate;
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = new ObjectMapper();
     }
 
     public double fetchCurrentPrice(String symbol) {
         try {
+            StockPrice cachedPrice = (StockPrice) redisTemplate.opsForValue().get("stockPrice:" + symbol);
+            if(cachedPrice!=null){
+                return cachedPrice.getClose();
+            }
             StockPrice stockPrice = stockPriceRepository.findTopBySymbolOrderByDateDesc(symbol);
             if(stockPrice != null){
                 return stockPrice.getClose();
             }
-            return fetchLast100DailyPrice(symbol).getFirst().getClose();
+            stockPrice=fetchLast100DailyPrice(symbol).getFirst();
+            redisTemplate.opsForValue().set("stockPrice:" + symbol, stockPrice, java.time.Duration.ofMinutes(60));
+            return stockPrice.getClose();
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch price for " + symbol, e);
