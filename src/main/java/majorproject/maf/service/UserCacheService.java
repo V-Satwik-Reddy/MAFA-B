@@ -7,6 +7,7 @@ import majorproject.maf.repository.UserRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,7 +15,9 @@ public class UserCacheService {
 
     private final UserRepository userRepo;
     private final StockRepository stockRepo;
-    public UserCacheService(UserRepository userRepo, StockRepository stockRepo) {
+    private final StringRedisTemplate simpleRedisCache;
+    public UserCacheService(UserRepository userRepo, StockRepository stockRepo, StringRedisTemplate simpleRedisCache) {
+        this.simpleRedisCache = simpleRedisCache;
         this.stockRepo = stockRepo;
         this.userRepo = userRepo;
     }
