@@ -21,7 +21,7 @@ public interface StockPriceRepository extends JpaRepository<StockPrice, Long> {
     where sp.symbol in :symbols
     and sp.date = (
         select max(sp2.date) from StockPrice sp2
-    )
+    ) order by sp.symbol
     """)
     List<Double> batchFind(List<String> symbols);
 }
