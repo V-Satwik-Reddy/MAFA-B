@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import majorproject.maf.repository.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -44,6 +45,7 @@ public class DashboardService {
     public List<StockDto> getHoldingsDetails(int userId) {
         List<StockDto> ans=new ArrayList<>();
         List<Stock> holdings= stockRepo.findByUserId(userId);
+        holdings.sort(Comparator.comparing(Stock::getSymbol));
         List<TransactionDto> alltxns=getUserTransactions(userId);
         List<Double> prices= stockPriceRepository.batchFind(holdings.stream().map(Stock::getSymbol).toList());
 
