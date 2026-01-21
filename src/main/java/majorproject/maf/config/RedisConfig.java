@@ -1,6 +1,7 @@
 package majorproject.maf.config;
 
 import majorproject.maf.dto.response.UserDto;
+import majorproject.maf.model.StockPrice;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +16,7 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
+import java.util.List;
 
 @Configuration
 //@ConditionalOnProperty(value = "spring.cache.type", havingValue = "redis")
@@ -50,6 +52,20 @@ public class RedisConfig {
         template.setValueSerializer(serializer);
         template.setHashKeySerializer(new StringRedisSerializer());
         template.setHashValueSerializer(serializer);
+
+        template.afterPropertiesSet();
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, List<StockPrice>> stockPriceRedisTemplate(
+            RedisConnectionFactory connectionFactory) {
+
+        RedisTemplate<String, List<StockPrice>> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
 
         template.afterPropertiesSet();
         return template;
