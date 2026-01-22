@@ -63,8 +63,13 @@ public class PriceFetch {
 
     public List<StockPrice> fetchLast100DailyPrice(String symbol) {
         try {
+            List<StockPrice> cachedPrice = (List<StockPrice>) redisTemplate.opsForValue().get("historicalStockPrices:" + symbol);
+            if(cachedPrice!=null){
+                return cachedPrice;
+            }
             List<StockPrice> prices= stockPriceRepository.findBySymbolOrderByDateDesc(symbol);
             if(prices != null && !prices.isEmpty() && prices.size()>=100){
+                redisTemplate.opsForValue().set("historicalStockPrices:" + symbol, prices, java.time.Duration.ofMinutes(60));
                 return prices;
             }
             String apiKey = getNextApiKey();
@@ -104,6 +109,7 @@ public class PriceFetch {
                 prices.add(stockPrice);
                 stockPriceRepository.save(stockPrice);
             }
+            redisTemplate.opsForValue().set("historicalStockPrices:" + symbol, prices, java.time.Duration.ofMinutes(60));
             return prices;
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch price for " + symbol, e);
