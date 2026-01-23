@@ -32,16 +32,16 @@ public class AuthService {
     private final JWTService jwt;
     private final EmailService emailService;
     private static final SecureRandom secureRandom = new SecureRandom();
-//    private final StringRedisTemplate simpleRedisCache;
-    private final UserOtpRepository userOtpRepository;
+    private final StringRedisTemplate simpleRedisCache;
+//    private final UserOtpRepository userOtpRepository;
 
-    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt, EmailService emailService, UserOtpRepository userOtpRepository) {
+    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt, EmailService emailService, UserOtpRepository userOtpRepository, StringRedisTemplate simpleRedisCache) {
         this.emailService = emailService;
         this.userRepo = userRepo;
         this.passEnc = passEnc;
         this.jwt = jwt;
-//        this.simpleRedisCache = simpleRedisCache;
-        this.userOtpRepository = userOtpRepository;
+        this.simpleRedisCache = simpleRedisCache;
+//        this.userOtpRepository = userOtpRepository;
     }
 
     public ApiResponse<?> signUp(SignUpRequest req) {
@@ -56,29 +56,29 @@ public class AuthService {
 
     public void sendOtpEmail(String email){
         String otp = generateOtp();
-        userOtpRepository.save(new UserOtp(email,otp, System.currentTimeMillis() + Duration.ofMinutes(5).toMillis()));
-//        simpleRedisCache.opsForValue().set("otp:email:" + email, otp, Duration.ofMinutes(5));
+//        userOtpRepository.save(new UserOtp(email,otp, System.currentTimeMillis() + Duration.ofMinutes(5).toMillis()));
+        simpleRedisCache.opsForValue().set("otp:email:" + email, otp, Duration.ofMinutes(5));
         emailService.sendOtpEmail(email,otp);
     }
 
     public ApiResponse<?> verifyEmail(EmailVerifyRequest e,HttpServletResponse resp) {
-        UserOtp userOtp = userOtpRepository.findByEmail(e.getEmail());
-        String savedOtp = userOtp.getOtp();
-        if(userOtp.getExpiresAt()< System.currentTimeMillis()){
-            userOtpRepository.delete(userOtp);
-            throw new OtpExpiredException("OTP has expired. Please request a new one.");
-        }
-//        String savedOtp = simpleRedisCache.opsForValue().get("otp:email:" + e.getEmail());
-//        if(savedOtp == null) {
+//        UserOtp userOtp = userOtpRepository.findByEmail(e.getEmail());
+//        String savedOtp = userOtp.getOtp();
+//        if(userOtp.getExpiresAt()< System.currentTimeMillis()){
+//            userOtpRepository.delete(userOtp);
 //            throw new OtpExpiredException("OTP has expired. Please request a new one.");
 //        }
+        String savedOtp = simpleRedisCache.opsForValue().get("otp:email:" + e.getEmail());
+        if(savedOtp == null) {
+            throw new OtpExpiredException("OTP has expired. Please request a new one.");
+        }
         if(!savedOtp.equals(e.getOtp())) {
             throw new InvalidOtpException("Invalid OTP. Please try again.");
         }
         User newUser = new User(e.getEmail(), passEnc.encode(e.getPassword()));
         userRepo.save(newUser);
-        userOtpRepository.delete(userOtp);
-//        simpleRedisCache.delete("otp:email:" + e.getEmail());
+//        userOtpRepository.delete(userOtp);
+        simpleRedisCache.delete("otp:email:" + e.getEmail());
         UserDto dto =new UserDto(newUser.getId(), newUser.getEmail(), newUser.getPhone(),newUser.getStatus());
         return ApiResponse.success( "Email verified and user registered successfully",getResponse(resp, dto));
     }
