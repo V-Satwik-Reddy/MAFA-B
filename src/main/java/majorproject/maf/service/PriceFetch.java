@@ -11,6 +11,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -52,10 +54,11 @@ public class PriceFetch {
             }
             StockPrice stockPrice = stockPriceRepository.findTopBySymbolOrderByDateDesc(symbol);
             if(stockPrice != null){
+                redisTemplate.opsForValue().set("stockPrice:" + symbol, stockPrice, Duration.ofMinutes(60));
                 return stockPrice.getClose();
             }
             stockPrice=fetchLast100DailyPrice(symbol).getFirst();
-            redisTemplate.opsForValue().set("stockPrice:" + symbol, stockPrice, java.time.Duration.ofMinutes(60));
+            redisTemplate.opsForValue().set("stockPrice:" + symbol, stockPrice, Duration.ofMinutes(60));
             return stockPrice.getClose();
 
         } catch (Exception e) {
@@ -71,12 +74,11 @@ public class PriceFetch {
             }
             List<StockPrice> prices= stockPriceRepository.findBySymbolOrderByDateDesc(symbol);
             if(prices != null && !prices.isEmpty() && prices.size()>=100){
-                stockPriceRedisTemplate.opsForValue().set("historicalStockPrices:" + symbol, prices, java.time.Duration.ofMinutes(60));
+                stockPriceRedisTemplate.opsForValue().set("historicalStockPrices:" + symbol, prices, Duration.ofMinutes(60));
                 return prices;
             }
             String apiKey = getNextApiKey();
             String url = String.format(BASE_URL,"TIME_SERIES_DAILY", symbol, apiKey);
-
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .GET()
@@ -101,7 +103,7 @@ public class PriceFetch {
                 JsonNode dailyData = timeSeries.path(dateStr);
                 StockPrice stockPrice = new StockPrice();
                 stockPrice.setSymbol(symbol);
-                stockPrice.setDate(java.time.LocalDate.parse(dateStr));
+                stockPrice.setDate(LocalDate.parse(dateStr));
                 stockPrice.setOpen(dailyData.path("1. open").asDouble());
                 stockPrice.setHigh(dailyData.path("2. high").asDouble());
                 stockPrice.setLow(dailyData.path("3. low").asDouble());
@@ -111,7 +113,7 @@ public class PriceFetch {
                 prices.add(stockPrice);
                 stockPriceRepository.save(stockPrice);
             }
-            stockPriceRedisTemplate.opsForValue().set("historicalStockPrices:" + symbol, prices, java.time.Duration.ofMinutes(60));
+            stockPriceRedisTemplate.opsForValue().set("historicalStockPrices:" + symbol, prices, Duration.ofMinutes(60));
             return prices;
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch price for " + symbol, e);
@@ -163,7 +165,7 @@ public class PriceFetch {
                 }
                 StockPrice stockPrice = new StockPrice();
                 stockPrice.setSymbol(symbol);
-                stockPrice.setDate(java.time.LocalDate.parse(globalQuote.get("07. latest trading day").asText()));
+                stockPrice.setDate(LocalDate.parse(globalQuote.get("07. latest trading day").asText()));
                 if(stockPriceRepository.findTopBySymbolOrderByDateDesc(symbol).getDate().equals(stockPrice.getDate())){
                     continue;
                 }
@@ -180,7 +182,7 @@ public class PriceFetch {
         }
     }
 
-    public List<Double> batchFetchPrices(List<String> symbols) {
-        return stockPriceRepository.batchFind(symbols);
-    }
+//    public List<Double> batchFetchPrices(List<String> symbols) {
+//        return stockPriceRepository.batchFind(symbols);
+//    }
 }
