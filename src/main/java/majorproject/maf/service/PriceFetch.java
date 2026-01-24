@@ -5,13 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import majorproject.maf.dto.response.StockChange;
 import majorproject.maf.model.StockPrice;
 import majorproject.maf.repository.StockPriceRepository;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -35,30 +34,31 @@ public class PriceFetch {
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final StockPriceRepository stockPriceRepository;
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final RedisTemplate<String, List<StockPrice>> stockPriceRedisTemplate;
+//    private final RedisTemplate<String, Object> redisTemplate;
+//    private final RedisTemplate<String, List<StockPrice>> stockPriceRedisTemplate;
 
-    public PriceFetch(StockPriceRepository stockPriceRepository, RedisTemplate<String, Object> redisTemplate, RedisTemplate<String, List<StockPrice>> stockPriceRedisTemplate) {
-        this.stockPriceRedisTemplate = stockPriceRedisTemplate;
+    public PriceFetch(StockPriceRepository stockPriceRepository) {
+//        this.stockPriceRedisTemplate = stockPriceRedisTemplate;
+//        this.redisTemplate = redisTemplate;
         this.stockPriceRepository = stockPriceRepository;
-        this.redisTemplate = redisTemplate;
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = new ObjectMapper();
     }
 
+    @Cacheable(value = "currentPrices",key = "#symbol")
     public double fetchCurrentPrice(String symbol) {
         try {
-            StockPrice cachedPrice = (StockPrice) redisTemplate.opsForValue().get("stockPrice:" + symbol);
-            if(cachedPrice!=null){
-                return cachedPrice.getClose();
-            }
+//            StockPrice cachedPrice = (StockPrice) redisTemplate.opsForValue().get("stockPrice:" + symbol);
+//            if(cachedPrice!=null){
+//                return cachedPrice.getClose();
+//            }
             StockPrice stockPrice = stockPriceRepository.findTopBySymbolOrderByDateDesc(symbol);
             if(stockPrice != null){
-                redisTemplate.opsForValue().set("stockPrice:" + symbol, stockPrice, Duration.ofMinutes(60));
+//                redisTemplate.opsForValue().set("stockPrice:" + symbol, stockPrice, Duration.ofMinutes(60));
                 return stockPrice.getClose();
             }
             stockPrice=fetchLast100DailyPrice(symbol).getFirst();
-            redisTemplate.opsForValue().set("stockPrice:" + symbol, stockPrice, Duration.ofMinutes(60));
+//            redisTemplate.opsForValue().set("stockPrice:" + symbol, stockPrice, Duration.ofMinutes(60));
             return stockPrice.getClose();
 
         } catch (Exception e) {
@@ -66,15 +66,16 @@ public class PriceFetch {
         }
     }
 
+    @Cacheable(value = "historicalPrices",key = "#symbol")
     public List<StockPrice> fetchLast100DailyPrice(String symbol) {
         try {
-            List<StockPrice> cachedPrice = stockPriceRedisTemplate.opsForValue().get("historicalStockPrices:" + symbol);
-            if(cachedPrice!=null){
-                return cachedPrice;
-            }
+//            List<StockPrice> cachedPrice = stockPriceRedisTemplate.opsForValue().get("historicalStockPrices:" + symbol);
+//            if(cachedPrice!=null){
+//                return cachedPrice;
+//            }
             List<StockPrice> prices= stockPriceRepository.findBySymbolOrderByDateDesc(symbol);
             if(prices != null && !prices.isEmpty() && prices.size()>=100){
-                stockPriceRedisTemplate.opsForValue().set("historicalStockPrices:" + symbol, prices, Duration.ofMinutes(60));
+//                stockPriceRedisTemplate.opsForValue().set("historicalStockPrices:" + symbol, prices, Duration.ofMinutes(60));
                 return prices;
             }
             String apiKey = getNextApiKey();
@@ -113,7 +114,7 @@ public class PriceFetch {
                 prices.add(stockPrice);
                 stockPriceRepository.save(stockPrice);
             }
-            stockPriceRedisTemplate.opsForValue().set("historicalStockPrices:" + symbol, prices, Duration.ofMinutes(60));
+//            stockPriceRedisTemplate.opsForValue().set("historicalStockPrices:" + symbol, prices, Duration.ofMinutes(60));
             return prices;
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch price for " + symbol, e);
@@ -126,6 +127,7 @@ public class PriceFetch {
         return API_KEYS[index];
     }
 
+    @Cacheable(value = "priceChanges",key = "#symbol")
     public StockChange fetchPriceChange(String symbol) {
         List<StockPrice> prices= fetchLast100DailyPrice(symbol);
         Double latestPrice= prices.get(0).getClose();
