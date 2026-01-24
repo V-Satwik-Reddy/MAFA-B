@@ -32,7 +32,7 @@ public class ExecutionService {
 
     @Transactional
     public TransactionDto buyShares(ExecuteRequest request, int id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.getReferenceById(id);
         UserProfile userProfile = userProfileRepository.findByUserId(id);
         double price=priceFetch.fetchCurrentPrice(request.getSymbol());
         double totalCost=request.getQuantity()*price;
@@ -58,7 +58,7 @@ public class ExecutionService {
 
     @Transactional
     public TransactionDto sellShares(ExecuteRequest request, int id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.getReferenceById(id);
         Stock stock=stockRepository.findByUserIdAndSymbol(id, request.getSymbol());
         if(stock==null||request.getQuantity()>stock.getShares()){
             return null;

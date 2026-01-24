@@ -51,26 +51,22 @@ public class ProfileService {
         }
 
         public void updateProfile(ProfileRequest request, int userId) {
-            try {
-                UserProfile existingProfile = userProfileRepository.findByUserId(userId);
-                UserProfile userProfile = buildProfile(existingProfile, request);
-                userProfileRepository.save(userProfile);
-            }catch(Exception ex) {
-                throw new InvalidProfileDetailsException("Profile creation failed: " + ex.getMessage());
-            }
+            UserProfile existingProfile = userProfileRepository.findByUserId(userId);
+            UserProfile userProfile = buildProfile(existingProfile, request);
+            userProfileRepository.save(userProfile);
         }
 
         public Profile getProfile(UserDto userDto) {
-        int userId = userDto.getId();
-        UserProfile userProfile = userProfileRepository.findByUserId(userId);
-        return new Profile(userDto.getEmail(), userProfile.getUsername(),userDto.getPhone(),userProfile.getBalance(), userProfile.getFirstName(), userProfile.getLastName(),
-                userProfile.getDateOfBirth(), userProfile.getGender().toString(),
-                userProfile.getAddressLine1(), userProfile.getAddressLine2(), userProfile.getCity(),
-                userProfile.getState(), userProfile.getPostalCode(), userProfile.getCountry(),
-                userProfile.getJobTitle(), userProfile.getCompanyName(), userProfile.getIndustry(),
-                userProfile.getEmploymentStatus().toString(), userProfile.getSalaryRange().toString()
-        );
-    }
+            int userId = userDto.getId();
+            UserProfile userProfile = userProfileRepository.findByUserId(userId);
+            return new Profile(userDto.getEmail(), userProfile.getUsername(),userDto.getPhone(),userProfile.getBalance(), userProfile.getFirstName(), userProfile.getLastName(),
+                    userProfile.getDateOfBirth(), userProfile.getGender().toString(),
+                    userProfile.getAddressLine1(), userProfile.getAddressLine2(), userProfile.getCity(),
+                    userProfile.getState(), userProfile.getPostalCode(), userProfile.getCountry(),
+                    userProfile.getJobTitle(), userProfile.getCompanyName(), userProfile.getIndustry(),
+                    userProfile.getEmploymentStatus().toString(), userProfile.getSalaryRange().toString()
+            );
+        }
 
         private UserProfile buildProfile(UserProfile profile, ProfileRequest request) {
             Gender gender = switch (request.getGender().toLowerCase()) {
@@ -117,12 +113,11 @@ public class ProfileService {
         }
 
         public void createPreferences(PreferenceRequest request, int id) {
-            User user = userRepo.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+            User user = userRepo.getReferenceById(id);
             UserPreferences preferences = new UserPreferences();
             preferences.setUser(user);
             user.setUserPreferences(preferences);
             fillPreferences(request, preferences);
-            userRepo.save(user);
         }
 
         public void updatePreferences(PreferenceRequest request, int id) {

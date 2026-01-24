@@ -95,7 +95,7 @@ public class ChatService {
             if (data == null) {
                 throw new RuntimeException("Agent response missing 'data' field");
             }
-            User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+            User user = userRepo.getReferenceById(userId);
             saveChat(user,query,data.toString());
             return data.toString();
         } catch (Exception e) {
