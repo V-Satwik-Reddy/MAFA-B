@@ -4,8 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -19,7 +18,7 @@ public class PreferenceRequest {
 
     private String preferredAsset;
 
-    private List<String> sectors;
+    private Set<String> sectors;
 
-    private List<String> companies;
+    private Set<String> companies;
 }

@@ -18,6 +18,8 @@ import majorproject.maf.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ProfileService {
@@ -126,25 +128,32 @@ public class ProfileService {
         }
 
         public PreferenceRequest getPreferences(UserDto u) {
-        int userId = u.getId();
-        UserPreferences userPreferences = userPreferencesRepository.findByUserId(userId);
-        List<String> sectors = userPreferences.getSectors().stream().map(Sectors::getSectorName).toList();
-        List<String> companies = userPreferences.getCompanies().stream().map(Companies::getCompanyName).toList();
-        return new PreferenceRequest(
-                userPreferences.getInvestmentGoals(),
-                userPreferences.getRiskTolerance(),
-                userPreferences.getPreferredAsset(),
-                sectors,
-                companies
-        );
-    }
+            int userId = u.getId();
+            UserPreferences userPreferences = userPreferencesRepository.findFullPreferences(userId);
+            Set<String> sectors = userPreferences.getSectors()
+                    .stream()
+                    .map(Sectors::getSectorName)
+                    .collect(Collectors.toSet());
+            Set<String> companies = userPreferences.getCompanies()
+                    .stream()
+                    .map(Companies::getCompanyName)
+                    .collect(Collectors.toSet());
+
+            return new PreferenceRequest(
+                    userPreferences.getInvestmentGoals(),
+                    userPreferences.getRiskTolerance(),
+                    userPreferences.getPreferredAsset(),
+                    sectors,
+                    companies
+            );
+        }
 
         private void fillPreferences(PreferenceRequest request,UserPreferences userPreferences) {
             userPreferences.setRiskTolerance(request.getRiskTolerance());
             userPreferences.setInvestmentGoals(request.getInvestmentGoals());
             userPreferences.setPreferredAsset(request.getPreferredAsset());
 
-            List<Sectors> sectors = userPreferences.getSectors();
+            Set<Sectors> sectors = userPreferences.getSectors();
             sectors.clear();
             for(String sectorName : request.getSectors()) {
                 Sectors sector = new Sectors();
@@ -154,7 +163,7 @@ public class ProfileService {
             }
             userPreferences.setSectors(sectors);
 
-            List<Companies> companies = userPreferences.getCompanies();
+            Set<Companies> companies = userPreferences.getCompanies();
             companies.clear();
             for(String companyName : request.getCompanies()) {
                 Companies company = new Companies();
