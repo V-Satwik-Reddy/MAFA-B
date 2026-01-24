@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "companies")
+@Table(name = "user_company_preferences")
 public class Companies {
     @jakarta.persistence.Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.SEQUENCE)
@@ -21,5 +21,6 @@ public class Companies {
     @JoinColumn(name = "user_id", nullable = false)
     private UserPreferences user;
 
-    private String companyName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private CompanyMaster company;
 }

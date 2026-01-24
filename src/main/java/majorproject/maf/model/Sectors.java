@@ -8,7 +8,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "sectors")
+@Table(name = "user_sectors_preferences")
 public class Sectors {
     @jakarta.persistence.Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.SEQUENCE)
@@ -18,5 +18,6 @@ public class Sectors {
     @JoinColumn(name = "user_id", nullable = false)
     private UserPreferences user;
 
-    private String sectorName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private SectorMaster sector;
 }

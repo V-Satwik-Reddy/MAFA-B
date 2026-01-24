@@ -1,4 +1,20 @@
 package majorproject.maf.model;
 
+import jakarta.persistence.*;
+import lombok.*;
+
+@Entity
+@Table(name = "company_master")
+@Getter @Setter
 public class CompanyMaster {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false)
+    private String symbol;   //
+
+    private String name;
 }
+
