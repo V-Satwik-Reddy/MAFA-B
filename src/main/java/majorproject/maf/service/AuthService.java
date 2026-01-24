@@ -8,8 +8,8 @@ import majorproject.maf.exception.auth.*;
 import majorproject.maf.dto.response.ApiResponse;
 import majorproject.maf.model.User;
 import majorproject.maf.dto.response.UserDto;
-import majorproject.maf.model.UserOtp;
-import majorproject.maf.repository.UserOtpRepository;
+//import majorproject.maf.model.UserOtp;
+//import majorproject.maf.repository.UserOtpRepository;
 import majorproject.maf.repository.UserRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
@@ -35,7 +35,7 @@ public class AuthService {
     private final StringRedisTemplate simpleRedisCache;
 //    private final UserOtpRepository userOtpRepository;
 
-    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt, EmailService emailService, UserOtpRepository userOtpRepository, StringRedisTemplate simpleRedisCache) {
+    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt, EmailService emailService, StringRedisTemplate simpleRedisCache) {
         this.emailService = emailService;
         this.userRepo = userRepo;
         this.passEnc = passEnc;
@@ -48,7 +48,7 @@ public class AuthService {
         if (userRepo.findByEmail(req.getEmail()) != null) {
             throw new UserAlreadyExistsException("User already registered with same Email");
         }
-        if(!req.getPassword().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,32}$"))
+        if (!req.getPassword().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,32}$"))
             throw new InvalidEmailOrPasswordFormatException("Invalid password. Password must be 8-32 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.");
         sendOtpEmail(req.getEmail());
         return ApiResponse.successMessage("User email verified successfully. Verify OTP sent to email");

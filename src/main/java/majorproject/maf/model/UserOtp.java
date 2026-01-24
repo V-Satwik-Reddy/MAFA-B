@@ -3,6 +3,9 @@ package majorproject.maf.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 
 @Entity
 @Table(name = "user_otp")
@@ -10,7 +13,10 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserOtp {
+public class UserOtp implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.SEQUENCE)
