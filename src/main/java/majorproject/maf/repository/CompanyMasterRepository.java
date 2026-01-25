@@ -13,7 +13,5 @@ public interface CompanyMasterRepository extends JpaRepository<CompanyMaster, Lo
 
     Optional<CompanyMaster> findBySymbol(String symbol);
 
-    List<CompanyMaster> findBySymbolIn(Collection<String> symbols); // 🔥 batch
-
     List<CompanyMaster> findByIdIn(Collection<Long> ids); // if frontend sends IDs
 }

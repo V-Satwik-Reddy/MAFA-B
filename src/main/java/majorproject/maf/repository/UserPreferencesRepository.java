@@ -1,5 +1,6 @@
 package majorproject.maf.repository;
 
+import io.lettuce.core.dynamic.annotation.Param;
 import majorproject.maf.model.UserPreferences;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -9,11 +10,13 @@ public interface UserPreferencesRepository extends JpaRepository<UserPreferences
     UserPreferences findByUserId(int id);
 
     @Query("""
-        SELECT DISTINCT p FROM UserPreferences p
-        LEFT JOIN FETCH p.sectors
-        LEFT JOIN FETCH p.companies
-        WHERE p.user.id = :id
-        """)
-    UserPreferences findFullPreferences(int id);
+        SELECT p FROM UserPreferences p
+        LEFT JOIN FETCH p.companies cp
+        LEFT JOIN FETCH cp.company
+        LEFT JOIN FETCH p.sectors sp
+        LEFT JOIN FETCH sp.sector
+        WHERE p.user.id = :userId
+    """)
+    UserPreferences findFullPreferences(@Param("userId") int userId);
 
 }

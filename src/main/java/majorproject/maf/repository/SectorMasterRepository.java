@@ -13,8 +13,6 @@ public interface SectorMasterRepository extends JpaRepository<SectorMaster, Long
 
     Optional<SectorMaster> findByName(String name);
 
-    List<SectorMaster> findByNameIn(Collection<String> names); // 🔥 batch
-
     List<SectorMaster> findByIdIn(Collection<Long> ids);
 }
 
