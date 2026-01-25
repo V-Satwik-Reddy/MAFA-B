@@ -1,12 +1,18 @@
 package majorproject.maf.dto.response;
 import lombok.*;
-import majorproject.maf.model.CompanyMaster;
+
+import java.io.Serial;
+import java.io.Serializable;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CompanyDto {
+public class CompanyDto implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private String symbol;
     private String name;

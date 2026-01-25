@@ -3,11 +3,18 @@ package majorproject.maf.dto.response;
 import lombok.*;
 import majorproject.maf.model.SectorMaster;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SectorDto {
+public class SectorDto implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private String name;
 

@@ -22,12 +22,12 @@ public class ProfileService {
         private final StockRepository stockRepo;
         private final UserRepository userRepo;
         private final UserPreferencesRepository userPreferencesRepository;
-        private final SectorMasterRepository sectorMasterRepository;
         private final CompanyMasterRepository companyMasterRepository;
+        private final SectorMasterRepository sectorMasterRepository;
 
-        public ProfileService(UserPreferencesRepository userPreferencesRepository,StockRepository stockRepo, UserRepository userRepo, UserProfileRepository userProfileRepository, SectorMasterRepository sectorMasterRepo, CompanyMasterRepository companyMasterRepo) {
-            this.sectorMasterRepository = sectorMasterRepo;
-            this.companyMasterRepository = companyMasterRepo;
+        public ProfileService(UserPreferencesRepository userPreferencesRepository,StockRepository stockRepo, UserRepository userRepo, UserProfileRepository userProfileRepository, CompanyMasterRepository companyMasterRepository, SectorMasterRepository sectorMasterRepository) {
+            this.companyMasterRepository = companyMasterRepository;
+            this.sectorMasterRepository = sectorMasterRepository;
             this.userProfileRepository = userProfileRepository;
             this.stockRepo = stockRepo;
             this.userRepo = userRepo;
@@ -128,12 +128,12 @@ public class ProfileService {
 
             Set<SectorDto> sectorIds = prefs.getSectors()
                     .stream()
-                    .map(cp -> new SectorDto(cp.getSector()))
+                    .map(cp -> new SectorDto(cp.getSector().getId(),cp.getSector().getName()))
                     .collect(Collectors.toSet());
 
             Set<CompanyDto> companyIds = prefs.getCompanies()
                     .stream()
-                    .map(cp-> new CompanyDto(cp.getCompany()))
+                    .map(cp-> new CompanyDto(cp.getCompany().getId(),cp.getCompany().getSymbol(),cp.getCompany().getName()))
                     .collect(Collectors.toSet());
 
             return new PreferenceResponse(
@@ -152,11 +152,9 @@ public class ProfileService {
             prefs.setPreferredAsset(request.getPreferredAsset());
 
             // 🔥 BATCH FETCH (1 query each)
-            List<SectorMaster> sectors =
-                    sectorMasterRepository.findByIdIn(request.getSectorIds());
+            List<SectorMaster> sectors = sectorMasterRepository.findByIdIn(request.getSectorIds());
 
-            List<CompanyMaster> companies =
-                    companyMasterRepository.findByIdIn(request.getCompanyIds());
+            List<CompanyMaster> companies = companyMasterRepository.findByIdIn(request.getCompanyIds());
 
             // update sectors
             prefs.getSectors().clear();
