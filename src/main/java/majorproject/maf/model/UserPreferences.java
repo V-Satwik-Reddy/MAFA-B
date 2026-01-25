@@ -22,7 +22,7 @@ public class UserPreferences {
     @Id
     private Integer id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "id")  // FK to user.id
     private User user;
