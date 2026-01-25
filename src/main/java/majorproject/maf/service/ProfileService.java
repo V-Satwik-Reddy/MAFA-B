@@ -2,21 +2,15 @@ package majorproject.maf.service;
 
 import majorproject.maf.dto.request.PreferenceRequest;
 import majorproject.maf.dto.request.ProfileRequest;
-import majorproject.maf.dto.response.Profile;
-import majorproject.maf.dto.response.Share;
-import majorproject.maf.dto.response.UserDto;
+import majorproject.maf.dto.response.*;
 import majorproject.maf.exception.InvalidProfileDetailsException;
 import majorproject.maf.model.*;
 import majorproject.maf.model.enums.EmploymentStatus;
 import majorproject.maf.model.enums.Gender;
 import majorproject.maf.model.enums.SalaryRange;
 import majorproject.maf.model.enums.UserStatus;
-import majorproject.maf.repository.StockRepository;
-import majorproject.maf.repository.UserPreferencesRepository;
-import majorproject.maf.repository.UserProfileRepository;
-import majorproject.maf.repository.UserRepository;
+import majorproject.maf.repository.*;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,8 +22,12 @@ public class ProfileService {
         private final StockRepository stockRepo;
         private final UserRepository userRepo;
         private final UserPreferencesRepository userPreferencesRepository;
+        private final SectorMasterRepository sectorMasterRepository;
+        private final CompanyMasterRepository companyMasterRepository;
 
-        public ProfileService(UserPreferencesRepository userPreferencesRepository,StockRepository stockRepo, UserRepository userRepo, UserProfileRepository userProfileRepository) {
+        public ProfileService(UserPreferencesRepository userPreferencesRepository,StockRepository stockRepo, UserRepository userRepo, UserProfileRepository userProfileRepository, SectorMasterRepository sectorMasterRepo, CompanyMasterRepository companyMasterRepo) {
+            this.sectorMasterRepository = sectorMasterRepo;
+            this.companyMasterRepository = companyMasterRepo;
             this.userProfileRepository = userProfileRepository;
             this.stockRepo = stockRepo;
             this.userRepo = userRepo;
@@ -38,15 +36,13 @@ public class ProfileService {
 
         public void createProfile(ProfileRequest request, int userId) {
             try {
-                User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+                User user = userRepo.getReferenceById(userId);
                 UserProfile userProfile = buildProfile(new UserProfile(),request);
                 userProfile.setUser(user);
-                user.setUserProfile(userProfile); // sync both sides
                 user.setPhone(request.getPhone());
                 user.setStatus(UserStatus.ACTIVE);
                 user.setPhoneVerified(true);
                 userProfile.setBalance(0.0);
-                userProfileRepository.save(userProfile);
             }catch(Exception ex) {
                 throw new InvalidProfileDetailsException("Profile creation failed: " + ex.getMessage());
             }
@@ -118,7 +114,6 @@ public class ProfileService {
             User user = userRepo.getReferenceById(id);
             UserPreferences preferences = new UserPreferences();
             preferences.setUser(user);
-            user.setUserPreferences(preferences);
             fillPreferences(request, preferences);
         }
 
@@ -127,52 +122,60 @@ public class ProfileService {
             fillPreferences(request,userPreferences);
         }
 
-        public PreferenceRequest getPreferences(UserDto u) {
-            int userId = u.getId();
-            UserPreferences userPreferences = userPreferencesRepository.findFullPreferences(userId);
-            Set<String> sectors = userPreferences.getSectors()
+        public PreferenceResponse getPreferences(UserDto u) {
+
+            UserPreferences prefs = userPreferencesRepository.findFullPreferences(u.getId());
+
+            Set<SectorDto> sectorIds = prefs.getSectors()
                     .stream()
-                    .map(Sectors::getSectorName)
-                    .collect(Collectors.toSet());
-            Set<String> companies = userPreferences.getCompanies()
-                    .stream()
-                    .map(Companies::getCompanyName)
+                    .map(cp -> new SectorDto(cp.getSector()))
                     .collect(Collectors.toSet());
 
-            return new PreferenceRequest(
-                    userPreferences.getInvestmentGoals(),
-                    userPreferences.getRiskTolerance(),
-                    userPreferences.getPreferredAsset(),
-                    sectors,
-                    companies
+            Set<CompanyDto> companyIds = prefs.getCompanies()
+                    .stream()
+                    .map(cp-> new CompanyDto(cp.getCompany()))
+                    .collect(Collectors.toSet());
+
+            return new PreferenceResponse(
+                    prefs.getInvestmentGoals(),
+                    prefs.getRiskTolerance(),
+                    prefs.getPreferredAsset(),
+                    sectorIds,
+                    companyIds
             );
         }
 
-        private void fillPreferences(PreferenceRequest request,UserPreferences userPreferences) {
-            userPreferences.setRiskTolerance(request.getRiskTolerance());
-            userPreferences.setInvestmentGoals(request.getInvestmentGoals());
-            userPreferences.setPreferredAsset(request.getPreferredAsset());
+        private void fillPreferences(PreferenceRequest request, UserPreferences prefs) {
 
-            Set<Sectors> sectors = userPreferences.getSectors();
-            sectors.clear();
-            for(String sectorName : request.getSectors()) {
-                Sectors sector = new Sectors();
-                sector.setUser(userPreferences);
-                sector.setSectorName(sectorName);
-                sectors.add(sector);
-            }
-            userPreferences.setSectors(sectors);
+            prefs.setRiskTolerance(request.getRiskTolerance());
+            prefs.setInvestmentGoals(request.getInvestmentGoals());
+            prefs.setPreferredAsset(request.getPreferredAsset());
 
-            Set<Companies> companies = userPreferences.getCompanies();
-            companies.clear();
-            for(String companyName : request.getCompanies()) {
-                Companies company = new Companies();
-                company.setUser(userPreferences);
-                company.setCompanyName(companyName);
-                companies.add(company);
+            // 🔥 BATCH FETCH (1 query each)
+            List<SectorMaster> sectors =
+                    sectorMasterRepository.findByIdIn(request.getSectorIds());
+
+            List<CompanyMaster> companies =
+                    companyMasterRepository.findByIdIn(request.getCompanyIds());
+
+            // update sectors
+            prefs.getSectors().clear();
+            for (SectorMaster sector : sectors) {
+                Sectors sp = new Sectors();
+                sp.setUser(prefs);
+                sp.setSector(sector);
+                prefs.getSectors().add(sp);
             }
-            userPreferences.setCompanies(companies);
-            userPreferencesRepository.save(userPreferences);
+
+            // update companies
+            prefs.getCompanies().clear();
+            for (CompanyMaster company : companies) {
+                Companies cp = new Companies();
+                cp.setUser(prefs);
+                cp.setCompany(company);
+                prefs.getCompanies().add(cp);
+            }
+            userPreferencesRepository.save(prefs);
         }
 
         public boolean isUsernameAvailable(String username) {
@@ -193,4 +196,5 @@ public class ProfileService {
             UserProfile userProfile = userProfileRepository.findByUserId(id);
             return userProfile.getBalance();
         }
+
 }

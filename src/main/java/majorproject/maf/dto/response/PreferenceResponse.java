@@ -1,16 +1,17 @@
-package majorproject.maf.dto.request;
+package majorproject.maf.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.util.Set;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PreferenceRequest {
+public class PreferenceResponse {
 
     private String investmentGoals;
 
@@ -18,7 +19,7 @@ public class PreferenceRequest {
 
     private String preferredAsset;
 
-    private Set<Long> sectorIds;
+    private Set<SectorDto> sectorIds;
 
-    private Set<Long> companyIds;
+    private Set<CompanyDto> companyIds;
 }

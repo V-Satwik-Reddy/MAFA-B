@@ -3,10 +3,7 @@ package majorproject.maf.controller;
 import majorproject.maf.dto.request.AddBalance;
 import majorproject.maf.dto.request.PreferenceRequest;
 import majorproject.maf.dto.request.ProfileRequest;
-import majorproject.maf.dto.response.Profile;
-import majorproject.maf.dto.response.Share;
-import majorproject.maf.dto.response.UserDto;
-import majorproject.maf.dto.response.ApiResponse;
+import majorproject.maf.dto.response.*;
 import majorproject.maf.service.ProfileService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,7 +53,7 @@ public class ProfileController {
     @GetMapping("/preferences")
     public ResponseEntity<ApiResponse<?>> getPreferences(Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
-        PreferenceRequest preferences = pS.getPreferences(u);
+        PreferenceResponse preferences = pS.getPreferences(u);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("User preferences fetched", preferences));
     }
 
