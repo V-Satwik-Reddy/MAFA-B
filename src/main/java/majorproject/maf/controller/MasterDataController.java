@@ -1,10 +1,16 @@
 package majorproject.maf.controller;
 
 import majorproject.maf.dto.response.ApiResponse;
+import majorproject.maf.dto.response.CompanyDto;
+import majorproject.maf.dto.response.SectorDto;
 import majorproject.maf.service.MasterDataService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 public class MasterDataController {
@@ -23,5 +29,15 @@ public class MasterDataController {
     @GetMapping("/sectors")
     public ResponseEntity<ApiResponse<?>> getSectors() {
         return ResponseEntity.ok(ApiResponse.success("Sectors fetched successfully", masterDataService.getAllSectors()));
+    }
+
+    @PostMapping("/sectors")
+    public ResponseEntity<ApiResponse<?>> addSector(@RequestBody List<SectorDto> sector) {
+        return ResponseEntity.ok(ApiResponse.success("Sector added successfully", masterDataService.addSector(sector)));
+    }
+
+    @PostMapping("/companies")
+    public ResponseEntity<ApiResponse<?>> addCompany(@RequestBody List<CompanyDto> companies) {
+        return ResponseEntity.ok(ApiResponse.success("Company added successfully", masterDataService.addCompany(companies)));
     }
 }

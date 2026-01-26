@@ -6,11 +6,11 @@ import majorproject.maf.model.CompanyMaster;
 import majorproject.maf.model.SectorMaster;
 import majorproject.maf.repository.CompanyMasterRepository;
 import majorproject.maf.repository.SectorMasterRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class MasterDataService {
@@ -32,4 +32,24 @@ public class MasterDataService {
         return sectorMasterRepository.findAll().stream().map(cp-> new SectorDto(cp.getId(), cp.getName())).toList();
     }
 
+    @CacheEvict(value = "permanentCache", key = "'allSectors'")
+    public String addSector(List<SectorDto> sector) {
+        for (SectorDto sectorDto : sector) {
+            SectorMaster sectorMaster = new SectorMaster();
+            sectorMaster.setName(sectorDto.getName());
+            sectorMasterRepository.save(sectorMaster);
+        }
+        return "success";
+    }
+
+    @CacheEvict(value = "permanentCache", key = "'allCompanies'")
+    public String addCompany(List<CompanyDto> companies) {
+        for (CompanyDto companyDto : companies) {
+            CompanyMaster companyMaster = new CompanyMaster();
+            companyMaster.setName(companyDto.getName());
+            companyMaster.setSymbol(companyDto.getSymbol());
+            companyMasterRepository.save(companyMaster);
+        }
+        return "success";
+    }
 }
