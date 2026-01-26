@@ -24,15 +24,17 @@ public class ProfileService {
         private final UserPreferencesRepository userPreferencesRepository;
         private final CompanyMasterRepository companyMasterRepository;
         private final SectorMasterRepository sectorMasterRepository;
+    private final StockPriceRepository stockPriceRepository;
 
-        public ProfileService(UserPreferencesRepository userPreferencesRepository,StockRepository stockRepo, UserRepository userRepo, UserProfileRepository userProfileRepository, CompanyMasterRepository companyMasterRepository, SectorMasterRepository sectorMasterRepository) {
+    public ProfileService(UserPreferencesRepository userPreferencesRepository, StockRepository stockRepo, UserRepository userRepo, UserProfileRepository userProfileRepository, CompanyMasterRepository companyMasterRepository, SectorMasterRepository sectorMasterRepository, StockPriceRepository stockPriceRepository) {
             this.companyMasterRepository = companyMasterRepository;
             this.sectorMasterRepository = sectorMasterRepository;
             this.userProfileRepository = userProfileRepository;
             this.stockRepo = stockRepo;
             this.userRepo = userRepo;
             this.userPreferencesRepository = userPreferencesRepository;
-        }
+        this.stockPriceRepository = stockPriceRepository;
+    }
 
         public void createProfile(ProfileRequest request, int userId) {
             try {
@@ -181,9 +183,16 @@ public class ProfileService {
         }
 
         public List<Share> getUserHoldings(int id) {
-            return stockRepo.findByUserId(id).stream().map(
+            List<Share> s=stockRepo.findByUserId(id).stream().map(
                     stock -> new Share(stock.getSymbol(), stock.getShares())
             ).toList();
+            List<Double> prices= stockPriceRepository.batchFind(
+                    s.stream().map(Share::getSymbol).toList()
+            );
+            for(int i=0;i<s.size();i++){
+                s.get(i).setPrice(prices.get(i));
+            }
+            return s;
         }
 
         public void addBalance(int id, double amount) {

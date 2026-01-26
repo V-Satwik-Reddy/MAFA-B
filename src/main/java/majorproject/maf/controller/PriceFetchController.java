@@ -2,9 +2,11 @@ package majorproject.maf.controller;
 
 import majorproject.maf.dto.response.ApiResponse;
 import majorproject.maf.dto.response.StockChange;
+import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.model.StockPrice;
 import majorproject.maf.service.PriceFetch;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,6 +39,12 @@ public class PriceFetchController {
     public ResponseEntity<?> getStockChange(@RequestParam String symbol) {
         StockChange stockChange = priceFetch.fetchPriceChange(symbol);
         return ResponseEntity.ok(stockChange);
+    }
+
+    @GetMapping("/user-stockchange")
+    public ResponseEntity<?> getUserStockChange(Authentication auth) {
+        UserDto u = (UserDto) auth.getPrincipal();
+        return ResponseEntity.ok().body(ApiResponse.success("Fetched user stock changes", priceFetch.fetchUserStockChanges(u)));
     }
 
     @PostMapping("/jobs/updateprices")
