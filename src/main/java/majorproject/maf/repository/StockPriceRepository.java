@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Set;
 
 public interface StockPriceRepository extends JpaRepository<StockPrice, Long> {
 
@@ -24,4 +25,22 @@ public interface StockPriceRepository extends JpaRepository<StockPrice, Long> {
     ) order by sp.symbol
     """)
     List<Double> batchFind(List<String> symbols);
+
+    @Query("""
+        select sp.close
+        from StockPrice sp
+        where sp.symbol = :symbol
+        order by sp.date desc
+        limit 2
+    """)
+    List<Double> singleSymbolPriceChange(String symbol);
+
+    @Query("""
+    select sp
+    from StockPrice sp
+    where sp.symbol in :symbols
+    order by sp.date desc
+    limit :length
+""")
+    List<StockPrice> multipleSymbolPriceChange(Set<String> symbols, int length);
 }
