@@ -2,6 +2,7 @@ package majorproject.maf.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import majorproject.maf.model.user.UserPreferences;
 
 @Entity
 @Getter

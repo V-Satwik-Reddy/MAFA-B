@@ -1,7 +1,7 @@
 package majorproject.maf.repository;
 
 import jakarta.transaction.Transactional;
-import majorproject.maf.model.UserProfile;
+import majorproject.maf.model.user.UserProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

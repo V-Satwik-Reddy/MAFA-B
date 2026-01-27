@@ -194,7 +194,8 @@ public class PriceFetch {
         return stockChanges;
     }
 
-    private StockChange getChange(StockPrice day1,StockPrice day2) {
+    @Cacheable(value = "priceChanges",key = "#day1.symbol")
+    public StockChange getChange(StockPrice day1,StockPrice day2) {
         Double change= day1.getClose() - day2.getClose();
         Double changePercent= (change/day2.getClose())*100;
         return new StockChange(day1.getSymbol(),day1.getClose(),change,changePercent);

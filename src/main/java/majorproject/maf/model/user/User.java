@@ -1,9 +1,12 @@
-package majorproject.maf.model;
+package majorproject.maf.model.user;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import majorproject.maf.model.Chat;
+import majorproject.maf.model.Stock;
+import majorproject.maf.model.Transaction;
 import majorproject.maf.model.enums.UserStatus;
 
 import java.time.LocalDateTime;

@@ -1,7 +1,7 @@
 package majorproject.maf.repository;
 
 import io.lettuce.core.dynamic.annotation.Param;
-import majorproject.maf.model.UserPreferences;
+import majorproject.maf.model.user.UserPreferences;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

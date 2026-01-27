@@ -1,6 +1,7 @@
 package majorproject.maf.model;
 
 import lombok.Data;
+import majorproject.maf.model.user.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

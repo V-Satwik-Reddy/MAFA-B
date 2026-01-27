@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import majorproject.maf.model.user.UserPreferences;
 
 @Entity
 @Getter

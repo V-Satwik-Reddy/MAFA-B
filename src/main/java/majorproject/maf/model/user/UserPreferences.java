@@ -1,14 +1,14 @@
-package majorproject.maf.model;
+package majorproject.maf.model.user;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import majorproject.maf.model.Companies;
+import majorproject.maf.model.Sectors;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity

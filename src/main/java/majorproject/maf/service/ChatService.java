@@ -3,7 +3,7 @@ package majorproject.maf.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import majorproject.maf.dto.response.ChatDto;
 import majorproject.maf.model.Chat;
-import majorproject.maf.model.User;
+import majorproject.maf.model.user.User;
 import majorproject.maf.repository.ChatRepository;
 import majorproject.maf.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;

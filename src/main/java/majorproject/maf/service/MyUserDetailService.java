@@ -1,7 +1,7 @@
 package majorproject.maf.service;
 
 
-import majorproject.maf.model.User;
+import majorproject.maf.model.user.User;
 import majorproject.maf.model.UserPrinciple;
 import majorproject.maf.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;

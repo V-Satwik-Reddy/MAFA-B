@@ -3,6 +3,7 @@ package majorproject.maf.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import lombok.*;
+import majorproject.maf.model.user.User;
 
 @Entity
 @Table(name = "holdings")

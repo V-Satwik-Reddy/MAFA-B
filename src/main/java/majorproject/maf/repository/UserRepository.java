@@ -1,7 +1,7 @@
 package majorproject.maf.repository;
 
 import lombok.NonNull;
-import majorproject.maf.model.User;
+import majorproject.maf.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

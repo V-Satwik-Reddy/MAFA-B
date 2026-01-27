@@ -6,7 +6,7 @@ import majorproject.maf.dto.request.LoginRequest;
 import majorproject.maf.dto.request.SignUpRequest;
 import majorproject.maf.exception.auth.*;
 import majorproject.maf.dto.response.ApiResponse;
-import majorproject.maf.model.User;
+import majorproject.maf.model.user.User;
 import majorproject.maf.dto.response.UserDto;
 //import majorproject.maf.model.UserOtp;
 //import majorproject.maf.repository.UserOtpRepository;

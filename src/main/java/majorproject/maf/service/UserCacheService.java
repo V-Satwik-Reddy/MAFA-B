@@ -1,7 +1,7 @@
 package majorproject.maf.service;
 
 import majorproject.maf.dto.response.UserDto;
-import majorproject.maf.model.User;
+import majorproject.maf.model.user.User;
 import majorproject.maf.repository.StockRepository;
 import majorproject.maf.repository.UserRepository;
 import org.springframework.cache.annotation.CacheEvict;

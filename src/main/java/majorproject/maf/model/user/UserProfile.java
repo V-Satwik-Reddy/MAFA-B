@@ -1,4 +1,4 @@
-package majorproject.maf.model;
+package majorproject.maf.model.user;
 
 
 import jakarta.persistence.*;

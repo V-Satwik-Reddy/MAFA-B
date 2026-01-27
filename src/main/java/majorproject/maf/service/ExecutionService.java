@@ -2,12 +2,12 @@ package majorproject.maf.service;
 
 import majorproject.maf.dto.request.ExecuteRequest;
 import majorproject.maf.dto.response.TransactionDto;
-import majorproject.maf.model.UserProfile;
+import majorproject.maf.model.user.UserProfile;
 import majorproject.maf.repository.UserProfileRepository;
 import org.springframework.transaction.annotation.Transactional;
 import majorproject.maf.model.Stock;
 import majorproject.maf.model.Transaction;
-import majorproject.maf.model.User;
+import majorproject.maf.model.user.User;
 import majorproject.maf.repository.StockRepository;
 import majorproject.maf.repository.UserRepository;
 import org.springframework.stereotype.Service;
