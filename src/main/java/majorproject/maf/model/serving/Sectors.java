@@ -12,7 +12,7 @@ import majorproject.maf.model.user.UserPreferences;
 @Table(name = "user_sectors_preferences")
 public class Sectors {
     @jakarta.persistence.Id
-    @GeneratedValue(strategy = jakarta.persistence.GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)

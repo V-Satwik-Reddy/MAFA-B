@@ -15,7 +15,7 @@ import majorproject.maf.model.user.UserPreferences;
 @Table(name = "user_company_preferences")
 public class Companies {
     @jakarta.persistence.Id
-    @GeneratedValue(strategy = jakarta.persistence.GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)

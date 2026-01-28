@@ -29,7 +29,14 @@ public class PriceFetch {
             "72HGUXFWCNPMDDAW",
             "JLD7PUGED1CFJLXE",
             "DCHTXOLI6P9PHWSB",
-            "5U2X9PNQAF0MLG4O"
+            "5U2X9PNQAF0MLG4O",
+            "C93EGUKLTINJ27L6",
+            "1IQMMKS54FSBM5BN",
+            "O97Y65K6NZHLYYKD",
+            "X7A3C3DZ5UZM3JYH",
+            "GA55UPGG7B5G9WDA",
+            "ZGKFZD2XZEYMTSI2",
+            "IPX9HKGA2AI2O5X4"
     };
 
     private final HttpClient httpClient;
@@ -129,7 +136,7 @@ public class PriceFetch {
             int c=0;
             for (String symbol : symbols) {
                 if(c==10){
-                    Thread.sleep(60000);
+                    Thread.sleep(120000);
                     c=0;
                 }
                 c++;
