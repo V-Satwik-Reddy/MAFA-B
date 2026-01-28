@@ -1,7 +1,6 @@
 package majorproject.maf.dto.response;
 
 import lombok.*;
-import majorproject.maf.model.SectorMaster;
 
 import java.io.Serial;
 import java.io.Serializable;

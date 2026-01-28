@@ -1,6 +1,6 @@
 package majorproject.maf.repository;
 
-import majorproject.maf.model.SectorMaster;
+import majorproject.maf.model.serving.SectorMaster;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

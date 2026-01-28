@@ -1,16 +1,20 @@
-package majorproject.maf.model;
+package majorproject.maf.model.serving;
+
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "sector_master")
+@Table(name = "company_master")
 @Getter @Setter
-public class SectorMaster {
+public class CompanyMaster {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
+    private String symbol;   //
+
     private String name;
 }
+

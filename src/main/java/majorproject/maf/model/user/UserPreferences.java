@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import majorproject.maf.model.Companies;
-import majorproject.maf.model.Sectors;
+import majorproject.maf.model.serving.Companies;
+import majorproject.maf.model.serving.Sectors;
 
 import java.util.HashSet;
 import java.util.Set;

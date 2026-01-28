@@ -1,4 +1,4 @@
-package majorproject.maf.model;
+package majorproject.maf.model.serving;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
