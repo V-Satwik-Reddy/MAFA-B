@@ -34,15 +34,14 @@ public class AuthService {
     private final JWTService jwt;
     private final EmailService emailService;
     private static final SecureRandom secureRandom = new SecureRandom();
-    private final StringRedisTemplate simpleRedisCache;
+//    private final StringRedisTemplate simpleRedisCache;
     private final UserOtpRepository userOtpRepository;
 
-    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt, EmailService emailService, StringRedisTemplate simpleRedisCache, UserOtpRepository userOtpRepository) {
+    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt, EmailService emailService, UserOtpRepository userOtpRepository) {
         this.emailService = emailService;
         this.userRepo = userRepo;
         this.passEnc = passEnc;
         this.jwt = jwt;
-        this.simpleRedisCache = simpleRedisCache;
         this.userOtpRepository = userOtpRepository;
     }
 
@@ -80,7 +79,7 @@ public class AuthService {
         User newUser = new User(e.getEmail(), passEnc.encode(e.getPassword()));
         userRepo.save(newUser);
         userOtpRepository.delete(userOtp);
-        simpleRedisCache.delete("otp:email:" + e.getEmail());
+//        simpleRedisCache.delete("otp:email:" + e.getEmail());
         UserDto dto =new UserDto(newUser.getId(), newUser.getEmail(), newUser.getPhone(),newUser.getStatus());
         return ApiResponse.success( "Email verified and user registered successfully",getResponse(resp, dto));
     }
