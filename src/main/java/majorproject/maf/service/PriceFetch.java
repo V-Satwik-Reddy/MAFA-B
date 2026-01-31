@@ -135,7 +135,7 @@ public class PriceFetch {
             List<String> symbols = stockPriceRepository.findAllSymbols();
             int c=0;
             for (String symbol : symbols) {
-                if(c==10){
+                if(c==API_KEYS.length){
                     Thread.sleep(120000);
                     c=0;
                 }
