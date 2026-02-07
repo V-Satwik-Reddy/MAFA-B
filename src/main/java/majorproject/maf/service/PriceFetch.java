@@ -2,6 +2,7 @@ package majorproject.maf.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import majorproject.maf.cache.PriceCacheService;
 import majorproject.maf.dto.response.*;
 import majorproject.maf.model.StockPrice;
 import majorproject.maf.repository.StockPriceRepository;
@@ -43,8 +44,10 @@ public class PriceFetch {
     private final ObjectMapper objectMapper;
     private final StockPriceRepository stockPriceRepository;
     private final ProfileService profileService;
+    private final PriceCacheService priceCacheService;
 
-    public PriceFetch(StockPriceRepository stockPriceRepository, ProfileService profileService) {
+    public PriceFetch(StockPriceRepository stockPriceRepository, ProfileService profileService, PriceCacheService priceCacheService) {
+        this.priceCacheService = priceCacheService;
         this.profileService = profileService;
         this.stockPriceRepository = stockPriceRepository;
         this.httpClient = HttpClient.newHttpClient();
@@ -120,14 +123,15 @@ public class PriceFetch {
         return API_KEYS[index];
     }
 
-    @Cacheable(value = "priceChanges",key = "#symbol")
     public StockChange fetchPriceChange(String symbol) {
+        StockChange cachedChange = priceCacheService.cacheStockChange(symbol,null);
+        if(cachedChange != null){
+            return cachedChange;
+        }
         List<Double> prices= stockPriceRepository.singleSymbolPriceChange(symbol);
         Double latestPrice= prices.get(0);
         Double previousPrice= prices.get(1);
-        Double change= latestPrice - previousPrice;
-        Double changePercent= (change/previousPrice)*100;
-        return new StockChange(symbol,latestPrice,change,changePercent);
+        return getChange(symbol,latestPrice,previousPrice);
     }
 
     public void addPreviousDayPrices(){
@@ -177,29 +181,44 @@ public class PriceFetch {
         }
     }
 
-    public List<StockPrice> fetchUserStockChanges(UserDto u) {
+    public List<StockChange> fetchUserStockChanges(UserDto u) {
         PreferenceResponse prefs = profileService.getPreferences(u);
-        Set<String> companyIds = prefs.getCompanyIds()
+        Set<String> symbols = prefs.getCompanyIds()
                 .stream()
                 .map(CompanyDto::getSymbol)
                 .collect(Collectors.toSet());
-        if(companyIds.isEmpty()){
+        if(symbols.isEmpty()){
             //implement the if no companies are selected case get the selected sectors and fetch top companies from those sectors
-            companyIds = new HashSet<>();
+            symbols = new HashSet<>();
         }
-        if(companyIds.isEmpty()){
-            companyIds= profileService.getUserHoldings(u.getId()).stream().map(Share::getSymbol).collect(Collectors.toSet());
+        if(symbols.isEmpty()){
+            symbols= profileService.getUserHoldings(u.getId()).stream().map(Share::getSymbol).collect(Collectors.toSet());
         }
-
-        List<StockPrice> changes = stockPriceRepository.multipleSymbolPriceChange(companyIds,companyIds.size()*2);
+        List<StockChange> stockChanges = new ArrayList<>();
+        Set<String> nonCachedSymbols=new HashSet<>();
+        for(String symbol: symbols){
+            StockChange change = priceCacheService.cacheStockChange(symbol,null);
+            if(change == null){
+                nonCachedSymbols.add(symbol);
+                System.out.println("Cache miss for symbol: " + symbol);
+            }else{
+                stockChanges.add(change);
+            }
+        }
+        if(nonCachedSymbols.isEmpty()){
+            return stockChanges;
+        }
+        List<StockPrice> changes = stockPriceRepository.multipleSymbolPriceChange(nonCachedSymbols,nonCachedSymbols.size()*2);
         changes.sort(Comparator.comparing(StockPrice::getSymbol).thenComparing(StockPrice::getDate));
-        return changes;
+        for (int i=0;i<changes.size();i+=2) {
+            StockChange change = getChange(changes.get(i+1).getSymbol(), changes.get(i+1).getClose(), changes.get(i).getClose());
+            stockChanges.add(change);
+        }
+        return stockChanges;
     }
-
-    @Cacheable(value = "priceChanges",key = "#day1.symbol")
-    public StockChange getChange(StockPrice day1,StockPrice day2) {
-        Double change= day1.getClose() - day2.getClose();
-        Double changePercent= (change/day2.getClose())*100;
-        return new StockChange(day1.getSymbol(),day1.getClose(),change,changePercent);
+    public StockChange getChange(String symbol, Double d1, Double d2) {
+        Double change = d1 - d2;
+        Double changePercent = (change / d2) * 100;
+        return priceCacheService.cacheStockChange(symbol,new StockChange(symbol,d1,change,changePercent));
     }
 }
