@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -44,7 +45,13 @@ public class PriceFetchController {
     @GetMapping("/user-stockchange")
     public ResponseEntity<?> getUserStockChange(Authentication auth) {
         UserDto u = (UserDto) auth.getPrincipal();
-        return ResponseEntity.ok().body(ApiResponse.success("Fetched user stock changes", priceFetch.fetchUserStockChanges(u)));
+        List<StockPrice> changes = priceFetch.fetchUserStockChanges(u);
+        List<StockChange> stockChanges = new ArrayList<>();
+        for (int i=0;i<changes.size();i+=2) {
+            StockChange change = priceFetch.getChange(changes.get(i+1), changes.get(i));
+            stockChanges.add(change);
+        }
+        return ResponseEntity.ok().body(ApiResponse.success("Fetched user stock changes", stockChanges));
     }
 
     @PostMapping("/jobs/updateprices")

@@ -21,7 +21,7 @@ public class ExecutionController {
     }
 
     @PostMapping("/buy")
-    public ResponseEntity<?> binanceBuy(@RequestBody ExecuteRequest request, Authentication authentication) throws Exception {
+    public ResponseEntity<?> binanceBuy(@RequestBody ExecuteRequest request, Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
         TransactionDto t =executionService.buyShares(request,u.getId());
         return ResponseEntity.ok(t);

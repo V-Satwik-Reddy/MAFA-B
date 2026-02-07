@@ -177,7 +177,7 @@ public class PriceFetch {
         }
     }
 
-    public List<StockChange> fetchUserStockChanges(UserDto u) {
+    public List<StockPrice> fetchUserStockChanges(UserDto u) {
         PreferenceResponse prefs = profileService.getPreferences(u);
         Set<String> companyIds = prefs.getCompanyIds()
                 .stream()
@@ -193,12 +193,7 @@ public class PriceFetch {
 
         List<StockPrice> changes = stockPriceRepository.multipleSymbolPriceChange(companyIds,companyIds.size()*2);
         changes.sort(Comparator.comparing(StockPrice::getSymbol).thenComparing(StockPrice::getDate));
-        List<StockChange> stockChanges = new ArrayList<>();
-        for (int i=0;i<changes.size();i+=2) {
-            StockChange change = getChange(changes.get(i+1), changes.get(i));
-            stockChanges.add(change);
-        }
-        return stockChanges;
+        return changes;
     }
 
     @Cacheable(value = "priceChanges",key = "#day1.symbol")
