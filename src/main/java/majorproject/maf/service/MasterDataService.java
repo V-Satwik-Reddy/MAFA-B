@@ -54,4 +54,10 @@ public class MasterDataService {
         }
         return "success";
     }
+
+    @Cacheable(value = "permanentCache", key = "'company::' + #symbol")
+    public CompanyDto getBySymbol(String symbol) {
+        CompanyMaster c=companyMasterRepository.findBySymbol(symbol);
+        return new CompanyDto(c.getId(), c.getSymbol(), c.getName(), new SectorDto(c.getSector().getId(), c.getSector().getName()));
+    }
 }

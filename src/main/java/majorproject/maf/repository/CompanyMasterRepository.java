@@ -7,12 +7,16 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface CompanyMasterRepository extends JpaRepository<CompanyMaster, Long> {
 
-    Optional<CompanyMaster> findBySymbol(String symbol);
+    @Query("""
+    Select c from CompanyMaster c
+    JOIN FETCH c.sector s
+    WHERE c.symbol = :symbol
+    """)
+    CompanyMaster findBySymbol(String symbol);
 
     @Query("""     
     Select c from CompanyMaster c
@@ -21,4 +25,5 @@ public interface CompanyMasterRepository extends JpaRepository<CompanyMaster, Lo
     List<CompanyMaster>  getAll();
 
     List<CompanyMaster> findByIdIn(Collection<Long> ids); // if frontend sends IDs
+
 }
