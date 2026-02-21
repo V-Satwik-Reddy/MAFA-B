@@ -25,21 +25,17 @@ import java.util.stream.Collectors;
 public class ProfileService {
 
         private final UserProfileRepository userProfileRepository;
-        private final StockRepository stockRepo;
         private final UserRepository userRepo;
         private final UserPreferencesRepository userPreferencesRepository;
         private final CompanyMasterRepository companyMasterRepository;
         private final SectorMasterRepository sectorMasterRepository;
-    private final StockPriceRepository stockPriceRepository;
 
-    public ProfileService(UserPreferencesRepository userPreferencesRepository, StockRepository stockRepo, UserRepository userRepo, UserProfileRepository userProfileRepository, CompanyMasterRepository companyMasterRepository, SectorMasterRepository sectorMasterRepository, StockPriceRepository stockPriceRepository) {
+    public ProfileService(UserPreferencesRepository userPreferencesRepository, UserRepository userRepo, UserProfileRepository userProfileRepository, CompanyMasterRepository companyMasterRepository, SectorMasterRepository sectorMasterRepository) {
             this.companyMasterRepository = companyMasterRepository;
             this.sectorMasterRepository = sectorMasterRepository;
             this.userProfileRepository = userProfileRepository;
-            this.stockRepo = stockRepo;
             this.userRepo = userRepo;
             this.userPreferencesRepository = userPreferencesRepository;
-        this.stockPriceRepository = stockPriceRepository;
     }
 
         public void createProfile(ProfileRequest request, int userId) {
@@ -187,28 +183,6 @@ public class ProfileService {
 
         public boolean isUsernameAvailable(String username) {
             return userProfileRepository.findByUsername(username)==null;
-        }
-
-        public List<Share> getUserHoldings(int id) {
-            List<Share> s=stockRepo.findByUserId(id).stream().map(
-                    stock -> new Share(stock.getSymbol(), stock.getShares())
-            ).toList();
-            List<Double> prices= stockPriceRepository.batchFind(
-                    s.stream().map(Share::getSymbol).toList()
-            );
-            for(int i=0;i<s.size();i++){
-                s.get(i).setPrice(prices.get(i));
-            }
-            return s;
-        }
-
-        public void addBalance(int id, double amount) {
-            userProfileRepository.creditBalance(id, amount);
-        }
-
-        public Double getBalance(int id) {
-            UserProfile userProfile = userProfileRepository.findByUserId(id);
-            return userProfile.getBalance();
         }
 
 }

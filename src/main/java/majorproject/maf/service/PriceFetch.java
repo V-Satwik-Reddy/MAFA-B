@@ -45,13 +45,15 @@ public class PriceFetch {
     private final StockPriceRepository stockPriceRepository;
     private final ProfileService profileService;
     private final PriceCacheService priceCacheService;
+    private final PortfolioService portfolioService;
 
-    public PriceFetch(StockPriceRepository stockPriceRepository, ProfileService profileService, PriceCacheService priceCacheService) {
+    public PriceFetch(StockPriceRepository stockPriceRepository, ProfileService profileService, PriceCacheService priceCacheService, PortfolioService portfolioService) {
         this.priceCacheService = priceCacheService;
         this.profileService = profileService;
         this.stockPriceRepository = stockPriceRepository;
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = new ObjectMapper();
+        this.portfolioService = portfolioService;
     }
 
     @Cacheable(value = "currentPrices",key = "#symbol")
@@ -192,7 +194,7 @@ public class PriceFetch {
             symbols = new HashSet<>();
         }
         if(symbols.isEmpty()){
-            symbols= profileService.getUserHoldings(u.getId()).stream().map(Share::getSymbol).collect(Collectors.toSet());
+            symbols= portfolioService.getUserHoldings(u.getId()).stream().map(Share::getSymbol).collect(Collectors.toSet());
         }
         List<StockChange> stockChanges = new ArrayList<>();
         Set<String> nonCachedSymbols=new HashSet<>();
