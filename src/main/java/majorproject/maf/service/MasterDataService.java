@@ -24,7 +24,7 @@ public class MasterDataService {
 
     @Cacheable(value = "permanentCache", key = "'allCompanies'")
     public List<CompanyDto> getAllCompanies() {
-        return companyMasterRepository.findAll().stream().map(cp-> new CompanyDto(cp.getId(), cp.getSymbol(), cp.getName())).toList();
+        return companyMasterRepository.getAll().stream().map(cp-> new CompanyDto(cp.getId(), cp.getSymbol(), cp.getName(),new SectorDto(cp.getSector().getId(),cp.getSector().getName()))).toList();
     }
 
     @Cacheable(value = "permanentCache", key = "'allSectors'")
@@ -48,6 +48,8 @@ public class MasterDataService {
             CompanyMaster companyMaster = new CompanyMaster();
             companyMaster.setName(companyDto.getName());
             companyMaster.setSymbol(companyDto.getSymbol());
+            SectorMaster s=sectorMasterRepository.getReferenceById(companyDto.getSector().getId());
+            companyMaster.setSector(s);
             companyMasterRepository.save(companyMaster);
         }
         return "success";

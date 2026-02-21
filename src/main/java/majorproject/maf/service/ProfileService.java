@@ -51,6 +51,7 @@ public class ProfileService {
                 user.setStatus(UserStatus.ACTIVE);
                 user.setPhoneVerified(true);
                 userProfile.setBalance(0.0);
+                userProfileRepository.save(userProfile);
             }catch(Exception ex) {
                 throw new InvalidProfileDetailsException("Profile creation failed: " + ex.getMessage());
             }
@@ -141,7 +142,7 @@ public class ProfileService {
 
             Set<CompanyDto> companyIds = prefs.getCompanies()
                     .stream()
-                    .map(cp-> new CompanyDto(cp.getCompany().getId(),cp.getCompany().getSymbol(),cp.getCompany().getName()))
+                    .map(cp-> new CompanyDto(cp.getCompany().getId(),cp.getCompany().getSymbol(),cp.getCompany().getName(),new SectorDto(cp.getCompany().getSector().getId(),cp.getCompany().getSector().getName())) )
                     .collect(Collectors.toSet());
 
             return new PreferenceResponse(

@@ -1,6 +1,6 @@
 package majorproject.maf.dto.response;
-import lombok.*;
 
+import lombok.*;
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -16,5 +16,5 @@ public class CompanyDto implements Serializable {
     private Long id;
     private String symbol;
     private String name;
-
+    private SectorDto sector;
 }

@@ -16,5 +16,9 @@ public class CompanyMaster {
     private String symbol;   //
 
     private String name;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sector_id")
+    private SectorMaster sector;
 }
 
