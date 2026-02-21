@@ -23,7 +23,7 @@ public class Watchlist {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private UserPreferences user;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private CompanyMaster company;
