@@ -2,6 +2,7 @@ package majorproject.maf.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
+import majorproject.maf.model.enums.TransactionType;
 import majorproject.maf.model.user.User;
 
 @Entity
@@ -14,7 +15,10 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String asset;
-    private String type;
+
+    @Enumerated(EnumType.STRING)
+    private TransactionType type;
+
     private Double amount;
     private Long assetQuantity;
 

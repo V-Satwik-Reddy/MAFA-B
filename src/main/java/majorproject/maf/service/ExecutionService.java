@@ -2,6 +2,7 @@ package majorproject.maf.service;
 
 import majorproject.maf.dto.request.ExecuteRequest;
 import majorproject.maf.dto.response.TransactionDto;
+import majorproject.maf.model.enums.TransactionType;
 import majorproject.maf.model.user.UserProfile;
 import majorproject.maf.repository.UserProfileRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +43,7 @@ public class ExecutionService {
         userProfileRepository.debitBalance(id,totalCost);
         Transaction t=new Transaction();
         t.setAsset(request.getSymbol());
-        t.setType("buy");
+        t.setType(TransactionType.BUY);
         t.setAmount(totalCost);
         t.setAssetQuantity(request.getQuantity());
         t.setUser(user);
@@ -68,7 +69,7 @@ public class ExecutionService {
         userProfileRepository.creditBalance(id,totalAmount);
         Transaction t=new Transaction();
         t.setAsset(request.getSymbol());
-        t.setType("sell");
+        t.setType(TransactionType.SELL);
         t.setAmount(totalAmount);
         t.setAssetQuantity(request.getQuantity());
         t.setUser(user);

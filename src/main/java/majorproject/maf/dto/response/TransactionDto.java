@@ -2,6 +2,7 @@ package majorproject.maf.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import majorproject.maf.model.enums.TransactionType;
 
 import java.time.LocalDateTime;
 
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 public class TransactionDto{
 
     private Long id;
-    private String type;
+    private TransactionType type;
     private String asset;
     private Long assetQuantity;
     private Double amount;

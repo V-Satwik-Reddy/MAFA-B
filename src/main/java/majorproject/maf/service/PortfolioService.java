@@ -4,6 +4,8 @@ import majorproject.maf.dto.response.CompanyDto;
 import majorproject.maf.dto.response.SectorDto;
 import majorproject.maf.dto.response.Share;
 import majorproject.maf.dto.response.WatchlistDto;
+import majorproject.maf.model.Transaction;
+import majorproject.maf.model.enums.TransactionType;
 import majorproject.maf.model.serving.CompanyMaster;
 import majorproject.maf.model.user.UserProfile;
 import majorproject.maf.model.user.Watchlist;
@@ -22,14 +24,16 @@ public class PortfolioService {
     private final WatchlistRepository watchlistRepository;
     private final CompanyMasterRepository companyMasterRepository;
     private final UserRepository userRepository;
+    private final DashboardService dashboardService;
 
-    public PortfolioService(StockRepository stockRepository, StockPriceRepository stockPriceRepository, UserProfileRepository userProfileRepository, WatchlistRepository watchlistRepository, CompanyMasterRepository companyMasterRepository, UserRepository userRepository) {
+    public PortfolioService(StockRepository stockRepository, StockPriceRepository stockPriceRepository, UserProfileRepository userProfileRepository, WatchlistRepository watchlistRepository, CompanyMasterRepository companyMasterRepository, UserRepository userRepository, DashboardService dashboardService) {
         this.stockPriceRepository = stockPriceRepository;
         this.stockRepository = stockRepository;
         this.userProfileRepository = userProfileRepository;
         this.watchlistRepository = watchlistRepository;
         this.companyMasterRepository = companyMasterRepository;
         this.userRepository = userRepository;
+        this.dashboardService = dashboardService;
     }
 
     public List<Share> getUserHoldings(int id) {
@@ -45,8 +49,29 @@ public class PortfolioService {
         return s;
     }
 
-    public void addBalance(int id, double amount) {
+    public void depositBalance(int id, double amount) {
+        Transaction transaction = new Transaction();
+        transaction.setType(TransactionType.DEPOSIT);
+        transaction.setAmount(amount);
+        transaction.setUser(userRepository.getReferenceById(id));
+        transaction.setAsset("CASH");
+        transaction.setAssetQuantity(0L);
+        dashboardService.createTransaction(transaction);
         userProfileRepository.creditBalance(id, amount);
+    }
+
+    public boolean withdrawBalance(int id, double amount) {
+        Double balance = userProfileRepository.findByUserId(id).getBalance();
+        if (balance < amount) return false;
+        Transaction transaction = new Transaction();
+        transaction.setType(TransactionType.WITHDRAWAL);
+        transaction.setAmount(amount);
+        transaction.setUser(userRepository.getReferenceById(id));
+        transaction.setAsset("CASH");
+        transaction.setAssetQuantity(0L);
+        dashboardService.createTransaction(transaction);
+        userProfileRepository.debitBalance(id, amount);
+        return true;
     }
 
     public Double getBalance(int id) {
@@ -80,7 +105,6 @@ public class PortfolioService {
             int i=watchlistRepository.deleteByUserIdAndCompanySymbol(id, symbol);
             if(i==0) return false;
         }catch (Exception e){
-            e.printStackTrace();
             return false;
         }
         return true;

@@ -32,11 +32,20 @@ public class PortfolioController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("User Holdings fetched", holdings));
     }
 
-    @PostMapping("/add-balance")
+    @PostMapping("/deposit-balance")
     public ResponseEntity<ApiResponse<?>> addBalance(@RequestBody AddBalance addBalance, Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
-        portfolioService.addBalance(u.getId(), addBalance.getAmount());
+        portfolioService.depositBalance(u.getId(), addBalance.getAmount());
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.successMessage("Balance added successfully"));
+    }
+
+    @PostMapping("/withdraw-balance")
+    public ResponseEntity<ApiResponse<?>> withdrawBalance(@RequestBody AddBalance addBalance, Authentication authentication) {
+        UserDto u= (UserDto) authentication.getPrincipal();
+        boolean done=portfolioService.withdrawBalance(u.getId(), addBalance.getAmount());
+        if(done) return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.successMessage("Balance withdrawn successfully"));
+        else
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("Insufficient balance"));
     }
 
     @GetMapping("/balance")
