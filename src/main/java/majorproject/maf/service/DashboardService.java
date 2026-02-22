@@ -82,7 +82,7 @@ public class DashboardService {
                 .toList();
     }
 
-    private LocalDateTime resolvePeriod(Period period) {
+    public LocalDateTime resolvePeriod(Period period) {
         if (period == null || period == Period.ALL) {
             return null;
         }
@@ -90,6 +90,7 @@ public class DashboardService {
         LocalDateTime now = LocalDateTime.now();
 
         return switch (period) {
+            case LAST_24_HOURS -> now.minusHours(24);
             case LAST_7_DAYS -> now.minusDays(7);
             case LAST_30_DAYS -> now.minusDays(30);
             case LAST_90_DAYS -> now.minusDays(90);
