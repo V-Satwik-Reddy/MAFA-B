@@ -1,19 +1,28 @@
 package majorproject.maf.service;
 
-import majorproject.maf.dto.response.CompanyDto;
-import majorproject.maf.dto.response.SectorDto;
-import majorproject.maf.dto.response.Share;
-import majorproject.maf.dto.response.WatchlistDto;
+import majorproject.maf.dto.response.*;
+import majorproject.maf.model.PortfolioDailySnapshot;
 import majorproject.maf.model.Transaction;
+import majorproject.maf.model.enums.Interval;
+import majorproject.maf.model.enums.Period;
 import majorproject.maf.model.enums.TransactionType;
 import majorproject.maf.model.serving.CompanyMaster;
+import majorproject.maf.model.user.User;
 import majorproject.maf.model.user.UserProfile;
 import majorproject.maf.model.user.Watchlist;
 import majorproject.maf.repository.*;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.temporal.WeekFields;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class PortfolioService {
@@ -25,8 +34,9 @@ public class PortfolioService {
     private final CompanyMasterRepository companyMasterRepository;
     private final UserRepository userRepository;
     private final DashboardService dashboardService;
+    private final PortfolioDailySnapshotRepository portfolioDailySnapshotRepository;
 
-    public PortfolioService(StockRepository stockRepository, StockPriceRepository stockPriceRepository, UserProfileRepository userProfileRepository, WatchlistRepository watchlistRepository, CompanyMasterRepository companyMasterRepository, UserRepository userRepository, DashboardService dashboardService) {
+    public PortfolioService(StockRepository stockRepository, StockPriceRepository stockPriceRepository, UserProfileRepository userProfileRepository, WatchlistRepository watchlistRepository, CompanyMasterRepository companyMasterRepository, UserRepository userRepository, DashboardService dashboardService, PortfolioDailySnapshotRepository portfolioDailySnapshotRepository) {
         this.stockPriceRepository = stockPriceRepository;
         this.stockRepository = stockRepository;
         this.userProfileRepository = userProfileRepository;
@@ -34,6 +44,7 @@ public class PortfolioService {
         this.companyMasterRepository = companyMasterRepository;
         this.userRepository = userRepository;
         this.dashboardService = dashboardService;
+        this.portfolioDailySnapshotRepository = portfolioDailySnapshotRepository;
     }
 
     public List<Share> getUserHoldings(int id) {
@@ -108,5 +119,73 @@ public class PortfolioService {
             return false;
         }
         return true;
+    }
+
+    public void createEODPortfolioSnapshot() {
+        List<User> users = userRepository.findAll();
+        for(User user:users){
+            Double cashBalance = getBalance(user.getId());
+            PortfolioDailySnapshot portfolioDailySnapshot = new PortfolioDailySnapshot();
+            List<Share> investedShares = getUserHoldings(user.getId());
+            double investedValue = 0.0;
+            for(Share share: investedShares) {
+                investedValue += share.getQuantity() * share.getPrice();
+            }
+            portfolioDailySnapshot.setUser(user);
+            portfolioDailySnapshot.setDate(java.time.LocalDate.now());
+            portfolioDailySnapshot.setInvestedValue(investedValue);
+            portfolioDailySnapshot.setCashBalance(cashBalance);
+            portfolioDailySnapshot.setTotalValue(investedValue + cashBalance);
+            portfolioDailySnapshotRepository.save(portfolioDailySnapshot);
+        }
+    }
+
+    public List<PortfolioDailySnapshotDTO> getPortfolioHistory(int id, Period period, Interval interval) {
+        LocalDateTime cutoff = dashboardService.resolvePeriod(period);
+        List<PortfolioDailySnapshot> snapshots= portfolioDailySnapshotRepository.findByUserIdAndDateAfterOrderByDateAsc(id, cutoff.toLocalDate());
+        if (snapshots.isEmpty()) {
+            return List.of();
+        }
+        if (interval == Interval.WEEKLY) {
+            WeekFields wf = WeekFields.ISO;
+
+            List<PortfolioDailySnapshot> weekly = snapshots.stream()
+                    .collect(Collectors.toMap(s -> {
+                        LocalDate d = s.getDate();
+                        int year = d.get(wf.weekBasedYear());
+                        int week = d.get(wf.weekOfWeekBasedYear());
+                        return year + "-" + week; // simple composite key
+                    }, Function.identity(), BinaryOperator.maxBy(Comparator.comparing(PortfolioDailySnapshot::getDate))))
+                    .values()
+                    .stream()
+                    .sorted(Comparator.comparing(PortfolioDailySnapshot::getDate))
+                    .toList();
+
+            return weekly.stream()
+                    .map(s -> new PortfolioDailySnapshotDTO(
+                            s.getDate(), s.getTotalValue(), s.getCashBalance(), s.getInvestedValue()))
+                    .toList();
+        }
+
+        // MONTHLY (or any other interval you add later)
+        if (interval == Interval.MONTHLY) {
+            List<PortfolioDailySnapshot> monthly = snapshots.stream()
+                    .collect(Collectors.toMap(s -> YearMonth.from(s.getDate()), Function.identity(), BinaryOperator.maxBy(Comparator.comparing(PortfolioDailySnapshot::getDate))))
+                    .values()
+                    .stream()
+                    .sorted(Comparator.comparing(PortfolioDailySnapshot::getDate))
+                    .toList();
+
+            return monthly.stream()
+                    .map(s -> new PortfolioDailySnapshotDTO(
+                            s.getDate(), s.getTotalValue(), s.getCashBalance(), s.getInvestedValue()))
+                    .toList();
+        }
+
+        // Fallback: daily
+        return snapshots.stream()
+                .map(s -> new PortfolioDailySnapshotDTO(
+                        s.getDate(), s.getTotalValue(), s.getCashBalance(), s.getInvestedValue()))
+                .toList();
     }
 }

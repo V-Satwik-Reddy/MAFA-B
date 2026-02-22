@@ -1,0 +1,14 @@
+package majorproject.maf.repository;
+
+import majorproject.maf.model.PortfolioDailySnapshot;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Repository
+public interface PortfolioDailySnapshotRepository extends JpaRepository<PortfolioDailySnapshot, Integer> {
+
+    List<PortfolioDailySnapshot> findByUserIdAndDateAfterOrderByDateAsc(Integer userId, LocalDate cutoff);
+}

@@ -6,6 +6,8 @@ import majorproject.maf.dto.response.ApiResponse;
 import majorproject.maf.dto.response.Share;
 import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.dto.response.WatchlistDto;
+import majorproject.maf.model.enums.Interval;
+import majorproject.maf.model.enums.Period;
 import majorproject.maf.service.PortfolioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -79,6 +81,20 @@ public class PortfolioController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Company removed from watchlist", Map.of("symbol",symbol,"removed",true)));
         else
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Company not found in watchlist"));
+    }
+
+    @PostMapping("/create-eod-snapshot")
+    public ResponseEntity<ApiResponse<?>> createEODPortfolioSnapshot() {
+        portfolioService.createEODPortfolioSnapshot();
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.successMessage("EOD Portfolio snapshot created successfully"));
+    }
+
+    @GetMapping("/portfolio/history")
+    public ResponseEntity<ApiResponse<?>> getPortfolioHistory(@RequestParam Period period,
+                                                              @RequestParam(required = false) Interval interval,
+                                                              Authentication authentication) {
+        UserDto u= (UserDto) authentication.getPrincipal();
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Portfolio history fetched", portfolioService.getPortfolioHistory(u.getId(), period, interval)));
     }
 }
 
