@@ -3,10 +3,14 @@ package majorproject.maf.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import majorproject.maf.dto.response.ChatDto;
 import majorproject.maf.model.Chat;
+import majorproject.maf.model.Transaction;
 import majorproject.maf.model.user.User;
 import majorproject.maf.repository.ChatRepository;
 import majorproject.maf.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -15,6 +19,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -59,8 +64,19 @@ public class ChatService {
         chatRepo.save(c);
     }
 
-    public List<ChatDto> getUserChats(int id) {
-        List<Chat> chats=chatRepo.findAllByUserIdOrderByCreatedAtAsc(id);
+    public List<ChatDto> getUserChats(int id,Integer limit,Integer page) {
+        List<Chat> chats;
+        int pageNumber = (page == null || page < 1) ? 0 : page - 1;
+
+        Pageable pageable = null;
+        if (limit != null) {
+            pageable = PageRequest.of(pageNumber, limit, Sort.by("createdAt").descending());
+        }
+        if(limit==null)
+            chats=chatRepo.findAllByUserIdOrderByCreatedAtDesc(id);
+        else
+            chats=chatRepo.findByUserIdOrderByCreatedAtDesc(id,pageable);
+        Collections.reverse(chats);
         return chats.stream()
                 .map(chat -> new ChatDto(chat.getUserQuery(), chat.getAgentResponse()))
                 .collect(Collectors.toList());
