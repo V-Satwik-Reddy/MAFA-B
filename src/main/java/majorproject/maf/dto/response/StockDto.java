@@ -1,8 +1,12 @@
 package majorproject.maf.dto.response;
 
-import lombok.Data;
+import lombok.*;
 
 @Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class StockDto {
     private String symbol;
     private long shares;

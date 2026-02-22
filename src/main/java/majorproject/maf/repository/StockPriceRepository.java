@@ -42,5 +42,5 @@ public interface StockPriceRepository extends JpaRepository<StockPrice, Long> {
     order by sp.date desc
     limit :length
 """)
-    List<StockPrice> multipleSymbolPriceChange(Set<String> symbols, int length);
+    List<StockPrice> multipleSymbolPrice(Set<String> symbols, int length);
 }

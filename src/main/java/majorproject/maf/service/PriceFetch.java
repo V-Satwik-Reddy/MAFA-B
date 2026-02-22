@@ -210,7 +210,7 @@ public class PriceFetch {
         if(nonCachedSymbols.isEmpty()){
             return stockChanges;
         }
-        List<StockPrice> changes = stockPriceRepository.multipleSymbolPriceChange(nonCachedSymbols,nonCachedSymbols.size()*2);
+        List<StockPrice> changes = stockPriceRepository.multipleSymbolPrice(nonCachedSymbols,nonCachedSymbols.size()*2);
         changes.sort(Comparator.comparing(StockPrice::getSymbol).thenComparing(StockPrice::getDate));
         for (int i=0;i<changes.size();i+=2) {
             StockChange change = getChange(changes.get(i+1).getSymbol(), changes.get(i+1).getClose(), changes.get(i).getClose());
@@ -222,5 +222,14 @@ public class PriceFetch {
         Double change = d1 - d2;
         Double changePercent = (change / d2) * 100;
         return priceCacheService.cacheStockChange(symbol,new StockChange(symbol,d1,change,changePercent));
+    }
+
+    public List<StockPriceDto> fetchBulkCurrentPrice(Set<String> symbols) {
+        List<StockPrice> sp=stockPriceRepository.multipleSymbolPrice(symbols,symbols.size());
+        List<StockPriceDto> prices=new ArrayList<>();
+        for(StockPrice s: sp){
+                prices.add(new StockPriceDto(s.getSymbol(), s.getClose(), s.getDate(), s.getOpen(), s.getHigh(), s.getLow(), s.getVolume()));
+        }
+        return prices;
     }
 }

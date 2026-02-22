@@ -1,7 +1,9 @@
 package majorproject.maf.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serial;
@@ -12,6 +14,8 @@ import java.time.LocalDate;
 @Table(name = "stock_prices")
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class StockPrice implements Serializable {
 
     @Serial

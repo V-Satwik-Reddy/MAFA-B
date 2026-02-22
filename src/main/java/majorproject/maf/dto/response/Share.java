@@ -1,9 +1,12 @@
 package majorproject.maf.dto.response;
 
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Share {
     private String symbol;
     private Long quantity;

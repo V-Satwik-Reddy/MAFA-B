@@ -1,18 +1,15 @@
 package majorproject.maf.controller;
 
-import majorproject.maf.dto.response.ApiResponse;
-import majorproject.maf.dto.response.StockChange;
-import majorproject.maf.dto.response.UserDto;
+import majorproject.maf.dto.request.SymbolsRequest;
+import majorproject.maf.dto.response.*;
 import majorproject.maf.model.StockPrice;
 import majorproject.maf.service.PriceFetch;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 public class PriceFetchController {
@@ -26,6 +23,14 @@ public class PriceFetchController {
     public ResponseEntity<Double> getStockPrice(@RequestParam String symbol) {
         double stockPrice = priceFetch.fetchCurrentPrice(symbol);
         return ResponseEntity.ok(stockPrice);
+    }
+
+    @PostMapping("/bulkstockprice")
+    public ResponseEntity<ApiResponse<?>> getBulkStockPrice(@RequestBody SymbolsRequest req){
+        Set<String> symbols = req.getSymbols();
+        List<StockPriceDto> prices = priceFetch.fetchBulkCurrentPrice(symbols);
+        ApiResponse<List<StockPriceDto>> response = new ApiResponse<>(true, "Fetched current prices for provided symbols", prices);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/stockdailyprices")
