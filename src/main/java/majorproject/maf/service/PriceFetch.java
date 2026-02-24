@@ -184,14 +184,18 @@ public class PriceFetch {
     }
 
     public List<StockChange> fetchUserStockChanges(UserDto u) {
-        PreferenceResponse prefs = profileService.getPreferences(u);
-        Set<String> symbols = prefs.getCompanyIds()
+        Set<String> symbols;
+        symbols = portfolioService.getWatchlist(u.getId())
                 .stream()
+                .map(WatchlistDto::getCompany)
                 .map(CompanyDto::getSymbol)
                 .collect(Collectors.toSet());
         if(symbols.isEmpty()){
-            //implement the if no companies are selected case get the selected sectors and fetch top companies from those sectors
-            symbols = new HashSet<>();
+            PreferenceResponse prefs = profileService.getPreferences(u);
+            symbols = prefs.getCompanyIds()
+                    .stream()
+                    .map(CompanyDto::getSymbol)
+                    .collect(Collectors.toSet());
         }
         if(symbols.isEmpty()){
             symbols= portfolioService.getUserHoldings(u.getId()).stream().map(Share::getSymbol).collect(Collectors.toSet());

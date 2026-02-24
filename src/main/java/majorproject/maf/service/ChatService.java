@@ -1,9 +1,9 @@
 package majorproject.maf.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import majorproject.maf.dto.response.ChatDto;
 import majorproject.maf.model.Chat;
-import majorproject.maf.model.Transaction;
 import majorproject.maf.model.user.User;
 import majorproject.maf.repository.ChatRepository;
 import majorproject.maf.repository.UserRepository;
@@ -38,7 +38,9 @@ public class ChatService {
 
     public ChatService(ChatRepository chatRepo, UserRepository userRepo) {
         this.userRepo = userRepo;
-        this.httpClient = HttpClient.newHttpClient();
+        this.httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)   // important for Uvicorn
+                .build();
         this.objectMapper = new ObjectMapper();
         this.chatRepo = chatRepo;
     }
@@ -57,6 +59,10 @@ public class ChatService {
 
     public String portfolioManagerAgentChat(String userQuery, int id) {
         return callAgentService(userQuery,id,"portfolio-manager-agent");
+    }
+
+    public String mcpChat(String query, int id) {
+        return callAgentService(query,id,"mcp/query");
     }
 
     public void saveChat(User u, String userQuery, String agentResponse) {
@@ -98,25 +104,34 @@ public class ChatService {
                     .header("Authorization", "Bearer " + token) // ✅ forward JWT
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
+            System.out.println("Request "+jsonBody);
             HttpResponse<String> response =
                     httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println("Response "+response.body());
             if (response.statusCode() != 200) {
                 throw new RuntimeException(
                         "Agent service error: " + response.statusCode() + " " + response.body()
                 );
             }
-            Map<?, ?> parsed = objectMapper.readValue(response.body(), Map.class);
+            Map<String, Object> parsed = objectMapper.readValue(response.body(), new TypeReference<>() {});
 
-            Object data = parsed.get("data");
-            if (data == null) {
-                throw new RuntimeException("Agent response missing 'data' field");
+            Boolean success = (Boolean) parsed.get("success");
+            if (Boolean.FALSE.equals(success)) {
+                throw new RuntimeException("Agent returned failure: " + response.body());
             }
+
+            Object reply = parsed.get("response");
+            if (reply == null) reply = parsed.get("data");
+            if (reply == null) {
+                throw new RuntimeException("Agent response missing both 'response' and 'data' fields: " + response.body());
+            }
+
+            String message = String.valueOf(reply);
             User user = userRepo.getReferenceById(userId);
-            saveChat(user,query,data.toString());
-            return data.toString();
+            saveChat(user, query, message);
+            return message;
         } catch (Exception e) {
             throw new RuntimeException("Chat service failed", e);
         }
     }
-
 }

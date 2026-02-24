@@ -25,6 +25,13 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/mcp-chat")
+    public ResponseEntity<String> mcpChat(@RequestBody ChatDto request, Authentication auth) {
+        UserDto user= (UserDto) auth.getPrincipal();
+        String response =chatService.mcpChat(request.getUserQuery(),user.getId());
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/ea-chat")
     public ResponseEntity<String> eaChat(@RequestBody ChatDto request, Authentication auth) {
         UserDto user= (UserDto) auth.getPrincipal();
