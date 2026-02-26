@@ -1,7 +1,5 @@
 package majorproject.maf.config;
 
-
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -9,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.service.JWTService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,6 +24,8 @@ public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTService jwt;
     ApplicationContext context;
+    @Value("${jwt.secret:}")
+    private String JWT_SECRET;
 
     public JWTFilter(JWTService jwt, ApplicationContext context) {
         this.jwt = jwt;
@@ -38,7 +39,24 @@ public class JWTFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
-
+        String cronJobHeader = request.getHeader("Cron-Job-Secret");
+        if(cronJobHeader!=null && !cronJobHeader.isEmpty()){
+            if(cronJobHeader.equals(JWT_SECRET)){
+                filterChain.doFilter(request, response);
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("""
+                {
+                    "success": false,
+                    "message": "Unauthorized",
+                    "data": "Invalid Cron Job Secret"
+                }
+            """);
+                response.getWriter().flush();
+            }
+            return;
+        }
         if (header == null || !header.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -73,7 +91,6 @@ public class JWTFilter extends OncePerRequestFilter {
             }
         """.formatted(ex.getMessage()));
             response.getWriter().flush();
-            return;
         }
     }
 

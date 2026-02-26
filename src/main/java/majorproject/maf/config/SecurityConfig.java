@@ -52,7 +52,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
                 .requestMatchers("/auth/**","/").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/jobs/**").permitAll()
+                .requestMatchers("/health/**").permitAll()
                 .requestMatchers(("/actuator/**")).permitAll()
                 .anyRequest().authenticated());
 

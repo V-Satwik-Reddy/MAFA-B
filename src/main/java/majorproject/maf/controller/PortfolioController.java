@@ -83,7 +83,7 @@ public class PortfolioController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Company not found in watchlist"));
     }
 
-    @PostMapping("/create-eod-snapshot")
+    @PostMapping("/jobs/create-eod-snapshot")
     public ResponseEntity<ApiResponse<?>> createEODPortfolioSnapshot() {
         portfolioService.createEODPortfolioSnapshot();
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.successMessage("EOD Portfolio snapshot created successfully"));
