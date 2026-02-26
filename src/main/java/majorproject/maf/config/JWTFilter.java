@@ -42,6 +42,12 @@ public class JWTFilter extends OncePerRequestFilter {
         String cronJobHeader = request.getHeader("Cron-Job-Secret");
         if(cronJobHeader!=null && !cronJobHeader.isEmpty()){
             if(cronJobHeader.equals(JWT_SECRET)){
+                UsernamePasswordAuthenticationToken cronAuth = new UsernamePasswordAuthenticationToken(
+                        "CRON_SYSTEM", // Principal (can be any string or dummy user)
+                        null,          // Credentials
+                        Collections.singleton(new SimpleGrantedAuthority("CRON")) // Role/Authority
+                );
+                SecurityContextHolder.getContext().setAuthentication(cronAuth);
                 filterChain.doFilter(request, response);
             } else {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

@@ -222,6 +222,7 @@ public class PriceFetch {
         }
         return stockChanges;
     }
+
     public StockChange getChange(String symbol, Double d1, Double d2) {
         Double change = d1 - d2;
         Double changePercent = (change / d2) * 100;

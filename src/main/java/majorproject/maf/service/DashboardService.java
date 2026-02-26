@@ -1,6 +1,6 @@
 package majorproject.maf.service;
 
-import majorproject.maf.dto.response.StockDto;
+import majorproject.maf.dto.response.StockDashboardDto;
 import majorproject.maf.dto.response.TransactionDto;
 import majorproject.maf.model.Stock;
 import majorproject.maf.model.Transaction;
@@ -103,8 +103,8 @@ public class DashboardService {
         transactionRepo.save(transaction);
     }
 
-    public List<StockDto> getHoldingsDetails(int userId) {
-        List<StockDto> ans = new ArrayList<>();
+    public List<StockDashboardDto> getHoldingsDetails(int userId) {
+        List<StockDashboardDto> ans = new ArrayList<>();
         List<Stock> holdings = stockRepo.findByUserId(userId);
         holdings.sort(Comparator.comparing(Stock::getSymbol));
         List<TransactionDto> alltxns = getUserTransactions(userId);
@@ -112,18 +112,18 @@ public class DashboardService {
 
         int i = 0;
         for (Stock stock : holdings) {
-            StockDto stockDto = new StockDto();
-            stockDto.setSymbol(stock.getSymbol());
-            stockDto.setShares(stock.getShares());
+            StockDashboardDto stockDashboardDto = new StockDashboardDto();
+            stockDashboardDto.setSymbol(stock.getSymbol());
+            stockDashboardDto.setShares(stock.getShares());
             double avgBuyPrice = getAvgBuyPrice(stock, alltxns);
-            stockDto.setAvgBuyPrice(avgBuyPrice);
+            stockDashboardDto.setAvgBuyPrice(avgBuyPrice);
             double currentPrice;
             currentPrice = prices.get(i++);
-            stockDto.setTotalAmount(stock.getShares() * currentPrice);
-            stockDto.setCurrentPrice(currentPrice);
+            stockDashboardDto.setTotalAmount(stock.getShares() * currentPrice);
+            stockDashboardDto.setCurrentPrice(currentPrice);
             double gainLoss = (currentPrice - avgBuyPrice) * stock.getShares();
-            stockDto.setGainLoss(gainLoss);
-            ans.add(stockDto);
+            stockDashboardDto.setGainLoss(gainLoss);
+            ans.add(stockDashboardDto);
         }
         return ans;
     }

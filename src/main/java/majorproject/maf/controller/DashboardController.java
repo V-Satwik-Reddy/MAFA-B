@@ -1,6 +1,6 @@
 package majorproject.maf.controller;
 
-import majorproject.maf.dto.response.StockDto;
+import majorproject.maf.dto.response.StockDashboardDto;
 import majorproject.maf.dto.response.TransactionDto;
 import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.model.enums.Period;
@@ -35,7 +35,7 @@ public class DashboardController {
     @GetMapping("/dashboard")
     public ResponseEntity<?> getDashboardData(Authentication auth) {
         UserDto u=(UserDto) auth.getPrincipal();
-        List<StockDto> holdings =  dashboardService.getHoldingsDetails(u.getId());
+        List<StockDashboardDto> holdings =  dashboardService.getHoldingsDetails(u.getId());
         return ResponseEntity.status(HttpStatus.OK).body(holdings);
     }
 }
