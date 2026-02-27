@@ -8,10 +8,13 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import majorproject.maf.exception.auth.*;
 import org.springframework.web.bind.annotation.RequestBody;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger logger=LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<?> handleUserExists() {
@@ -61,13 +64,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleOtherExceptions(Exception ex) {
         System.out.println("An unexpected error occurred." +ex);
+        ex.getStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
     }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<?> handleException(RuntimeException ex, HttpServletRequest request, @RequestBody(required = false) Object body) {
         System.out.println(request.getRequestURI()+" "+request.getContextPath()+" "+body.toString());
-        System.out.println("An unexpected error occurred." +ex);
+        logger.error("An unidentifiable error occurred during operation X", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
     }
 

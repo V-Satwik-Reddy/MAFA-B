@@ -29,13 +29,15 @@ public class ProfileService {
         private final UserPreferencesRepository userPreferencesRepository;
         private final CompanyMasterRepository companyMasterRepository;
         private final SectorMasterRepository sectorMasterRepository;
+        private final PortfolioService portfolioService;
 
-    public ProfileService(UserPreferencesRepository userPreferencesRepository, UserRepository userRepo, UserProfileRepository userProfileRepository, CompanyMasterRepository companyMasterRepository, SectorMasterRepository sectorMasterRepository) {
+    public ProfileService(UserPreferencesRepository userPreferencesRepository, UserRepository userRepo, UserProfileRepository userProfileRepository, CompanyMasterRepository companyMasterRepository, SectorMasterRepository sectorMasterRepository, PortfolioService portfolioService) {
             this.companyMasterRepository = companyMasterRepository;
             this.sectorMasterRepository = sectorMasterRepository;
             this.userProfileRepository = userProfileRepository;
             this.userRepo = userRepo;
             this.userPreferencesRepository = userPreferencesRepository;
+            this.portfolioService = portfolioService;
     }
 
         public void createProfile(ProfileRequest request, int userId) {
@@ -176,8 +178,10 @@ public class ProfileService {
                 Companies cp = new Companies();
                 cp.setUser(prefs);
                 cp.setCompany(company);
+                portfolioService.addToWatchlist(prefs.getId(),company.getSymbol());
                 prefs.getCompanies().add(cp);
             }
+
             userPreferencesRepository.save(prefs);
         }
 
