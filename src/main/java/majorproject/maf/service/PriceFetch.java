@@ -46,14 +46,16 @@ public class PriceFetch {
     private final ProfileService profileService;
     private final PriceCacheService priceCacheService;
     private final PortfolioService portfolioService;
+    private final AlertService alertService;
 
-    public PriceFetch(StockPriceRepository stockPriceRepository, ProfileService profileService, PriceCacheService priceCacheService, PortfolioService portfolioService) {
+    public PriceFetch(StockPriceRepository stockPriceRepository, ProfileService profileService, PriceCacheService priceCacheService, PortfolioService portfolioService, AlertService alertService) {
         this.priceCacheService = priceCacheService;
         this.profileService = profileService;
         this.stockPriceRepository = stockPriceRepository;
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = new ObjectMapper();
         this.portfolioService = portfolioService;
+        this.alertService = alertService;
     }
 
     @Cacheable(value = "currentPrices",key = "#symbol")
@@ -140,6 +142,7 @@ public class PriceFetch {
         try {
             List<String> symbols = stockPriceRepository.findAllSymbols();
             int c=0;
+            Map<String,StockPrice> stockPrices=new HashMap<>();
             for (String symbol : symbols) {
                 if(c==API_KEYS.length){
                     Thread.sleep(120000);
@@ -175,9 +178,10 @@ public class PriceFetch {
                 stockPrice.setLow(globalQuote.get("04. low").asDouble());
                 stockPrice.setClose(globalQuote.get("05. price").asDouble());
                 stockPrice.setVolume(globalQuote.get("06. volume").asLong());
-                System.out.println("Saving price for "+symbol+" on "+stockPrice.getDate());
                 stockPriceRepository.save(stockPrice);
+                stockPrices.put(symbol,stockPrice);
             }
+            alertService.checkAlerts(stockPrices);
         }catch (Exception e){
             throw new RuntimeException("Failed to fetch previous day prices", e);
         }

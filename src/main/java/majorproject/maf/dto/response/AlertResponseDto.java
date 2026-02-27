@@ -32,4 +32,5 @@ public class AlertResponseDto {
 
     private LocalDateTime createdAt;
 
+    private LocalDateTime triggeredAt;
 }

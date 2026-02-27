@@ -42,6 +42,8 @@ public class Alert {
 
     private LocalDateTime createdAt;
 
+    private LocalDateTime triggeredAt;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
