@@ -2,6 +2,7 @@ package majorproject.maf.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import majorproject.maf.cache.PriceCacheService;
 import majorproject.maf.dto.response.*;
 import majorproject.maf.model.StockPrice;
@@ -20,25 +21,8 @@ import java.util.stream.Collectors;
 public class PriceFetch {
     static int counter = 0;
     private static final String BASE_URL = "https://www.alphavantage.co/query?function=%s&symbol=%s&apikey=%s";
-    private static final String[] API_KEYS = {
-            "UD1GU1VAGIUPJJJ8",
-            "ALDBRKIZ0UVVWWLY",
-            "Y02G2WHADMYSRKFH",
-            "Q6576M1ODT5IKYJJ",
-            "I3ZBIX5S6HYA9MXA",
-            "9NGBH4WQU4Q1VV5Q",
-            "72HGUXFWCNPMDDAW",
-            "JLD7PUGED1CFJLXE",
-            "DCHTXOLI6P9PHWSB",
-            "5U2X9PNQAF0MLG4O",
-            "C93EGUKLTINJ27L6",
-            "1IQMMKS54FSBM5BN",
-            "O97Y65K6NZHLYYKD",
-            "X7A3C3DZ5UZM3JYH",
-            "GA55UPGG7B5G9WDA",
-            "ZGKFZD2XZEYMTSI2",
-            "IPX9HKGA2AI2O5X4"
-    };
+
+    private final String[] API_KEYS;
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
@@ -48,7 +32,7 @@ public class PriceFetch {
     private final PortfolioService portfolioService;
     private final AlertService alertService;
 
-    public PriceFetch(StockPriceRepository stockPriceRepository, ProfileService profileService, PriceCacheService priceCacheService, PortfolioService portfolioService, AlertService alertService) {
+    public PriceFetch(@Value("${alpha_vantage_api_keys:}") String allApiKeys,StockPriceRepository stockPriceRepository, ProfileService profileService, PriceCacheService priceCacheService, PortfolioService portfolioService, AlertService alertService) {
         this.priceCacheService = priceCacheService;
         this.profileService = profileService;
         this.stockPriceRepository = stockPriceRepository;
@@ -56,6 +40,7 @@ public class PriceFetch {
         this.objectMapper = new ObjectMapper();
         this.portfolioService = portfolioService;
         this.alertService = alertService;
+        API_KEYS = allApiKeys.split(",");
     }
 
     @Cacheable(value = "currentPrices",key = "#symbol")

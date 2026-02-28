@@ -53,7 +53,7 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**","/").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/health/**").permitAll()
-                .requestMatchers(("/actuator/**")).permitAll()
+                .requestMatchers(("/actuator/health/**")).permitAll()
                 .anyRequest().authenticated());
 
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

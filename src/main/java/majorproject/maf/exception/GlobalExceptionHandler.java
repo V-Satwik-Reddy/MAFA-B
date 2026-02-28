@@ -63,15 +63,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleOtherExceptions(Exception ex) {
-        System.out.println("An unexpected error occurred." +ex);
-        ex.getStackTrace();
+        logger.error("Unhandled exception", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
     }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<?> handleException(RuntimeException ex, HttpServletRequest request, @RequestBody(required = false) Object body) {
-        System.out.println(request.getRequestURI()+" "+request.getContextPath()+" "+body.toString());
-        logger.error("An unidentifiable error occurred during operation X", ex);
+        logger.error("Unhandled RuntimeException at {} {}", request.getMethod(), request.getRequestURI(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
     }
 
