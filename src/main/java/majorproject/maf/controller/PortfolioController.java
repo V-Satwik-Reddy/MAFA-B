@@ -44,10 +44,8 @@ public class PortfolioController {
     @PostMapping("/withdraw-balance")
     public ResponseEntity<ApiResponse<?>> withdrawBalance(@RequestBody AddBalance addBalance, Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
-        boolean done=portfolioService.withdrawBalance(u.getId(), addBalance.getAmount());
-        if(done) return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.successMessage("Balance withdrawn successfully"));
-        else
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("Insufficient balance"));
+        portfolioService.withdrawBalance(u.getId(), addBalance.getAmount());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("Balance withdrawn successfully"));
     }
 
     @GetMapping("/balance")
@@ -78,7 +76,7 @@ public class PortfolioController {
         UserDto u= (UserDto) authentication.getPrincipal();
         boolean done=portfolioService.removeFromWatchlist(u.getId(), symbol);
         if(done)
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Company removed from watchlist", Map.of("symbol",symbol,"removed",true)));
+            return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Company removed from watchlist", Map.of("symbol",symbol,"removed",true)));
         else
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Company not found in watchlist"));
     }

@@ -24,10 +24,15 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
     @Modifying
     @Query("""
         UPDATE Stock h
-        SET h.shares = h.shares - :delta
-        WHERE h.user.id = :userId AND h.symbol = :symbol
+        SET h.shares = h.shares - :quantity
+        WHERE h.user.id = :userId AND h.symbol = :symbol AND h.shares >= :quantity
     """)
-    void decrementShares(int userId, String symbol, long delta);
+    int decrementIfSufficientShares(int id, String symbol, long quantity);
 
-    void deleteByUserIdAndSymbol(int id, String symbol);
+    @Modifying
+    @Query("""
+    Delete from Stock s
+    where s.user.id=:userId and s.symbol=:symbol and s.shares=0
+""")
+    void deleteIfSharesZero(int id, String symbol);
 }

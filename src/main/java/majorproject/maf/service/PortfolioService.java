@@ -1,6 +1,7 @@
 package majorproject.maf.service;
 
 import majorproject.maf.dto.response.*;
+import majorproject.maf.exception.InsufficientBalanceException;
 import majorproject.maf.model.PortfolioDailySnapshot;
 import majorproject.maf.model.StockPrice;
 import majorproject.maf.model.Transaction;
@@ -73,9 +74,9 @@ public class PortfolioService {
         userProfileRepository.creditBalance(id, amount);
     }
 
-    public boolean withdrawBalance(int id, double amount) {
-        Double balance = userProfileRepository.findByUserId(id).getBalance();
-        if (balance < amount) return false;
+    public void withdrawBalance(int id, double amount) {
+        int res=userProfileRepository.debitIfSufficientBalance(id, amount);
+        if(res==0) throw new InsufficientBalanceException("Insufficient balance to execute the withdrawal.");
         Transaction transaction = new Transaction();
         transaction.setType(TransactionType.WITHDRAWAL);
         transaction.setAmount(amount);
@@ -83,8 +84,6 @@ public class PortfolioService {
         transaction.setAsset("CASH");
         transaction.setAssetQuantity(0L);
         dashboardService.createTransaction(transaction);
-        userProfileRepository.debitBalance(id, amount);
-        return true;
     }
 
     public Double getBalance(int id) {
@@ -114,13 +113,8 @@ public class PortfolioService {
     }
 
     public boolean removeFromWatchlist(int id, String symbol) {
-        try{
-            int i=watchlistRepository.deleteByUserIdAndCompanySymbol(id, symbol);
-            if(i==0) return false;
-        }catch (Exception e){
-            return false;
-        }
-        return true;
+        int i=watchlistRepository.deleteByUserIdAndCompanySymbol(id, symbol);
+        return i != 0;
     }
 
     public void createEODPortfolioSnapshot() {

@@ -15,13 +15,13 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
 public class PriceFetch {
-    static int counter = 0;
+    private static final AtomicInteger counter = new AtomicInteger(0);
     private static final String BASE_URL = "https://www.alphavantage.co/query?function=%s&symbol=%s&apikey=%s";
-
     private final String[] API_KEYS;
 
     private final HttpClient httpClient;
@@ -116,8 +116,7 @@ public class PriceFetch {
     }
 
     private String getNextApiKey() {
-        int index = counter++;
-        counter=counter%API_KEYS.length;
+        int index = counter.getAndUpdate(c -> (c + 1) % API_KEYS.length);
         return API_KEYS[index];
     }
 

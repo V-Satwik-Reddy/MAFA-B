@@ -2,6 +2,7 @@ package majorproject.maf.service;
 
 import majorproject.maf.dto.request.ExecuteRequest;
 import majorproject.maf.dto.response.TransactionDto;
+import majorproject.maf.exception.InsufficientBalanceException;
 import majorproject.maf.model.enums.TransactionType;
 import majorproject.maf.model.user.UserProfile;
 import majorproject.maf.repository.UserProfileRepository;
@@ -34,13 +35,12 @@ public class ExecutionService {
     @Transactional
     public TransactionDto buyShares(ExecuteRequest request, int id) {
         User user = userRepository.getReferenceById(id);
-        UserProfile userProfile = userProfileRepository.findByUserId(id);
         double price=priceFetch.fetchCurrentPrice(request.getSymbol());
         double totalCost=request.getQuantity()*price;
-        if(userProfile.getBalance()< totalCost){
-            return null;
+        int res= userProfileRepository.debitIfSufficientBalance(id,totalCost);
+        if(res==0){
+            throw new InsufficientBalanceException("Insufficient balance to execute the buy order.");
         }
-        userProfileRepository.debitBalance(id,totalCost);
         Transaction t=new Transaction();
         t.setAsset(request.getSymbol());
         t.setType(TransactionType.BUY);
@@ -64,9 +64,9 @@ public class ExecutionService {
     @Transactional
     public TransactionDto sellShares(ExecuteRequest request, int id) {
         User user = userRepository.getReferenceById(id);
-        Stock stock=stockRepository.findByUserIdAndSymbol(id, request.getSymbol());
-        if(stock==null||request.getQuantity()>stock.getShares()){
-            return null;
+        int res= stockRepository.decrementIfSufficientShares(id, request.getSymbol(), request.getQuantity());
+        if(res==0){
+            throw new InsufficientBalanceException("Insufficient shares to execute the sell order.");
         }
         double price=priceFetch.fetchCurrentPrice(request.getSymbol());
         double totalAmount=request.getQuantity()*price;
@@ -78,10 +78,7 @@ public class ExecutionService {
         t.setAssetQuantity(request.getQuantity());
         t.setUser(user);
         ds.createTransaction(t);
-        stockRepository.decrementShares(id, request.getSymbol(), request.getQuantity());
-        if(stock.getShares()-request.getQuantity()<=0){
-            stockRepository.deleteByUserIdAndSymbol(id,request.getSymbol());
-        }
+        stockRepository.deleteIfSharesZero(id, request.getSymbol());
 
         return new TransactionDto(t.getId(),t.getType(),t.getAsset(),t.getAssetQuantity(),t.getAmount(),t.getCreatedAt());
     }

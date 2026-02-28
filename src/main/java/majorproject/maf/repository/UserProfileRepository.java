@@ -15,7 +15,6 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Intege
     UserProfile findByUsername(String username);
 
     @Modifying
-    @Transactional
     @Query("""
         UPDATE UserProfile u
         SET u.balance = u.balance + :delta
@@ -24,11 +23,10 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Intege
     void creditBalance(int id, double delta);
 
     @Modifying
-    @Transactional
     @Query("""
-        UPDATE UserProfile u
-        SET u.balance = u.balance - :delta
-        WHERE u.id  = :id
-    """)
-    void debitBalance(int id, double delta);
+    UPDATE UserProfile u
+    SET u.balance = u.balance - :amount
+    WHERE u.id = :id AND u.balance >= :amount
+""")
+    int debitIfSufficientBalance(int id, double totalCost);
 }

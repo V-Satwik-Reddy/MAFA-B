@@ -25,11 +25,11 @@ public interface WatchlistRepository extends JpaRepository<Watchlist, Long> {
 """)
     Watchlist findBySymbolAndUserId(String symbol, int userId);
 
+    @Modifying
+    @Transactional
     @Query("""
     delete from Watchlist wl
     where wl.user.id = :userId and wl.company.symbol = :symbol
 """)
-    @Modifying
-    @Transactional
     int deleteByUserIdAndCompanySymbol(int userId, String symbol);
 }

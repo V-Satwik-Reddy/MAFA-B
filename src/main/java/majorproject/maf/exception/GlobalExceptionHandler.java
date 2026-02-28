@@ -61,6 +61,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Refresh Token Expired Please Login Again"));
     }
 
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<?> handleInsufficientBalanceException() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("Insufficient balance to execute the buy order."));
+    }
+
+    @ExceptionHandler(InsufficientSharesException.class)
+    public ResponseEntity<?> handleInsufficientSharesException() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("Insufficient shares to execute the sell order."));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleOtherExceptions(Exception ex) {
         logger.error("Unhandled exception", ex);
