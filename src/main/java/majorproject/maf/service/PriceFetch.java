@@ -73,6 +73,15 @@ public class PriceFetch {
         }
     }
 
+    public List<StockPriceDto> fetchBulkCurrentPrice(List<String> symbols) {
+        Map<String,StockPrice> sp=stockPriceRepository.batchFind(symbols);
+        List<StockPriceDto> prices=new ArrayList<>();
+        for(StockPrice s: sp.values()){
+            prices.add(new StockPriceDto(s.getSymbol(), s.getClose(), s.getDate(), s.getOpen(), s.getHigh(), s.getLow(), s.getVolume()));
+        }
+        return prices;
+    }
+
     @Cacheable(value = "historicalPrices",key = "#symbol")
     public List<StockPrice> fetchLast100DailyPrice(String symbol) {
         try {
@@ -145,6 +154,9 @@ public class PriceFetch {
             Map<String,StockPrice> stockPrices=new HashMap<>();
             for (String symbol : symbols) {
                 if(c==API_KEYS.length){
+                    Map<String, StockPrice> finalStockPrices = new HashMap<>(stockPrices);
+                    alertService.checkAlerts(finalStockPrices);
+                    stockPrices=new HashMap<>();
                     Thread.sleep(120000);
                     c=0;
                 }
@@ -231,14 +243,5 @@ public class PriceFetch {
         Double change = d1 - d2;
         Double changePercent = (change / d2) * 100;
         return priceCacheService.cacheStockChange(symbol,new StockChange(symbol,d1,change,changePercent));
-    }
-
-    public List<StockPriceDto> fetchBulkCurrentPrice(Set<String> symbols) {
-        List<StockPrice> sp=stockPriceRepository.multipleSymbolPrice(symbols,symbols.size());
-        List<StockPriceDto> prices=new ArrayList<>();
-        for(StockPrice s: sp){
-                prices.add(new StockPriceDto(s.getSymbol(), s.getClose(), s.getDate(), s.getOpen(), s.getHigh(), s.getLow(), s.getVolume()));
-        }
-        return prices;
     }
 }

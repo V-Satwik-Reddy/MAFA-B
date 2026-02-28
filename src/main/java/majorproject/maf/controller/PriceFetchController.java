@@ -9,7 +9,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 public class PriceFetchController {
@@ -27,7 +26,7 @@ public class PriceFetchController {
 
     @PostMapping("/bulkstockprice")
     public ResponseEntity<ApiResponse<?>> getBulkStockPrice(@RequestBody SymbolsRequest req){
-        Set<String> symbols = req.getSymbols();
+        List<String> symbols = req.getSymbols();
         List<StockPriceDto> prices = priceFetch.fetchBulkCurrentPrice(symbols);
         ApiResponse<List<StockPriceDto>> response = new ApiResponse<>(true, "Fetched current prices for provided symbols", prices);
         return ResponseEntity.ok(response);

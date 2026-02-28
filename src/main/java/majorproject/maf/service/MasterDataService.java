@@ -17,9 +17,12 @@ public class MasterDataService {
 
     private final CompanyMasterRepository companyMasterRepository;
     private final SectorMasterRepository sectorMasterRepository;
-    public MasterDataService(CompanyMasterRepository companyMasterRepository, SectorMasterRepository sectorMasterRepository) {
+    private final PriceFetch priceFetch;
+
+    public MasterDataService(CompanyMasterRepository companyMasterRepository, SectorMasterRepository sectorMasterRepository, PriceFetch priceFetch) {
         this.sectorMasterRepository = sectorMasterRepository;
         this.companyMasterRepository = companyMasterRepository;
+        this.priceFetch = priceFetch;
     }
 
     @Cacheable(value = "permanentCache", key = "'allCompanies'")
@@ -50,6 +53,7 @@ public class MasterDataService {
             companyMaster.setSymbol(companyDto.getSymbol());
             SectorMaster s=sectorMasterRepository.getReferenceById(companyDto.getSector().getId());
             companyMaster.setSector(s);
+            priceFetch.fetchCurrentPrice(companyDto.getSymbol());
             companyMasterRepository.save(companyMaster);
         }
         return "success";

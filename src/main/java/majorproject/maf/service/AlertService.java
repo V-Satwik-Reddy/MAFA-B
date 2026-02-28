@@ -8,6 +8,7 @@ import majorproject.maf.model.StockPrice;
 import majorproject.maf.model.enums.AlertCondition;
 import majorproject.maf.model.enums.AlertStatus;
 import majorproject.maf.repository.AlertRepository;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -74,6 +75,7 @@ public class AlertService {
         return buildAlertResponse(alert);
     }
 
+    @Async
     public void checkAlerts(Map<String,StockPrice> stockPrices) {
         List<Alert> alerts=alertRepository.findAllByStatus(AlertStatus.ACTIVE);
         for(Alert alert:alerts){
