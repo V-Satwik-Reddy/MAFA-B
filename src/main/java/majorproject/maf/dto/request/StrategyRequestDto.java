@@ -17,7 +17,7 @@ public class StrategyRequestDto {
     private String goal;
     private Integer timeHorizonMonths;
     private RiskProfile riskProfile;
-    private Map<String, Integer> targetAllocation; // or Map<String, BigDecimal>
-    private Map<String, Integer> sectorLimits;
+    private Map<String, Double> targetAllocation; // or Map<String, BigDecimal>
+    private Map<String, Double> sectorLimits;
     private RebalancingFrequency rebalancingFrequency;
 }

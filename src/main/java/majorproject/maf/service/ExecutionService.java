@@ -49,7 +49,11 @@ public class ExecutionService {
         t.setUser(user);
         ds.createTransaction(t);
         if (stockRepository.findByUserIdAndSymbol(id, request.getSymbol()) == null) {
-            stockRepository.save(new Stock(request.getSymbol(), request.getQuantity(), user));
+            Stock s=new Stock();
+                s.setSymbol(request.getSymbol());
+                s.setShares(request.getQuantity());
+                s.setUser(user);
+            stockRepository.save(s);
         }
         else {
             stockRepository.incrementShares(id, request.getSymbol(), request.getQuantity());

@@ -3,6 +3,7 @@ package majorproject.maf.service;
 import majorproject.maf.dto.response.StockDashboardDto;
 import majorproject.maf.dto.response.TransactionDto;
 import majorproject.maf.model.Stock;
+import majorproject.maf.model.StockPrice;
 import majorproject.maf.model.Transaction;
 import majorproject.maf.model.enums.Period;
 import majorproject.maf.model.enums.TransactionType;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class DashboardService {
@@ -108,9 +110,8 @@ public class DashboardService {
         List<Stock> holdings = stockRepo.findByUserId(userId);
         holdings.sort(Comparator.comparing(Stock::getSymbol));
         List<TransactionDto> alltxns = getUserTransactions(userId);
-        List<Double> prices = stockPriceRepository.batchFind(holdings.stream().map(Stock::getSymbol).toList());
+        Map<String, StockPrice> prices = stockPriceRepository.batchFind(holdings.stream().map(Stock::getSymbol).toList());
 
-        int i = 0;
         for (Stock stock : holdings) {
             StockDashboardDto stockDashboardDto = new StockDashboardDto();
             stockDashboardDto.setSymbol(stock.getSymbol());
@@ -118,7 +119,7 @@ public class DashboardService {
             double avgBuyPrice = getAvgBuyPrice(stock, alltxns);
             stockDashboardDto.setAvgBuyPrice(avgBuyPrice);
             double currentPrice;
-            currentPrice = prices.get(i++);
+            currentPrice = prices.get(stock.getSymbol()).getClose();
             stockDashboardDto.setTotalAmount(stock.getShares() * currentPrice);
             stockDashboardDto.setCurrentPrice(currentPrice);
             double gainLoss = (currentPrice - avgBuyPrice) * stock.getShares();

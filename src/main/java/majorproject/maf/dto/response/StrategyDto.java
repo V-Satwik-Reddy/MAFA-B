@@ -20,8 +20,8 @@ public class StrategyDto {
     private String goal;
     private Integer timeHorizonMonths;
     private RiskProfile riskProfile;
-    private Map<String, Integer> targetAllocation;
-    private Map<String, Integer> sectorLimits;
+    private Map<String, Double> targetAllocation;
+    private Map<String, Double> sectorLimits;
     private RebalancingFrequency rebalancingFrequency;
     private boolean active;
     private LocalDateTime createdAt;

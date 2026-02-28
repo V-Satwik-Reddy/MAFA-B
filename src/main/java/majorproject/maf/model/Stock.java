@@ -13,16 +13,11 @@ import majorproject.maf.model.user.User;
 @AllArgsConstructor
 public class Stock {
     @Id
-    private String symbol;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Override
-    public String toString() {
-        return "Stock{" +
-                "shares=" + shares +
-                ", symbol='" + symbol + '\'' +
-                ", user=" + user +
-                '}';
-    }
+    @Column(nullable = false)
+    private String symbol;
 
     private long shares;
 

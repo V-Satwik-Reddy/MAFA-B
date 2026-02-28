@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface StockRepository extends JpaRepository<Stock, String> {
+public interface StockRepository extends JpaRepository<Stock, Long> {
 
     Stock findByUserIdAndSymbol(int user_id,String symbol);
 

@@ -89,8 +89,8 @@ public class StrategyService {
     }
 
     public StrategyDto toDto(InvestmentStrategy strategy) {
-        Map<String, Integer> targetAllocation = readMap(strategy.getTargetAllocationJson());
-        Map<String,Integer> sectorLimits = readMap(strategy.getSectorLimitsJson());
+        Map<String, Double> targetAllocation = readMap(strategy.getTargetAllocationJson());
+        Map<String,Double> sectorLimits = readMap(strategy.getSectorLimitsJson());
         return new StrategyDto(
                 strategy.getId(),
                 strategy.getStrategyType(),
@@ -106,7 +106,7 @@ public class StrategyService {
         );
     }
 
-    private Map<String, Integer> readMap(String json) {
+    private Map<String, Double> readMap(String json) {
         if (json == null || json.isBlank()) return Map.of();
         try {
             return objectMapper.readValue(json, new TypeReference<>() {
@@ -116,7 +116,7 @@ public class StrategyService {
         }
     }
 
-    private String writeMap(Map<String, Integer> map) {
+    private String writeMap(Map<String, Double> map) {
         if (map == null || map.isEmpty()) return "{}";
         try {
             return objectMapper.writeValueAsString(map);

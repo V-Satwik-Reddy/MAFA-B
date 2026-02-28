@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface StockPriceRepository extends JpaRepository<StockPrice, Long> {
@@ -17,14 +18,14 @@ public interface StockPriceRepository extends JpaRepository<StockPrice, Long> {
     List<String> findAllSymbols();
 
     @Query("""
-    select sp.close
+    select sp.symbol,sp
     from StockPrice sp
     where sp.symbol in :symbols
     and sp.date = (
         select max(sp2.date) from StockPrice sp2
     ) order by sp.symbol
     """)
-    List<Double> batchFind(List<String> symbols);
+    Map<String, StockPrice> batchFind(List<String> symbols);
 
     @Query("""
         select sp.close

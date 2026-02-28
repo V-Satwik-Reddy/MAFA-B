@@ -2,6 +2,7 @@ package majorproject.maf.service;
 
 import majorproject.maf.dto.response.*;
 import majorproject.maf.model.PortfolioDailySnapshot;
+import majorproject.maf.model.StockPrice;
 import majorproject.maf.model.Transaction;
 import majorproject.maf.model.enums.Interval;
 import majorproject.maf.model.enums.Period;
@@ -20,6 +21,7 @@ import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -51,11 +53,11 @@ public class PortfolioService {
         List<Share> s=stockRepository.findByUserId(id).stream().map(
                 stock -> new Share(stock.getSymbol(), stock.getShares())
         ).toList();
-        List<Double> prices= stockPriceRepository.batchFind(
+        Map<String, StockPrice> prices= stockPriceRepository.batchFind(
                 s.stream().map(Share::getSymbol).toList()
         );
-        for(int i=0;i<s.size();i++){
-            s.get(i).setPrice(prices.get(i));
+        for (Share share : s) {
+            share.setPrice(prices.get(share.getSymbol()).getClose());
         }
         return s;
     }
