@@ -4,18 +4,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import majorproject.maf.dto.request.EmailVerifyRequest;
 import majorproject.maf.dto.request.LoginRequest;
 import majorproject.maf.dto.request.SignUpRequest;
+import majorproject.maf.exception.ResourseNotFoundException;
 import majorproject.maf.exception.auth.*;
 import majorproject.maf.dto.response.ApiResponse;
-//import majorproject.maf.model.UserOtp;
-//import majorproject.maf.repository.UserOtpRepository;
 import majorproject.maf.model.user.User;
 import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.repository.UserRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -33,7 +30,6 @@ public class AuthService {
     private final EmailService emailService;
     private static final SecureRandom secureRandom = new SecureRandom();
     private final StringRedisTemplate simpleRedisCache;
-//    private final UserOtpRepository userOtpRepository;
 
     public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt, EmailService emailService, StringRedisTemplate simpleRedisCache) {
         this.simpleRedisCache = simpleRedisCache;
@@ -43,15 +39,7 @@ public class AuthService {
         this.jwt = jwt;
     }
 
-//    public AuthService(UserRepository userRepo, PasswordEncoder passEnc, JWTService jwt, EmailService emailService, UserOtpRepository userOtpRepository) {
-//        this.userOtpRepository = userOtpRepository;
-//        this.emailService = emailService;
-//        this.userRepo = userRepo;
-//        this.passEnc = passEnc;
-//        this.jwt = jwt;
-//    }
-
-    public ApiResponse<?> signUp(SignUpRequest req) {
+    public ApiResponse<Void> signUp(SignUpRequest req) {
         if (userRepo.findByEmail(req.getEmail()) != null) {
             throw new UserAlreadyExistsException("User already registered with same Email");
         }
@@ -63,18 +51,11 @@ public class AuthService {
 
     public void sendOtpEmail(String email){
         String otp = generateOtp();
-//        userOtpRepository.save(new UserOtp(email,otp, System.currentTimeMillis() + Duration.ofMinutes(5).toMillis()));
         simpleRedisCache.opsForValue().set("otp:email:" + email, otp, Duration.ofMinutes(5));
         emailService.sendOtpEmail(email,otp);
     }
 
-    public ApiResponse<?> verifyEmail(EmailVerifyRequest e,HttpServletResponse resp) {
-//        UserOtp userOtp = userOtpRepository.findByEmail(e.getEmail());
-//        String savedOtp = userOtp.getOtp();
-//        if(userOtp.getExpiresAt()< System.currentTimeMillis()){
-//            userOtpRepository.delete(userOtp);
-//            throw new OtpExpiredException("OTP has expired. Please request a new one.");
-//        }
+    public ApiResponse<Map<String,Object>> verifyEmail(EmailVerifyRequest e,HttpServletResponse resp) {
         String savedOtp = simpleRedisCache.opsForValue().get("otp:email:" + e.getEmail());
         if(savedOtp == null) {
             throw new OtpExpiredException("OTP has expired. Please request a new one.");
@@ -84,13 +65,12 @@ public class AuthService {
         }
         User newUser = new User(e.getEmail(), passEnc.encode(e.getPassword()));
         userRepo.save(newUser);
-//        userOtpRepository.delete(userOtp);
         simpleRedisCache.delete("otp:email:" + e.getEmail());
         UserDto dto =new UserDto(newUser.getId(), newUser.getEmail(), newUser.getPhone(),newUser.getStatus());
         return ApiResponse.success( "Email verified and user registered successfully",getResponse(resp, dto));
     }
 
-    public ApiResponse<?> login(LoginRequest req, HttpServletResponse response) {
+    public ApiResponse<Map<String,Object>> login(LoginRequest req, HttpServletResponse response) {
 
         User user = userRepo.findByEmail(req.getEmail());
         if (user == null) {
@@ -124,24 +104,21 @@ public class AuthService {
         );
     }
 
-    public ResponseEntity<?> refresh( @CookieValue(name = "refresh_token", required = false) String refreshToken) {
+    public ApiResponse<Map<String,Object>> refresh( @CookieValue(name = "refresh_token", required = false) String refreshToken) {
 
         if (refreshToken == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new ResourseNotFoundException("Refresh token not found, please login again");
         }
         if (!jwt.validateRefreshToken(refreshToken)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new JwtValidationException("Invalid Refresh Token");
         }
-
         UserDto user= jwt.extractUser(refreshToken);
         if(user==null){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new UserNotFoundException("User not found");
         }
         String newAccessToken = jwt.generateAccessToken(user);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "accessToken", newAccessToken,"user", user
-        ));
+        return ApiResponse.success("Access Token Generated",Map.of("accessToken", newAccessToken,"user", user));
     }
 
     public String generateOtp() {

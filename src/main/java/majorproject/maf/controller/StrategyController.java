@@ -22,37 +22,30 @@ public class StrategyController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<?>> getUserStrategy(Authentication auth) {
+    public ResponseEntity<ApiResponse<StrategyDto>> getUserStrategy(Authentication auth) {
         UserDto userDto = (UserDto) auth.getPrincipal();
         StrategyDto strategyDto = strategyService.getUserStrategy(userDto.getId());
-        if(strategyDto != null) {
-            return ResponseEntity.ok(ApiResponse.success("User strategy fetched successfully", strategyDto));
-        }
-        return ResponseEntity.status(404).body(ApiResponse.error("No strategy found for user"));
+        return ResponseEntity.ok(ApiResponse.success("User strategy fetched successfully", strategyDto));
     }
 
     @GetMapping("/history")
-    public ResponseEntity<ApiResponse<?>> getUserStrategyHistory(Authentication auth) {
+    public ResponseEntity<ApiResponse<List<StrategyDto>>> getUserStrategyHistory(Authentication auth) {
         UserDto userDto = (UserDto) auth.getPrincipal();
         List<StrategyDto> strategyHistory = strategyService.getUserStrategyHistory(userDto.getId());
         return ResponseEntity.ok(ApiResponse.success("User strategy history fetched successfully", strategyHistory)); // Replace null with actual history data
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<?>> saveStrategy(Authentication auth, @RequestBody StrategyRequestDto req) {
+    public ResponseEntity<ApiResponse<StrategyDto>> saveStrategy(Authentication auth, @RequestBody StrategyRequestDto req) {
         UserDto userDto = (UserDto) auth.getPrincipal();
         StrategyDto strategyDto = strategyService.addUserStrategy(userDto.getId(), req);
         return ResponseEntity.ok(ApiResponse.success("User strategy saved successfully", strategyDto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<?>> updateStrategy(Authentication auth, @PathVariable Long id, @RequestBody StrategyRequestDto req) {
+    public ResponseEntity<ApiResponse<StrategyDto>> updateStrategy(Authentication auth, @PathVariable Long id, @RequestBody StrategyRequestDto req) {
         UserDto userDto = (UserDto) auth.getPrincipal();
-        try {
-            StrategyDto updated = strategyService.updateUserStrategy(userDto.getId(), id, req);
-            return ResponseEntity.ok(ApiResponse.success("User strategy updated successfully", updated));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(404).body(ApiResponse.error("Strategy not found for user"));
-        }
+        StrategyDto updated = strategyService.updateUserStrategy(userDto.getId(), id, req);
+        return ResponseEntity.ok(ApiResponse.success("User strategy updated successfully", updated));
     }
 }

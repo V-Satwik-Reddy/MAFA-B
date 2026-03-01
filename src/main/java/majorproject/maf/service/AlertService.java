@@ -3,6 +3,7 @@ package majorproject.maf.service;
 import majorproject.maf.dto.request.AlertRequestDto;
 import majorproject.maf.dto.response.AlertResponseDto;
 import majorproject.maf.dto.response.UserDto;
+import majorproject.maf.exception.ResourseNotFoundException;
 import majorproject.maf.model.Alert;
 import majorproject.maf.model.StockPrice;
 import majorproject.maf.model.enums.AlertCondition;
@@ -70,6 +71,9 @@ public class AlertService {
 
     public AlertResponseDto deleteUserAlert(Integer userId,Long alertId) {
         Alert alert=alertRepository.findByUserIdAndId(userId,alertId);
+        if(alert==null){
+            throw new ResourseNotFoundException("Alert not found with id "+alertId);
+        }
         alert.setStatus(AlertStatus.CANCELLED);
         alertRepository.save(alert);
         return buildAlertResponse(alert);

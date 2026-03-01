@@ -53,6 +53,13 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/isa-chat")
+    public ResponseEntity<String> isaChat(@RequestBody ChatDto request, Authentication auth) {
+        UserDto user= (UserDto) auth.getPrincipal();
+        String response =chatService.investmentStrategyAgentChat(request.getUserQuery(),user.getId());
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/chats")
     public ResponseEntity<?> getChats(@RequestParam(required = false) Integer limit,@RequestParam(required = false) Integer page, Authentication auth) {
         UserDto user= (UserDto) auth.getPrincipal();

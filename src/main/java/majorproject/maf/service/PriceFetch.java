@@ -50,8 +50,8 @@ public class PriceFetch {
             if(stockPrice != null){
                 return stockPrice.getClose();
             }
-            stockPrice=fetchLast100DailyPrice(symbol).getFirst();
-            return stockPrice.getClose();
+            return fetchLast100DailyPrice(symbol).getFirst().getClose();
+
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch price for " + symbol, e);
@@ -68,11 +68,11 @@ public class PriceFetch {
     }
 
     @Cacheable(value = "historicalPrices",key = "#symbol")
-    public List<StockPrice> fetchLast100DailyPrice(String symbol) {
+    public List<StockPriceDto> fetchLast100DailyPrice(String symbol) {
         try {
             List<StockPrice> prices= stockPriceRepository.findBySymbolOrderByDateDesc(symbol);
             if(prices != null && !prices.isEmpty() && prices.size()>=100){
-                return prices;
+                return prices.stream().map(s -> new StockPriceDto(s.getSymbol(), s.getClose(), s.getDate(), s.getOpen(), s.getHigh(), s.getLow(), s.getVolume())).toList();
             }
             String apiKey = getNextApiKey();
             String url = String.format(BASE_URL,"TIME_SERIES_DAILY", symbol, apiKey);
@@ -109,7 +109,7 @@ public class PriceFetch {
                 prices.add(stockPrice);
             }
             stockPriceRepository.saveAll(prices);
-            return prices;
+            return prices.stream().map(s -> new StockPriceDto(s.getSymbol(), s.getClose(), s.getDate(), s.getOpen(), s.getHigh(), s.getLow(), s.getVolume())).toList();
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch price for " + symbol, e);
         }

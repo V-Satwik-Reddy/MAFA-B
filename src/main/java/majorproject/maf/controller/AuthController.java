@@ -13,6 +13,8 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -23,36 +25,37 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<?>> signUp(@Valid @RequestBody SignUpRequest req) {
-        ApiResponse<?> apiResponse = auth.signUp(req);
+    public ResponseEntity<ApiResponse<Void>> signUp(@Valid @RequestBody SignUpRequest req) {
+        ApiResponse<Void> apiResponse = auth.signUp(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
 
     @PostMapping("/resend-otp")
-    public ResponseEntity<ApiResponse<?>> resendOtp(@Valid @RequestBody SignUpRequest req) {
+    public ResponseEntity<ApiResponse<Void>> resendOtp(@Valid @RequestBody SignUpRequest req) {
         auth.sendOtpEmail(req.getEmail());
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.successMessage("OTP resent successfully"));
     }
 
     @PostMapping("/verify-email")
-    public ResponseEntity<ApiResponse<?>> verifyEmail(@Valid @RequestBody EmailVerifyRequest req, HttpServletResponse resp) {
-        ApiResponse<?> apiResponse = auth.verifyEmail(req,resp);
+    public ResponseEntity<ApiResponse<Map<String,Object>>> verifyEmail(@Valid @RequestBody EmailVerifyRequest req, HttpServletResponse resp) {
+        ApiResponse<Map<String,Object>> apiResponse = auth.verifyEmail(req,resp);
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login( @Valid @RequestBody LoginRequest req, HttpServletResponse response) {
-        ApiResponse<?> apiResponse = auth.login(req,response);
+    public ResponseEntity<ApiResponse<Map<String,Object>>> login( @Valid @RequestBody LoginRequest req, HttpServletResponse response) {
+        ApiResponse<Map<String,Object>> apiResponse = auth.login(req,response);
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh( @CookieValue(name = "refresh_token", required = false) String refreshToken) {
-        return auth.refresh(refreshToken);
+    public ResponseEntity<ApiResponse<Map<String,Object>>> refresh( @CookieValue(name = "refresh_token", required = false) String refreshToken) {
+        ApiResponse<Map<String,Object>> apiResponse = auth.refresh(refreshToken);
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletResponse response) {
         ResponseCookie deleteCookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
                 .secure(false)        // true in prod
@@ -61,7 +64,7 @@ public class AuthController {
                 .maxAge(0)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
-        return ResponseEntity.status(HttpStatus.OK).body("Logged out successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.successMessage("Logged out successfully"));
     }
 
 }

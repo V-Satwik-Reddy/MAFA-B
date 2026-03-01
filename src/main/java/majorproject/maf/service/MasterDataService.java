@@ -40,16 +40,15 @@ public class MasterDataService {
     }
 
     @CacheEvict(value = "permanentCache", key = "'allSectors'")
-    public String addSector(List<SectorDto> sectors) {
+    public void addSector(List<SectorDto> sectors) {
         List<SectorMaster> entities = sectors.stream()
                 .map(s -> new SectorMaster(s.getName()))
                 .toList();
         sectorMasterRepository.saveAll(entities);
-        return "success";
     }
 
     @CacheEvict(value = "permanentCache", key = "'allCompanies'")
-    public String addCompany(List<CompanyDto> companies) {
+    public void addCompany(List<CompanyDto> companies) {
         Set<String> sectorNames = companies.stream().map(CompanyDto::getSector).map(SectorDto::getName).collect(Collectors.toSet());
         Map<String, SectorMaster> sectorMap = sectorMasterRepository.findByNameIn(sectorNames);
         List<CompanyMaster> companyMasters= new ArrayList<>();
@@ -62,7 +61,6 @@ public class MasterDataService {
             companyMasters.add(companyMaster);
         }
         companyMasterRepository.saveAll(companyMasters);
-        return "success";
     }
 
     @Cacheable(value = "permanentCache", key = "'company::' + #symbol")

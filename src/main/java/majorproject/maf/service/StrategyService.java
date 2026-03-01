@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import majorproject.maf.dto.request.StrategyRequestDto;
 import majorproject.maf.dto.response.StrategyDto;
+import majorproject.maf.exception.ResourseNotFoundException;
 import majorproject.maf.model.InvestmentStrategy;
 import majorproject.maf.repository.StrategyRepository;
 import majorproject.maf.repository.UserRepository;
@@ -30,7 +31,7 @@ public class StrategyService {
     public StrategyDto getUserStrategy(int userId) {
         InvestmentStrategy strategy = strategyRepository.findFirstByUserIdAndIsActiveTrueOrderByCreatedAtDesc(userId);
         if (strategy == null) {
-            return null; // Or throw an exception if preferred
+            throw new ResourseNotFoundException("No active strategy found for user");
         }
         return toDto(strategy);
     }
@@ -59,7 +60,7 @@ public class StrategyService {
 
     public StrategyDto updateUserStrategy(int userId, Long strategyId, StrategyRequestDto req) {
         InvestmentStrategy strategy = strategyRepository.findByIdAndUserId(strategyId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Strategy not found for user"));
+                .orElseThrow(() -> new ResourseNotFoundException("Strategy not found for user"));
 
         if (req.getStrategyType() != null) {
             strategy.setStrategyType(req.getStrategyType());
@@ -82,8 +83,6 @@ public class StrategyService {
         if (req.getRebalancingFrequency() != null) {
             strategy.setRebalancingFrequency(req.getRebalancingFrequency());
         }
-        // You probably don't let client change isActive from here
-
         InvestmentStrategy saved = strategyRepository.save(strategy);
         return toDto(saved);
     }

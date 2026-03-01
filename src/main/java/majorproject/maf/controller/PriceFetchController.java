@@ -2,8 +2,8 @@ package majorproject.maf.controller;
 
 import majorproject.maf.dto.request.SymbolsRequest;
 import majorproject.maf.dto.response.*;
-import majorproject.maf.model.StockPrice;
 import majorproject.maf.service.PriceFetch;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -25,35 +25,33 @@ public class PriceFetchController {
     }
 
     @PostMapping("/bulkstockprice")
-    public ResponseEntity<ApiResponse<?>> getBulkStockPrice(@RequestBody SymbolsRequest req){
+    public ResponseEntity<ApiResponse<List<StockPriceDto>>> getBulkStockPrice(@RequestBody SymbolsRequest req){
         List<String> symbols = req.getSymbols();
         List<StockPriceDto> prices = priceFetch.fetchBulkCurrentPrice(symbols);
-        ApiResponse<List<StockPriceDto>> response = new ApiResponse<>(true, "Fetched current prices for provided symbols", prices);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Fetched current prices for provided symbols", prices));
     }
 
     @GetMapping("/stockdailyprices")
-    public ResponseEntity<ApiResponse<?>> getAllPrices(@RequestParam String symbol) {
-        List<StockPrice> allPrices = priceFetch.fetchLast100DailyPrice(symbol);
-        ApiResponse<List<StockPrice>> response = new ApiResponse<>(true, "Fetched last 30 days prices", allPrices);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ApiResponse<List<StockPriceDto>>> getAllPrices(@RequestParam String symbol) {
+        List<StockPriceDto> allPrices = priceFetch.fetchLast100DailyPrice(symbol);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Fetched last 30 days prices", allPrices));
     }
 
     @GetMapping("/stockchange")
-    public ResponseEntity<?> getStockChange(@RequestParam String symbol) {
+    public ResponseEntity<ApiResponse<StockChange>> getStockChange(@RequestParam String symbol) {
         StockChange stockChange = priceFetch.fetchPriceChange(symbol);
-        return ResponseEntity.ok(stockChange);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Fetched stock change", stockChange));
     }
 
     @GetMapping("/user-stockchange")
-    public ResponseEntity<?> getUserStockChange(Authentication auth) {
+    public ResponseEntity<ApiResponse<List<StockChange>>> getUserStockChange(Authentication auth) {
         UserDto u = (UserDto) auth.getPrincipal();
         return ResponseEntity.ok().body(ApiResponse.success("Fetched user stock changes", priceFetch.fetchUserStockChanges(u)));
     }
 
     @PostMapping("/jobs/updateprices")
-    public ResponseEntity<?> updatePrices(){
+    public ResponseEntity<ApiResponse<Void>> updatePrices(){
         priceFetch.addPreviousDayPrices();
-        return ResponseEntity.ok("Prices Updated Successfully");
+        return ResponseEntity.ok().body(ApiResponse.successMessage("Prices Updated Successfully"));
     }
 }

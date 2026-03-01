@@ -21,17 +21,19 @@ public class MasterDataController {
     }
 
     @GetMapping("/companies")
-    public ResponseEntity<ApiResponse<?>> getCompanies() {
-        return ResponseEntity.ok(ApiResponse.success("Companies fetched successfully", masterDataService.getAllCompanies()));
+    public ResponseEntity<ApiResponse<List<CompanyDto>>> getCompanies() {
+        List<CompanyDto> companies = masterDataService.getAllCompanies();
+        return ResponseEntity.ok(ApiResponse.success("Companies fetched successfully", companies));
     }
 
     @GetMapping("/companies/{symbol}")
-    public ResponseEntity<ApiResponse<?>> getCompanyBySymbol(@PathVariable String symbol) {
-        return ResponseEntity.ok(ApiResponse.success("Companies fetched successfully", masterDataService.getBySymbol(symbol)));
+    public ResponseEntity<ApiResponse<CompanyDto>> getCompanyBySymbol(@PathVariable String symbol) {
+        CompanyDto company = masterDataService.getBySymbol(symbol);
+        return ResponseEntity.ok(ApiResponse.success("Companies fetched successfully", company));
     }
 
     @PostMapping("/companies/by-symbols")
-    public ResponseEntity<ApiResponse<?>> getCompaniesBySymbols(
+    public ResponseEntity<ApiResponse<List<CompanyDto>>> getCompaniesBySymbols(
             @RequestBody SymbolsRequest request) {
 
         List<CompanyDto> companies = request.getSymbols().stream()
@@ -45,17 +47,20 @@ public class MasterDataController {
     }
 
     @GetMapping("/sectors")
-    public ResponseEntity<ApiResponse<?>> getSectors() {
-        return ResponseEntity.ok(ApiResponse.success("Sectors fetched successfully", masterDataService.getAllSectors()));
+    public ResponseEntity<ApiResponse<List<SectorDto>>> getSectors() {
+        List<SectorDto> sectors = masterDataService.getAllSectors();
+        return ResponseEntity.ok(ApiResponse.success("Sectors fetched successfully", sectors));
     }
 
     @PostMapping("/sectors")
-    public ResponseEntity<ApiResponse<?>> addSector(@RequestBody List<SectorDto> sector) {
-        return ResponseEntity.ok(ApiResponse.success("Sector added successfully", masterDataService.addSector(sector)));
+    public ResponseEntity<ApiResponse<Void>> addSector(@RequestBody List<SectorDto> sector) {
+        masterDataService.addSector(sector);
+        return ResponseEntity.ok(ApiResponse.successMessage("Sector added successfully"));
     }
 
     @PostMapping("/companies")
-    public ResponseEntity<ApiResponse<?>> addCompany(@RequestBody List<CompanyDto> companies) {
-        return ResponseEntity.ok(ApiResponse.success("Company added successfully", masterDataService.addCompany(companies)));
+    public ResponseEntity<ApiResponse<Void>> addCompany(@RequestBody List<CompanyDto> companies) {
+        masterDataService.addCompany(companies);
+        return ResponseEntity.ok(ApiResponse.successMessage("Company added successfully"));
     }
 }

@@ -1,5 +1,6 @@
 package majorproject.maf.controller;
 
+import majorproject.maf.dto.response.ApiResponse;
 import majorproject.maf.dto.response.StockDashboardDto;
 import majorproject.maf.dto.response.TransactionDto;
 import majorproject.maf.dto.response.UserDto;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
+import java.util.ListResourceBundle;
 
 @RestController
 public class DashboardController {
@@ -23,19 +25,19 @@ public class DashboardController {
     }
 
     @GetMapping("/transactions")
-    public ResponseEntity<?> getTransactions(@RequestParam(required = false) Integer limit,
-                                             @RequestParam(required = false) Integer page,
-                                             @RequestParam(required = false) Period period,
-                                             Authentication auth) {
+    public ResponseEntity<ApiResponse<List<TransactionDto>>> getTransactions(@RequestParam(required = false) Integer limit,
+                                                       @RequestParam(required = false) Integer page,
+                                                       @RequestParam(required = false) Period period,
+                                                       Authentication auth) {
         UserDto u=(UserDto) auth.getPrincipal();
         List<TransactionDto> txns = dashboardService.getUserTransactions(u.getId(),limit,page,period);
-        return ResponseEntity.status(HttpStatus.OK).body(txns);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Users Transactions fetched successfully", txns));
     }
 
     @GetMapping("/dashboard")
-    public ResponseEntity<?> getDashboardData(Authentication auth) {
+    public ResponseEntity<ApiResponse<List<StockDashboardDto>>> getDashboardData(Authentication auth) {
         UserDto u=(UserDto) auth.getPrincipal();
         List<StockDashboardDto> holdings =  dashboardService.getHoldingsDetails(u.getId());
-        return ResponseEntity.status(HttpStatus.OK).body(holdings);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Users Holdings fetched successfully", holdings));
     }
 }

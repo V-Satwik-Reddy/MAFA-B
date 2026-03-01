@@ -1,17 +1,9 @@
 package majorproject.maf.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Builder;
 
-@Data
-@AllArgsConstructor
 @Builder
-public class ApiResponse<T> {
-
-    private final boolean success;
-    private final String message;
-    private final T data;
+public record ApiResponse<T>(boolean success, String message, T data) {
 
     public static <T> ApiResponse<T> success(String message, T data) {
         return ApiResponse.<T>builder()
@@ -21,15 +13,15 @@ public class ApiResponse<T> {
                 .build();
     }
 
-    public static <T> ApiResponse<T> successMessage(String message) {
-        return ApiResponse.<T>builder()
+    public static <Void> ApiResponse<Void> successMessage(String message) {
+        return ApiResponse.<Void>builder()
                 .success(true)
                 .message(message)
                 .build();
     }
 
-    public static <T> ApiResponse<T> error(String message) {
-        return ApiResponse.<T>builder()
+    public static ApiResponse<Void> error(String message) {
+        return ApiResponse.<Void>builder()
                 .success(false)
                 .message(message)
                 .build();

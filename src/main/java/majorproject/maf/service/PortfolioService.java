@@ -2,6 +2,8 @@ package majorproject.maf.service;
 
 import majorproject.maf.dto.response.*;
 import majorproject.maf.exception.InsufficientBalanceException;
+import majorproject.maf.exception.ResourceAlreadyExistsException;
+import majorproject.maf.exception.ResourseNotFoundException;
 import majorproject.maf.model.PortfolioDailySnapshot;
 import majorproject.maf.model.Stock;
 import majorproject.maf.model.StockPrice;
@@ -101,20 +103,19 @@ public class PortfolioService {
         return wlDto;
     }
 
-    public int addToWatchlist(int id, String symbol) {
+    public void addToWatchlist(int id, String symbol) {
         CompanyMaster company= companyMasterRepository.findBySymbol(symbol);
         Watchlist w=watchlistRepository.findBySymbolAndUserId(symbol, id);
-        if(w!=null) return 0;
+        if(w!=null) throw new ResourceAlreadyExistsException("Company already in watchlist");
         w=new Watchlist();
         w.setCompany(company);
         w.setUser(userRepository.getReferenceById(id));
         watchlistRepository.save(w);
-        return 1;
     }
 
-    public boolean removeFromWatchlist(int id, String symbol) {
+    public void removeFromWatchlist(int id, String symbol) {
         int i=watchlistRepository.deleteByUserIdAndCompanySymbol(id, symbol);
-        return i != 0;
+        if(i==0) throw new ResourseNotFoundException("Watchlist not found");
     }
 
     public void createEODPortfolioSnapshot() {

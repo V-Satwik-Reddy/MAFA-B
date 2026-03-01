@@ -2,10 +2,7 @@ package majorproject.maf.controller;
 
 import majorproject.maf.dto.request.AddBalance;
 import majorproject.maf.dto.request.WatchlistRequest;
-import majorproject.maf.dto.response.ApiResponse;
-import majorproject.maf.dto.response.Share;
-import majorproject.maf.dto.response.UserDto;
-import majorproject.maf.dto.response.WatchlistDto;
+import majorproject.maf.dto.response.*;
 import majorproject.maf.model.enums.Interval;
 import majorproject.maf.model.enums.Period;
 import majorproject.maf.service.PortfolioService;
@@ -28,69 +25,65 @@ public class PortfolioController {
     }
 
     @GetMapping("/holdings")
-    public ResponseEntity<ApiResponse<?>> getHoldings(Authentication authentication) {
+    public ResponseEntity<ApiResponse<List<Share>>> getHoldings(Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
         List<Share> holdings = portfolioService.getUserHoldings(u.getId());
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("User Holdings fetched", holdings));
     }
 
     @PostMapping("/deposit-balance")
-    public ResponseEntity<ApiResponse<?>> addBalance(@RequestBody AddBalance addBalance, Authentication authentication) {
+    public ResponseEntity<ApiResponse<Void>> addBalance(@RequestBody AddBalance addBalance, Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
         portfolioService.depositBalance(u.getId(), addBalance.getAmount());
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.successMessage("Balance added successfully"));
     }
 
     @PostMapping("/withdraw-balance")
-    public ResponseEntity<ApiResponse<?>> withdrawBalance(@RequestBody AddBalance addBalance, Authentication authentication) {
+    public ResponseEntity<ApiResponse<Void>> withdrawBalance(@RequestBody AddBalance addBalance, Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
         portfolioService.withdrawBalance(u.getId(), addBalance.getAmount());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("Balance withdrawn successfully"));
     }
 
     @GetMapping("/balance")
-    public ResponseEntity<ApiResponse<?>> getBalance(Authentication authentication) {
+    public ResponseEntity<ApiResponse<Double>> getBalance(Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
         Double balance = portfolioService.getBalance(u.getId());
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("User balance fetched", balance));
     }
 
     @GetMapping("/watchlist")
-    public ResponseEntity<ApiResponse<?>> getWatchlist(Authentication authentication) {
+    public ResponseEntity<ApiResponse<List<WatchlistDto>>> getWatchlist(Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
         List<WatchlistDto> watchlist = portfolioService.getWatchlist(u.getId());
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("User watchlist fetched", watchlist));
     }
 
     @PostMapping("/watchlist")
-    public ResponseEntity<ApiResponse<?>> addToWatchlist(@RequestBody WatchlistRequest req, Authentication authentication) {
+    public ResponseEntity<ApiResponse<Map<String,Object>>> addToWatchlist(@RequestBody WatchlistRequest req, Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
-        int i=portfolioService.addToWatchlist(u.getId(), req.getSymbol());
-        if(i==1) return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Company added to watchlist", Map.of("symbol", req.getSymbol(), "addedAt", LocalDateTime.now())));
-        else
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error("Company already in watchlist"));
+        portfolioService.addToWatchlist(u.getId(), req.getSymbol());
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Company added to watchlist", Map.of("symbol", req.getSymbol(), "addedAt", LocalDateTime.now())));
     }
 
     @DeleteMapping("/watchlist/{symbol}")
-    public ResponseEntity<ApiResponse<?>> removeFromWatchlist(@PathVariable String symbol, Authentication authentication) {
+    public ResponseEntity<ApiResponse<Map<String,Object>>> removeFromWatchlist(@PathVariable String symbol, Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
-        boolean done=portfolioService.removeFromWatchlist(u.getId(), symbol);
-        if(done)
-            return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Company removed from watchlist", Map.of("symbol",symbol,"removed",true)));
-        else
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Company not found in watchlist"));
+        portfolioService.removeFromWatchlist(u.getId(), symbol);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Company removed from watchlist", Map.of("symbol",symbol,"removed",true)));
     }
 
     @PostMapping("/jobs/create-eod-snapshot")
-    public ResponseEntity<ApiResponse<?>> createEODPortfolioSnapshot() {
+    public ResponseEntity<ApiResponse<Void>> createEODPortfolioSnapshot() {
         portfolioService.createEODPortfolioSnapshot();
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.successMessage("EOD Portfolio snapshot created successfully"));
     }
 
     @GetMapping("/portfolio/history")
-    public ResponseEntity<ApiResponse<?>> getPortfolioHistory(@RequestParam Period period, @RequestParam(required = false) Interval interval, Authentication authentication) {
+    public ResponseEntity<ApiResponse<List<PortfolioDailySnapshotDTO>>> getPortfolioHistory(@RequestParam Period period, @RequestParam(required = false) Interval interval, Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Portfolio history fetched", portfolioService.getPortfolioHistory(u.getId(), period, interval)));
+        List<PortfolioDailySnapshotDTO> snapshots=portfolioService.getPortfolioHistory(u.getId(), period, interval);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Portfolio history fetched", snapshots));
     }
 }
 

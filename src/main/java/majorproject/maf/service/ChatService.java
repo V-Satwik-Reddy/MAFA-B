@@ -61,6 +61,10 @@ public class ChatService {
         return callAgentService(userQuery,id,"portfolio-manager-agent");
     }
 
+    public String investmentStrategyAgentChat(String userQuery, int id) {
+        return callAgentService(userQuery,id,"investment-strategy-agent");
+    }
+
     public String mcpChat(String query, int id) {
         return callAgentService(query,id,"mcp/query");
     }
