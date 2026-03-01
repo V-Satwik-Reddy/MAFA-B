@@ -140,8 +140,9 @@ public class PriceFetch {
                 if(c==API_KEYS.length){
                     Map<String, StockPrice> finalStockPrices = new HashMap<>(stockPrices);
                     alertService.checkAlerts(finalStockPrices);
+                    stockPriceRepository.saveAll(stockPrices.values());
                     stockPrices=new HashMap<>();
-                    Thread.sleep(120000);
+                    Thread.sleep(10000);
                     c=0;
                 }
                 c++;
@@ -174,9 +175,9 @@ public class PriceFetch {
                 stockPrice.setLow(globalQuote.get("04. low").asDouble());
                 stockPrice.setClose(globalQuote.get("05. price").asDouble());
                 stockPrice.setVolume(globalQuote.get("06. volume").asLong());
-                stockPriceRepository.save(stockPrice);
                 stockPrices.put(symbol,stockPrice);
             }
+            stockPriceRepository.saveAll(stockPrices.values());
             alertService.checkAlerts(stockPrices);
         }catch (Exception e){
             throw new RuntimeException("Failed to fetch previous day prices", e);

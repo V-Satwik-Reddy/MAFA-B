@@ -10,7 +10,11 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class MasterDataService {
@@ -36,26 +40,28 @@ public class MasterDataService {
     }
 
     @CacheEvict(value = "permanentCache", key = "'allSectors'")
-    public String addSector(List<SectorDto> sector) {
-        for (SectorDto sectorDto : sector) {
-            SectorMaster sectorMaster = new SectorMaster();
-            sectorMaster.setName(sectorDto.getName());
-            sectorMasterRepository.save(sectorMaster);
-        }
+    public String addSector(List<SectorDto> sectors) {
+        List<SectorMaster> entities = sectors.stream()
+                .map(s -> new SectorMaster(s.getName()))
+                .toList();
+        sectorMasterRepository.saveAll(entities);
         return "success";
     }
 
     @CacheEvict(value = "permanentCache", key = "'allCompanies'")
     public String addCompany(List<CompanyDto> companies) {
+        Set<String> sectorNames = companies.stream().map(CompanyDto::getSector).map(SectorDto::getName).collect(Collectors.toSet());
+        Map<String, SectorMaster> sectorMap = sectorMasterRepository.findByNameIn(sectorNames);
+        List<CompanyMaster> companyMasters= new ArrayList<>();
         for (CompanyDto companyDto : companies) {
             CompanyMaster companyMaster = new CompanyMaster();
             companyMaster.setName(companyDto.getName());
             companyMaster.setSymbol(companyDto.getSymbol());
-            SectorMaster s=sectorMasterRepository.getReferenceById(companyDto.getSector().getId());
-            companyMaster.setSector(s);
+            companyMaster.setSector(sectorMap.get(companyDto.getSector().getName()));
             priceFetch.fetchCurrentPrice(companyDto.getSymbol());
-            companyMasterRepository.save(companyMaster);
+            companyMasters.add(companyMaster);
         }
+        companyMasterRepository.saveAll(companyMasters);
         return "success";
     }
 

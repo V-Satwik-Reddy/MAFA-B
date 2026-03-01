@@ -3,13 +3,13 @@ package majorproject.maf.service;
 import majorproject.maf.dto.response.*;
 import majorproject.maf.exception.InsufficientBalanceException;
 import majorproject.maf.model.PortfolioDailySnapshot;
+import majorproject.maf.model.Stock;
 import majorproject.maf.model.StockPrice;
 import majorproject.maf.model.Transaction;
 import majorproject.maf.model.enums.Interval;
 import majorproject.maf.model.enums.Period;
 import majorproject.maf.model.enums.TransactionType;
 import majorproject.maf.model.serving.CompanyMaster;
-import majorproject.maf.model.user.User;
 import majorproject.maf.model.user.UserProfile;
 import majorproject.maf.model.user.Watchlist;
 import majorproject.maf.repository.*;
@@ -118,22 +118,26 @@ public class PortfolioService {
     }
 
     public void createEODPortfolioSnapshot() {
-        List<User> users = userRepository.findAll();
-        for(User user:users){
-            Double cashBalance = getBalance(user.getId());
+        List<UserProfile> users = userProfileRepository.findAll();
+        List<Stock> allShares = stockRepository.findAll();
+        Map<Integer, List<Stock>> sharesByUser = allShares.stream().collect(Collectors.groupingBy(s -> s.getUser().getId()));
+        Map<String,StockPrice> sharePrice = stockPriceRepository.batchFind(allShares.stream().map(Stock::getSymbol).toList());
+        List<PortfolioDailySnapshot>  snapshots=new ArrayList<>();
+        for(UserProfile user:users){
+            Double cashBalance = user.getBalance();
             PortfolioDailySnapshot portfolioDailySnapshot = new PortfolioDailySnapshot();
-            List<Share> investedShares = getUserHoldings(user.getId());
             double investedValue = 0.0;
-            for(Share share: investedShares) {
-                investedValue += share.getQuantity() * share.getPrice();
+            for(Stock stock:sharesByUser.get(user.getId())) {
+                investedValue += stock.getShares() * sharePrice.get(stock.getSymbol()).getClose();
             }
-            portfolioDailySnapshot.setUser(user);
+            portfolioDailySnapshot.setUser(user.getUser());
             portfolioDailySnapshot.setDate(java.time.LocalDate.now());
             portfolioDailySnapshot.setInvestedValue(investedValue);
             portfolioDailySnapshot.setCashBalance(cashBalance);
             portfolioDailySnapshot.setTotalValue(investedValue + cashBalance);
-            portfolioDailySnapshotRepository.save(portfolioDailySnapshot);
+            snapshots.add(portfolioDailySnapshot);
         }
+        portfolioDailySnapshotRepository.saveAll(snapshots);
     }
 
     public List<PortfolioDailySnapshotDTO> getPortfolioHistory(int id, Period period, Interval interval) {

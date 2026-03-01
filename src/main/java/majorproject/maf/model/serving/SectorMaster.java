@@ -3,8 +3,11 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "sector_master")
-@Getter @Setter
 public class SectorMaster {
 
     @Id
@@ -13,4 +16,8 @@ public class SectorMaster {
 
     @Column(unique = true)
     private String name;
+
+    public SectorMaster(String name) {
+        this.name = name;
+    }
 }

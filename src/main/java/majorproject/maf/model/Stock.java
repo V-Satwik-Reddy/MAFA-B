@@ -6,11 +6,11 @@ import lombok.*;
 import majorproject.maf.model.user.User;
 
 @Entity
-@Table(name = "holdings")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "holdings")
 public class Stock {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
