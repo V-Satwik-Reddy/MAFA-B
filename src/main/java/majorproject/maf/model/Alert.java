@@ -8,15 +8,16 @@ import lombok.Setter;
 import majorproject.maf.model.enums.AlertCondition;
 import majorproject.maf.model.enums.AlertStatus;
 import majorproject.maf.model.enums.Channel;
+import majorproject.maf.model.user.User;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "alerts")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "alerts")
 public class Alert {
 
     @Id
@@ -25,7 +26,9 @@ public class Alert {
 
     private String userEmail;
 
-    private Integer userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     private String symbol;
 

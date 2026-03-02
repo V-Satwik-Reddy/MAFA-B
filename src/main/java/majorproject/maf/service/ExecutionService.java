@@ -4,7 +4,6 @@ import majorproject.maf.dto.request.ExecuteRequest;
 import majorproject.maf.dto.response.TransactionDto;
 import majorproject.maf.exception.InsufficientBalanceException;
 import majorproject.maf.model.enums.TransactionType;
-import majorproject.maf.model.user.UserProfile;
 import majorproject.maf.repository.UserProfileRepository;
 import org.springframework.transaction.annotation.Transactional;
 import majorproject.maf.model.Stock;

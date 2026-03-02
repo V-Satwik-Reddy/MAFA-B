@@ -5,7 +5,6 @@ import majorproject.maf.dto.request.ProfileRequest;
 import majorproject.maf.dto.response.*;
 import majorproject.maf.exception.InvalidProfileDetailsException;
 import majorproject.maf.model.enums.EmploymentStatus;
-import majorproject.maf.model.enums.Gender;
 import majorproject.maf.model.enums.SalaryRange;
 import majorproject.maf.model.enums.UserStatus;
 import majorproject.maf.model.serving.Companies;
@@ -65,7 +64,7 @@ public class ProfileService {
             int userId = userDto.getId();
             UserProfile userProfile = userProfileRepository.findByUserId(userId);
             return new Profile(userDto.getEmail(), userProfile.getUsername(),userDto.getPhone(),userProfile.getBalance(), userProfile.getFirstName(), userProfile.getLastName(),
-                    userProfile.getDateOfBirth(), userProfile.getGender().toString(),
+                    userProfile.getDateOfBirth(), userProfile.getGender(),
                     userProfile.getAddressLine1(), userProfile.getAddressLine2(), userProfile.getCity(),
                     userProfile.getState(), userProfile.getPostalCode(), userProfile.getCountry(),
                     userProfile.getJobTitle(), userProfile.getCompanyName(), userProfile.getIndustry(),
@@ -74,11 +73,6 @@ public class ProfileService {
         }
 
         private UserProfile buildProfile(UserProfile profile, ProfileRequest request) {
-            Gender gender = switch (request.getGender().toLowerCase()) {
-                case "male" -> Gender.MALE;
-                case "female" -> Gender.FEMALE;
-                default -> Gender.PREFER_NOT_TO_SAY;
-            };
 
             EmploymentStatus employmentStatus = switch (request.getEmploymentStatus().toLowerCase()) {
                 case "employed" -> EmploymentStatus.EMPLOYED;
@@ -98,7 +92,7 @@ public class ProfileService {
             profile.setFirstName(request.getFirstName());
             profile.setLastName(request.getLastName());
             profile.setDateOfBirth(request.getDateOfBirth());
-            profile.setGender(gender);
+            profile.setGender(request.getGender());
             profile.setUsername(request.getUsername());
 
             profile.setAddressLine1(request.getAddressLine1());

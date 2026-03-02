@@ -60,7 +60,7 @@ public class User {
         this.password = password;
         this.createdAt = LocalDateTime.now();
         this.isEmailVerified = true;
-        this.status = UserStatus.ProfilePENDING;
+        this.status = UserStatus.PROFILE_PENDING;
         this.phone="";
     }
 }

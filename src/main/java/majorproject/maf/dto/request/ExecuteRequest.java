@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExecuteRequest {
-    private long Quantity;
+    private long quantity;
     private String symbol;
 }

@@ -3,6 +3,7 @@ package majorproject.maf.dto.request;
 
 import jakarta.persistence.*;
 import lombok.*;
+import majorproject.maf.model.enums.Gender;
 
 import java.time.LocalDate;
 
@@ -15,7 +16,7 @@ public class ProfileRequest {
     private String firstName;
     private String lastName;
     private LocalDate dateOfBirth;
-    private String gender;
+    private Gender gender;
     private String phone;
     @Column(unique = true)
     private String username;

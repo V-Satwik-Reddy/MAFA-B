@@ -9,6 +9,7 @@ import majorproject.maf.model.StockPrice;
 import majorproject.maf.model.enums.AlertCondition;
 import majorproject.maf.model.enums.AlertStatus;
 import majorproject.maf.repository.AlertRepository;
+import majorproject.maf.repository.UserRepository;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +23,12 @@ public class AlertService {
 
     private final AlertRepository alertRepository;
     private final EmailService emailService;
+    private final UserRepository userRepository;
 
-    public AlertService(AlertRepository alertRepository, EmailService emailService) {
+    public AlertService(AlertRepository alertRepository, EmailService emailService, UserRepository userRepository) {
         this.alertRepository = alertRepository;
         this.emailService = emailService;
+        this.userRepository = userRepository;
     }
 
     private AlertResponseDto buildAlertResponse(Alert alert) {
@@ -44,7 +47,7 @@ public class AlertService {
     public AlertResponseDto createAlert(UserDto user,AlertRequestDto alertRequestDto) {
         Alert alert = new Alert();
         alert.setUserEmail(user.getEmail());
-        alert.setUserId(user.getId());
+        alert.setUser(userRepository.getReferenceById(user.getId()));
         alert.setSymbol(alertRequestDto.getSymbol());
         alert.setChannel(alertRequestDto.getChannel());
         alert.setAlertCondition(alertRequestDto.getCondition());

@@ -3,7 +3,6 @@ package majorproject.maf.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -14,7 +13,6 @@ import majorproject.maf.model.enums.UserStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
-import java.sql.SQLOutput;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -48,7 +46,7 @@ public class JWTService {
                 .claim("phone",user.getPhone())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRY))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .signWith(key)
                 .compact();
     }
 
@@ -63,7 +61,7 @@ public class JWTService {
                 .claim("phone",user.getPhone())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRY))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .signWith(key)
                 .compact();
     }
 
@@ -89,7 +87,7 @@ public class JWTService {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
-                .setSigningKey(key)
+                .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

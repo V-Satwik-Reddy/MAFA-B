@@ -1,5 +1,6 @@
 package majorproject.maf.service;
 
+import jakarta.transaction.Transactional;
 import majorproject.maf.dto.response.*;
 import majorproject.maf.exception.InsufficientBalanceException;
 import majorproject.maf.exception.ResourceAlreadyExistsException;
@@ -65,6 +66,7 @@ public class PortfolioService {
         return s;
     }
 
+    @Transactional
     public void depositBalance(int id, double amount) {
         Transaction transaction = new Transaction();
         transaction.setType(TransactionType.DEPOSIT);
@@ -76,6 +78,7 @@ public class PortfolioService {
         userProfileRepository.creditBalance(id, amount);
     }
 
+    @Transactional
     public void withdrawBalance(int id, double amount) {
         int res=userProfileRepository.debitIfSufficientBalance(id, amount);
         if(res==0) throw new InsufficientBalanceException("Insufficient balance to execute the withdrawal.");
@@ -93,6 +96,7 @@ public class PortfolioService {
         return userProfile.getBalance();
     }
 
+    @Transactional
     public List<WatchlistDto> getWatchlist(int id) {
         List<Watchlist> wl= watchlistRepository.findByUser(id);
         List<WatchlistDto> wlDto=new ArrayList<>();
@@ -118,6 +122,7 @@ public class PortfolioService {
         if(i==0) throw new ResourseNotFoundException("Watchlist not found");
     }
 
+    @Transactional
     public void createEODPortfolioSnapshot() {
         List<UserProfile> users = userProfileRepository.findAll();
         List<Stock> allShares = stockRepository.findAll();

@@ -1,7 +1,6 @@
 package majorproject.maf.repository;
 
 import majorproject.maf.model.Alert;
-import majorproject.maf.model.enums.AlertCondition;
 import majorproject.maf.model.enums.AlertStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

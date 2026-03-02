@@ -56,9 +56,9 @@ public class RedisConfig {
 
         Map<String, RedisCacheConfiguration> cacheConfigs = new HashMap<>();
 
-        cacheConfigs.put("currentPrices", defaultConfig.entryTtl(Duration.ofMinutes(60)));
+        cacheConfigs.put("currentPrices", defaultConfig.entryTtl(Duration.ofHours(24)));
         cacheConfigs.put("historicalPrices", defaultConfig.entryTtl(Duration.ofHours(24)));
-        cacheConfigs.put("priceChanges", defaultConfig.entryTtl(Duration.ofMinutes(24)));
+        cacheConfigs.put("priceChanges", defaultConfig.entryTtl(Duration.ofHours(24)));
         cacheConfigs.put("users", defaultConfig.entryTtl(Duration.ofDays(7)));
         cacheConfigs.put("shortLived", defaultConfig.entryTtl(Duration.ofMinutes(5)));
 

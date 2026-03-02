@@ -4,6 +4,6 @@ public enum UserStatus {
     ACTIVE,
     INACTIVE,
     BLOCKED,
-    ProfilePENDING,
-    PhoneVerificationPENDING
+    PROFILE_PENDING,
+    PHONE_VERIFICATION_PENDING
 }
