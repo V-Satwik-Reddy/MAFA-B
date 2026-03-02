@@ -6,8 +6,6 @@ import java.io.Serial;
 import java.io.Serializable;
 
 @Data
-@Getter
-@Setter
 @AllArgsConstructor
 public class StockChange implements Serializable {
     @Serial

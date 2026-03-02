@@ -1,15 +1,11 @@
 package majorproject.maf.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import majorproject.maf.model.enums.RebalancingFrequency;
 import majorproject.maf.model.enums.RiskProfile;
 import java.util.Map;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class StrategyRequestDto {

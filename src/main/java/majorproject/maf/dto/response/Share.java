@@ -3,8 +3,7 @@ package majorproject.maf.dto.response;
 
 import lombok.*;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Share {

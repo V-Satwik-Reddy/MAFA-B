@@ -3,8 +3,6 @@ package majorproject.maf.dto.response;
 import lombok.*;
 
 @Data
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class StockDashboardDto {

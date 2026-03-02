@@ -5,8 +5,7 @@ import lombok.*;
 import java.io.Serial;
 import java.io.Serializable;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class SectorDto implements Serializable {

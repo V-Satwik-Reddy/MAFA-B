@@ -1,17 +1,13 @@
 package majorproject.maf.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import majorproject.maf.model.enums.RebalancingFrequency;
 import majorproject.maf.model.enums.RiskProfile;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class StrategyDto {
