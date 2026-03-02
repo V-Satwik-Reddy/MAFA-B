@@ -80,6 +80,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(ex.getMessage()));
     }
 
+    @ExceptionHandler(InvalidProfileDetailsException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidProfileDetailsException(InvalidProfileDetailsException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleOtherExceptions(Exception ex) {
         logger.error("Unhandled exception", ex);

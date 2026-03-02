@@ -10,6 +10,8 @@ import majorproject.maf.model.enums.AlertCondition;
 import majorproject.maf.model.enums.AlertStatus;
 import majorproject.maf.repository.AlertRepository;
 import majorproject.maf.repository.UserRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -58,24 +60,33 @@ public class AlertService {
         return buildAlertResponse(alert);
     }
 
-    public List<AlertResponseDto> getUserAlerts(Integer userId, AlertStatus status) {
+    public List<AlertResponseDto> getUserAlerts(Integer userId, AlertStatus status,int page, Integer size) {
         List<Alert> alerts;
-        if(status==null){
-            alerts=alertRepository.findByUserId(userId);
-        }else{
+        if(size!=null&&status!=null){
+            PageRequest pageable = PageRequest.of(page,size, Sort.by("createdAt").descending());
+            alerts=alertRepository.findByUserIdAndStatus(userId,status,pageable);
+        }else if(size!=null){
+            PageRequest pageable = PageRequest.of(page,size, Sort.by("createdAt").descending());
+            alerts=alertRepository.findByUserId(userId,pageable);
+        }else if(status != null){
             alerts=alertRepository.findByUserIdAndStatus(userId,status);
+        }else{
+            alerts=alertRepository.findByUserId(userId);
         }
-        List<AlertResponseDto> alertResponseDtos=new ArrayList<>();
+        List<AlertResponseDto> alertResponseDTOs=new ArrayList<>();
         for(Alert alert:alerts){
-            alertResponseDtos.add(buildAlertResponse(alert));
+            alertResponseDTOs.add(buildAlertResponse(alert));
         }
-        return alertResponseDtos;
+        return alertResponseDTOs;
     }
 
     public AlertResponseDto deleteUserAlert(Integer userId,Long alertId) {
         Alert alert=alertRepository.findByUserIdAndId(userId,alertId);
         if(alert==null){
             throw new ResourseNotFoundException("Alert not found with id "+alertId);
+        }
+        if(alert.getStatus()==AlertStatus.TRIGGERED){
+            throw new IllegalStateException("Cannot cancel an already triggered alert");
         }
         alert.setStatus(AlertStatus.CANCELLED);
         alertRepository.save(alert);

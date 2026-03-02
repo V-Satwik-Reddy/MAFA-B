@@ -18,14 +18,14 @@ public interface StockPriceRepository extends JpaRepository<StockPrice, Long> {
     List<String> findAllSymbols();
 
     @Query("""
-    select sp.symbol,sp
+    select sp
     from StockPrice sp
     where sp.symbol in :symbols
     and sp.date = (
         select max(sp2.date) from StockPrice sp2
     ) order by sp.symbol
     """)
-    Map<String, StockPrice> batchFind(List<String> symbols);
+    List<StockPrice> batchFind(List<String> symbols);
 
     @Query("""
         select sp.close

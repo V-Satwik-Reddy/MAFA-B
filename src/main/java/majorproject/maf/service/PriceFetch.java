@@ -59,7 +59,8 @@ public class PriceFetch {
     }
 
     public List<StockPriceDto> fetchBulkCurrentPrice(List<String> symbols) {
-        Map<String,StockPrice> sp=stockPriceRepository.batchFind(symbols);
+        Map<String,StockPrice> sp=stockPriceRepository.batchFind(symbols).stream()
+                .collect(Collectors.toMap(StockPrice::getSymbol, sp1 -> sp1));
         List<StockPriceDto> prices=new ArrayList<>();
         for(StockPrice s: sp.values()){
             prices.add(new StockPriceDto(s.getSymbol(), s.getClose(), s.getDate(), s.getOpen(), s.getHigh(), s.getLow(), s.getVolume()));

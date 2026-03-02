@@ -1,7 +1,7 @@
-#logging:
-#  level:
-#    org.springframework.web: Trace
-#    org.springframework.web.servlet.DispatcherServlet: DEBUG
+logging:
+  level:
+    org.springframework.web: Trace
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
 #management:
 #  metrics:
 #    tags:

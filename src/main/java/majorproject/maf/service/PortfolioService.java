@@ -59,7 +59,7 @@ public class PortfolioService {
         ).toList();
         Map<String, StockPrice> prices= stockPriceRepository.batchFind(
                 s.stream().map(Share::getSymbol).toList()
-        );
+        ).stream().collect(Collectors.toMap(StockPrice::getSymbol, sp -> sp));
         for (Share share : s) {
             share.setPrice(prices.get(share.getSymbol()).getClose());
         }
@@ -127,7 +127,8 @@ public class PortfolioService {
         List<UserProfile> users = userProfileRepository.findAll();
         List<Stock> allShares = stockRepository.findAll();
         Map<Integer, List<Stock>> sharesByUser = allShares.stream().collect(Collectors.groupingBy(s -> s.getUser().getId()));
-        Map<String,StockPrice> sharePrice = stockPriceRepository.batchFind(allShares.stream().map(Stock::getSymbol).toList());
+        Map<String,StockPrice> sharePrice = stockPriceRepository.batchFind(allShares.stream().map(Stock::getSymbol).toList()).stream()
+                .collect(Collectors.toMap(StockPrice::getSymbol, sp -> sp));
         List<PortfolioDailySnapshot>  snapshots=new ArrayList<>();
         for(UserProfile user:users){
             Double cashBalance = user.getBalance();

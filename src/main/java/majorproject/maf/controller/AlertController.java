@@ -29,9 +29,9 @@ public class AlertController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<AlertResponseDto>>> getAlerts(@RequestParam(required = false) AlertStatus status, Authentication authentication) {
+    public ResponseEntity<ApiResponse<List<AlertResponseDto>>> getAlerts(@RequestParam(defaultValue = "0") int page,@RequestParam(required = false) Integer size,@RequestParam(required = false) AlertStatus status, Authentication authentication) {
         UserDto userDto = (UserDto) authentication.getPrincipal();
-        List<AlertResponseDto> alerts=alertService.getUserAlerts(userDto.getId(),status);
+        List<AlertResponseDto> alerts=alertService.getUserAlerts(userDto.getId(),status,page,size);
         return ResponseEntity.ok(ApiResponse.success("Fetched User Alerts", alerts));
     }
 

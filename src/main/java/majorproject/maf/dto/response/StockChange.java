@@ -7,6 +7,7 @@ import java.io.Serializable;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class StockChange implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;

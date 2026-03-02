@@ -27,5 +27,5 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Intege
     SET u.balance = u.balance - :amount
     WHERE u.id = :id AND u.balance >= :amount
 """)
-    int debitIfSufficientBalance(int id, double totalCost);
+    int debitIfSufficientBalance(int id, double amount);
 }

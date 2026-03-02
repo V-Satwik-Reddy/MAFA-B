@@ -15,9 +15,9 @@ import majorproject.maf.repository.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class DashboardService {
@@ -108,9 +108,9 @@ public class DashboardService {
     public List<StockDashboardDto> getHoldingsDetails(int userId) {
         List<StockDashboardDto> ans = new ArrayList<>();
         List<Stock> holdings = stockRepo.findByUserId(userId);
-        holdings.sort(Comparator.comparing(Stock::getSymbol));
         List<TransactionDto> alltxns = getUserTransactions(userId);
-        Map<String, StockPrice> prices = stockPriceRepository.batchFind(holdings.stream().map(Stock::getSymbol).toList());
+        Map<String, StockPrice> prices = stockPriceRepository.batchFind(holdings.stream().map(Stock::getSymbol).toList()).stream()
+                .collect(Collectors.toMap(StockPrice::getSymbol, sp -> sp));
 
         for (Stock stock : holdings) {
             StockDashboardDto stockDashboardDto = new StockDashboardDto();
