@@ -139,10 +139,6 @@ public class PriceFetch {
             Map<String,StockPrice> stockPrices=new HashMap<>();
             for (String symbol : symbols) {
                 if(c==API_KEYS.length){
-                    Map<String, StockPrice> finalStockPrices = new HashMap<>(stockPrices);
-                    alertService.checkAlerts(finalStockPrices);
-                    stockPriceRepository.saveAll(stockPrices.values());
-                    stockPrices=new HashMap<>();
                     Thread.sleep(10000);
                     c=0;
                 }
