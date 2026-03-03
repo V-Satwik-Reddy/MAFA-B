@@ -17,10 +17,6 @@ public interface SectorMasterRepository extends JpaRepository<SectorMaster, Long
 
     List<SectorMaster> findByIdIn(Collection<Long> ids);
 
-    @Query("""
-    select sm.name,sm from SectorMaster sm
-    where sm.name in :names
-""")
-    Map<String,SectorMaster> findByNameIn(Collection<String> names);
+    List<SectorMaster> findByNameIn(Collection<String> names);
 }
 

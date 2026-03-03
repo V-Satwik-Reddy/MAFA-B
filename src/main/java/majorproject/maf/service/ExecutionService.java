@@ -3,6 +3,7 @@ package majorproject.maf.service;
 import majorproject.maf.dto.request.ExecuteRequest;
 import majorproject.maf.dto.response.TransactionDto;
 import majorproject.maf.exception.InsufficientBalanceException;
+import majorproject.maf.exception.InsufficientSharesException;
 import majorproject.maf.model.enums.TransactionType;
 import majorproject.maf.repository.UserProfileRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,7 +66,7 @@ public class ExecutionService {
         User user = userRepository.getReferenceById(id);
         int res= stockRepository.decrementIfSufficientShares(id, request.getSymbol(), request.getQuantity());
         if(res==0){
-            throw new InsufficientBalanceException("Insufficient shares to execute the sell order.");
+            throw new InsufficientSharesException("Insufficient shares to execute the sell order.");
         }
         double price=priceFetch.fetchCurrentPrice(request.getSymbol());
         double totalAmount=request.getQuantity()*price;

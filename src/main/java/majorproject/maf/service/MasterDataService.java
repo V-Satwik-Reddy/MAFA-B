@@ -50,7 +50,8 @@ public class MasterDataService {
     @CacheEvict(value = "permanentCache", key = "'allCompanies'")
     public void addCompany(List<CompanyDto> companies) {
         Set<String> sectorNames = companies.stream().map(CompanyDto::getSector).map(SectorDto::getName).collect(Collectors.toSet());
-        Map<String, SectorMaster> sectorMap = sectorMasterRepository.findByNameIn(sectorNames);
+        List<SectorMaster> allSectorMap = sectorMasterRepository.findByNameIn(sectorNames);
+        Map<String, SectorMaster> sectorMap = allSectorMap.stream().collect(Collectors.toMap(SectorMaster::getName, s -> s));
         List<CompanyMaster> companyMasters= new ArrayList<>();
         for (CompanyDto companyDto : companies) {
             CompanyMaster companyMaster = new CompanyMaster();

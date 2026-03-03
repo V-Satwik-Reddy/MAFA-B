@@ -42,7 +42,7 @@ public class PortfolioController {
     public ResponseEntity<ApiResponse<Void>> withdrawBalance(@RequestBody AddBalance addBalance, Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
         portfolioService.withdrawBalance(u.getId(), addBalance.getAmount());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("Balance withdrawn successfully"));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.successMessage("Balance withdrawn successfully"));
     }
 
     @GetMapping("/balance")

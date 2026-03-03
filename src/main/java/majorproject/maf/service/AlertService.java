@@ -99,7 +99,7 @@ public class AlertService {
         for(Alert alert:alerts){
             StockPrice stockPrice=stockPrices.get(alert.getSymbol());
             if((alert.getAlertCondition()== AlertCondition.ABOVE&&stockPrice.getClose()>alert.getTargetPrice())||
-                alert.getAlertCondition()== AlertCondition.BELOW&&stockPrice.getClose()<alert.getTargetPrice()){
+            (alert.getAlertCondition()== AlertCondition.BELOW&&stockPrice.getClose()<alert.getTargetPrice())){
                 alert.setStatus(AlertStatus.TRIGGERED);
                 alert.setTriggeredAt(LocalDateTime.now());
                 alertRepository.save(alert);

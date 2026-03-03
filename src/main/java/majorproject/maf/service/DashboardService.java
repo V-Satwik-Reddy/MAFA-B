@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import majorproject.maf.repository.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,7 +87,7 @@ public class DashboardService {
 
     public LocalDateTime resolvePeriod(Period period) {
         if (period == null || period == Period.ALL) {
-            return null;
+            return LocalDateTime.of(2000, 1, 1, 0, 0); // effectively no cutoff
         }
 
         LocalDateTime now = LocalDateTime.now();

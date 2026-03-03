@@ -80,16 +80,11 @@ public class JWTFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } catch (Exception ex) {
+            String safeMessage = "Authentication failed. Please log in again.";
             SecurityContextHolder.clearContext();
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
-            response.getWriter().write("""
-            {
-                "success": false,
-                "message": "Unauthorized",
-                "data": "%s"
-            }
-        """.formatted(ex.getMessage()));
+            response.getWriter().write("{\"error\":\"" + safeMessage + "\"}");
             response.getWriter().flush();
         }
     }

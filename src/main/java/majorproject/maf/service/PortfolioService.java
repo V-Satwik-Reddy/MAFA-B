@@ -134,6 +134,7 @@ public class PortfolioService {
             Double cashBalance = user.getBalance();
             PortfolioDailySnapshot portfolioDailySnapshot = new PortfolioDailySnapshot();
             double investedValue = 0.0;
+            if(!sharesByUser.containsKey(user.getId())){ investedValue=0;}
             for(Stock stock:sharesByUser.get(user.getId())) {
                 investedValue += stock.getShares() * sharePrice.get(stock.getSymbol()).getClose();
             }
