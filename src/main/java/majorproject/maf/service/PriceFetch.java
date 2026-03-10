@@ -51,7 +51,7 @@ public class PriceFetch {
             if(stockPrice != null){
                 return stockPrice.getClose();
             }
-            return fetchLast100DailyPrice(symbol,1,0).getHistoricalPrices().getFirst().getClose();
+            return fetchLast100DailyPrice(symbol,1,0,null,null,null,null).getHistoricalPrices().getFirst().getClose();
 
 
         } catch (Exception e) {
@@ -70,18 +70,52 @@ public class PriceFetch {
     }
 
     @Cacheable(value = "historicalPrices",key = "#symbol")
-    public HistoricalPricesWrapperDto fetchLast100DailyPrice(String symbol,Integer limit, Integer offset) {
+    public HistoricalPricesWrapperDto fetchLast100DailyPrice(String symbol, Integer limit, Integer offset,
+                                                              LocalDate startDate, LocalDate endDate,
+                                                              LocalDate beforeDate, LocalDate afterDate) {
         try {
             List<StockPrice> prices;
-            if(limit == null)
-            prices= stockPriceRepository.findBySymbolOrderByDateDesc(symbol);
-            else {
-                if(offset==null)
-                    offset=0;
-                PageRequest pageRequest = PageRequest.of(offset,limit);
-                prices= stockPriceRepository.findBySymbolOrderByDateDesc(symbol, pageRequest);
+            PageRequest pageRequest = null;
+            if (limit != null) {
+                if (offset == null) offset = 0;
+                pageRequest = PageRequest.of(offset, limit);
             }
+
+            // Date range filter takes highest priority, then before, then after, then default
+            if (startDate != null && endDate != null) {
+                if (pageRequest != null) {
+                    prices = stockPriceRepository.findBySymbolAndDateBetweenOrderByDateDesc(symbol, startDate, endDate, pageRequest);
+                } else {
+                    prices = stockPriceRepository.findBySymbolAndDateBetweenOrderByDateDesc(symbol, startDate, endDate);
+                }
+            } else if (beforeDate != null) {
+                if (pageRequest != null) {
+                    prices = stockPriceRepository.findBySymbolAndDateBeforeOrderByDateDesc(symbol, beforeDate, pageRequest);
+                } else {
+                    prices = stockPriceRepository.findBySymbolAndDateBeforeOrderByDateDesc(symbol, beforeDate);
+                }
+            } else if (afterDate != null) {
+                if (pageRequest != null) {
+                    prices = stockPriceRepository.findBySymbolAndDateAfterOrderByDateDesc(symbol, afterDate, pageRequest);
+                } else {
+                    prices = stockPriceRepository.findBySymbolAndDateAfterOrderByDateDesc(symbol, afterDate);
+                }
+            } else {
+                // Default: no date filter
+                if (pageRequest != null) {
+                    prices = stockPriceRepository.findBySymbolOrderByDateDesc(symbol, pageRequest);
+                } else {
+                    prices = stockPriceRepository.findBySymbolOrderByDateDesc(symbol);
+                }
+            }
+
             if(prices != null && !prices.isEmpty() && prices.size()>=100){
+                return new HistoricalPricesWrapperDto(prices.stream().map(s -> new StockPriceDto(s.getSymbol(), s.getClose(), s.getDate(), s.getOpen(), s.getHigh(), s.getLow(), s.getVolume())).collect(Collectors.toCollection(ArrayList::new)));
+            }
+            // If not enough data in DB and no date filters were applied, fetch from API
+            if (startDate != null || endDate != null || beforeDate != null || afterDate != null) {
+                // Return whatever we have from DB when date filters are applied
+                if (prices == null) prices = new ArrayList<>();
                 return new HistoricalPricesWrapperDto(prices.stream().map(s -> new StockPriceDto(s.getSymbol(), s.getClose(), s.getDate(), s.getOpen(), s.getHigh(), s.getLow(), s.getVolume())).collect(Collectors.toCollection(ArrayList::new)));
             }
             String apiKey = getNextApiKey();

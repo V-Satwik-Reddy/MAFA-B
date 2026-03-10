@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,6 +15,18 @@ public interface StockPriceRepository extends JpaRepository<StockPrice, Long> {
     List<StockPrice> findBySymbolOrderByDateDesc(String symbol);
 
     List<StockPrice> findBySymbolOrderByDateDesc(String symbol, PageRequest pageRequest);
+
+    // Date range: between startDate and endDate
+    List<StockPrice> findBySymbolAndDateBetweenOrderByDateDesc(String symbol, LocalDate start, LocalDate end);
+    List<StockPrice> findBySymbolAndDateBetweenOrderByDateDesc(String symbol, LocalDate start, LocalDate end, PageRequest pageRequest);
+
+    // Before a specific date
+    List<StockPrice> findBySymbolAndDateBeforeOrderByDateDesc(String symbol, LocalDate before);
+    List<StockPrice> findBySymbolAndDateBeforeOrderByDateDesc(String symbol, LocalDate before, PageRequest pageRequest);
+
+    // After a specific date
+    List<StockPrice> findBySymbolAndDateAfterOrderByDateDesc(String symbol, LocalDate after);
+    List<StockPrice> findBySymbolAndDateAfterOrderByDateDesc(String symbol, LocalDate after, PageRequest pageRequest);
 
     StockPrice findTopBySymbolOrderByDateDesc(String symbol);
 

@@ -12,8 +12,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.ListResourceBundle;
 
 @RestController
 public class DashboardController {
@@ -25,12 +26,17 @@ public class DashboardController {
     }
 
     @GetMapping("/transactions")
-    public ResponseEntity<ApiResponse<List<TransactionDto>>> getTransactions(@RequestParam(required = false) Integer limit,
-                                                       @RequestParam(required = false) Integer page,
-                                                       @RequestParam(required = false) Period period,
-                                                       Authentication auth) {
+    public ResponseEntity<ApiResponse<List<TransactionDto>>> getTransactions(
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Period period,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime beforeDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime afterDate,
+            Authentication auth) {
         UserDto u=(UserDto) auth.getPrincipal();
-        List<TransactionDto> txns = dashboardService.getUserTransactions(u.getId(),limit,page,period);
+        List<TransactionDto> txns = dashboardService.getUserTransactions(u.getId(), limit, page, period, startDate, endDate, beforeDate, afterDate);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Users Transactions fetched successfully", txns));
     }
 

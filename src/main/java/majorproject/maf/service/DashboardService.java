@@ -13,7 +13,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import majorproject.maf.repository.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +46,9 @@ public class DashboardService {
                 .toList();
     }
 
-    public List<TransactionDto> getUserTransactions(int id, Integer limit, Integer page, Period period) {
+    public List<TransactionDto> getUserTransactions(int id, Integer limit, Integer page, Period period,
+                                                     LocalDateTime startDate, LocalDateTime endDate,
+                                                     LocalDateTime beforeDate, LocalDateTime afterDate) {
         List<Transaction> transactions;
         int pageNumber = (page == null || page < 1) ? 0 : page - 1;
 
@@ -55,22 +56,38 @@ public class DashboardService {
         if (limit != null) {
             pageable = PageRequest.of(pageNumber, limit, Sort.by("createdAt").descending());
         }
-        LocalDateTime cutoff = resolvePeriod(period);
-        // 🔹 CASE 1 — no filters
-        if (cutoff == null && limit == null) {
-            transactions = transactionRepo.findByUserIdOrderByCreatedAtDesc(id);
-        }
-        // 🔹 CASE 2 — lastDays only
-        else if (cutoff != null && limit == null) {
-            transactions = transactionRepo.findByUserIdAndCreatedAtAfterOrderByCreatedAtDesc(id, cutoff);
-        }
-        // 🔹 CASE 3 — limit only
-        else if (cutoff == null) {
-            transactions = transactionRepo.findByUserIdOrderByCreatedAtDesc(id, pageable);
-        }
-        // 🔹 CASE 4 — limit + lastDays
-        else {
-            transactions = transactionRepo.findByUserIdAndCreatedAtAfterOrderByCreatedAtDesc(id, cutoff, pageable);
+
+        // Date range filter takes highest priority, then before, then after, then period
+        if (startDate != null && endDate != null) {
+            if (pageable != null) {
+                transactions = transactionRepo.findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(id, startDate, endDate, pageable);
+            } else {
+                transactions = transactionRepo.findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(id, startDate, endDate);
+            }
+        } else if (beforeDate != null) {
+            if (pageable != null) {
+                transactions = transactionRepo.findByUserIdAndCreatedAtBeforeOrderByCreatedAtDesc(id, beforeDate, pageable);
+            } else {
+                transactions = transactionRepo.findByUserIdAndCreatedAtBeforeOrderByCreatedAtDesc(id, beforeDate);
+            }
+        } else if (afterDate != null) {
+            if (pageable != null) {
+                transactions = transactionRepo.findByUserIdAndCreatedAtAfterOrderByCreatedAtDesc(id, afterDate, pageable);
+            } else {
+                transactions = transactionRepo.findByUserIdAndCreatedAtAfterOrderByCreatedAtDesc(id, afterDate);
+            }
+        } else {
+            // Fallback to existing period-based logic
+            LocalDateTime cutoff = resolvePeriod(period);
+            if (cutoff == null && limit == null) {
+                transactions = transactionRepo.findByUserIdOrderByCreatedAtDesc(id);
+            } else if (cutoff != null && limit == null) {
+                transactions = transactionRepo.findByUserIdAndCreatedAtAfterOrderByCreatedAtDesc(id, cutoff);
+            } else if (cutoff == null) {
+                transactions = transactionRepo.findByUserIdOrderByCreatedAtDesc(id, pageable);
+            } else {
+                transactions = transactionRepo.findByUserIdAndCreatedAtAfterOrderByCreatedAtDesc(id, cutoff, pageable);
+            }
         }
 
         return transactions.stream()

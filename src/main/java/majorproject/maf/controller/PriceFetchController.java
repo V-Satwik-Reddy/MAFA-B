@@ -3,11 +3,13 @@ package majorproject.maf.controller;
 import majorproject.maf.dto.request.SymbolsRequest;
 import majorproject.maf.dto.response.*;
 import majorproject.maf.service.PriceFetch;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -32,8 +34,15 @@ public class PriceFetchController {
     }
 
     @GetMapping("/stockdailyprices")
-    public ResponseEntity<ApiResponse<List<StockPriceDto>>> getAllPrices(@RequestParam String symbol,@RequestParam(required = false) Integer limit, Integer offset) {
-        HistoricalPricesWrapperDto allPrices = priceFetch.fetchLast100DailyPrice(symbol,limit,offset);
+    public ResponseEntity<ApiResponse<List<StockPriceDto>>> getAllPrices(
+            @RequestParam String symbol,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) Integer offset,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beforeDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate afterDate) {
+        HistoricalPricesWrapperDto allPrices = priceFetch.fetchLast100DailyPrice(symbol, limit, offset, startDate, endDate, beforeDate, afterDate);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Fetched last 30 days prices", allPrices.getHistoricalPrices()));
     }
 

@@ -15,4 +15,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Transaction> findByUserIdAndCreatedAtAfterOrderByCreatedAtDesc(Integer userId, LocalDateTime cutoff);
 
     List<Transaction> findByUserIdAndCreatedAtAfterOrderByCreatedAtDesc(Integer userId, LocalDateTime cutoff, Pageable pageable);
+
+    // Date range: between startDate and endDate
+    List<Transaction> findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(Integer userId, LocalDateTime start, LocalDateTime end);
+    List<Transaction> findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(Integer userId, LocalDateTime start, LocalDateTime end, Pageable pageable);
+
+    // Before a specific date
+    List<Transaction> findByUserIdAndCreatedAtBeforeOrderByCreatedAtDesc(Integer userId, LocalDateTime before);
+    List<Transaction> findByUserIdAndCreatedAtBeforeOrderByCreatedAtDesc(Integer userId, LocalDateTime before, Pageable pageable);
 }
