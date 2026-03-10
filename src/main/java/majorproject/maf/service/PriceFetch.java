@@ -110,7 +110,7 @@ public class PriceFetch {
                 prices.add(stockPrice);
             }
             stockPriceRepository.saveAll(prices);
-            return prices.stream().map(s -> new StockPriceDto(s.getSymbol(), s.getClose(), s.getDate(), s.getOpen(), s.getHigh(), s.getLow(), s.getVolume())).toList();
+            return prices.stream().map(s -> new StockPriceDto(s.getSymbol(), s.getClose(), s.getDate(), s.getOpen(), s.getHigh(), s.getLow(), s.getVolume())).collect(Collectors.toCollection(ArrayList::new));
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch price for " + symbol, e);
         }
