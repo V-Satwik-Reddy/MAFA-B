@@ -1,6 +1,7 @@
 package majorproject.maf.repository;
 
 import majorproject.maf.model.StockPrice;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -11,6 +12,8 @@ import java.util.Set;
 public interface StockPriceRepository extends JpaRepository<StockPrice, Long> {
 
     List<StockPrice> findBySymbolOrderByDateDesc(String symbol);
+
+    List<StockPrice> findBySymbolOrderByDateDesc(String symbol, PageRequest pageRequest);
 
     StockPrice findTopBySymbolOrderByDateDesc(String symbol);
 

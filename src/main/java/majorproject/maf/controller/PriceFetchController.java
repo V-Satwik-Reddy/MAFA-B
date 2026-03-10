@@ -32,9 +32,9 @@ public class PriceFetchController {
     }
 
     @GetMapping("/stockdailyprices")
-    public ResponseEntity<ApiResponse<List<StockPriceDto>>> getAllPrices(@RequestParam String symbol) {
-        List<StockPriceDto> allPrices = priceFetch.fetchLast100DailyPrice(symbol);
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Fetched last 30 days prices", allPrices));
+    public ResponseEntity<ApiResponse<List<StockPriceDto>>> getAllPrices(@RequestParam String symbol,@RequestParam(required = false) Integer limit, Integer offset) {
+        HistoricalPricesWrapperDto allPrices = priceFetch.fetchLast100DailyPrice(symbol,limit,offset);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Fetched last 30 days prices", allPrices.getHistoricalPrices()));
     }
 
     @GetMapping("/stockchange")

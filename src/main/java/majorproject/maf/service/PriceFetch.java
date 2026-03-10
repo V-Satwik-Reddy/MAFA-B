@@ -8,6 +8,7 @@ import majorproject.maf.dto.response.*;
 import majorproject.maf.model.StockPrice;
 import majorproject.maf.repository.StockPriceRepository;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -50,7 +51,7 @@ public class PriceFetch {
             if(stockPrice != null){
                 return stockPrice.getClose();
             }
-            return fetchLast100DailyPrice(symbol).getFirst().getClose();
+            return fetchLast100DailyPrice(symbol,1,0).getHistoricalPrices().getFirst().getClose();
 
 
         } catch (Exception e) {
@@ -69,25 +70,23 @@ public class PriceFetch {
     }
 
     @Cacheable(value = "historicalPrices",key = "#symbol")
-    public List<StockPriceDto> fetchLast100DailyPrice(String symbol) {
+    public HistoricalPricesWrapperDto fetchLast100DailyPrice(String symbol,Integer limit, Integer offset) {
         try {
-            List<StockPrice> prices= stockPriceRepository.findBySymbolOrderByDateDesc(symbol);
+            List<StockPrice> prices;
+            if(limit == null)
+            prices= stockPriceRepository.findBySymbolOrderByDateDesc(symbol);
+            else {
+                if(offset==null)
+                    offset=0;
+                PageRequest pageRequest = PageRequest.of(offset,limit);
+                prices= stockPriceRepository.findBySymbolOrderByDateDesc(symbol, pageRequest);
+            }
             if(prices != null && !prices.isEmpty() && prices.size()>=100){
-                return prices.stream().map(s -> new StockPriceDto(s.getSymbol(), s.getClose(), s.getDate(), s.getOpen(), s.getHigh(), s.getLow(), s.getVolume())).toList();
+                return new HistoricalPricesWrapperDto(prices.stream().map(s -> new StockPriceDto(s.getSymbol(), s.getClose(), s.getDate(), s.getOpen(), s.getHigh(), s.getLow(), s.getVolume())).collect(Collectors.toCollection(ArrayList::new)));
             }
             String apiKey = getNextApiKey();
             String url = String.format(BASE_URL,"TIME_SERIES_DAILY", symbol, apiKey);
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .GET()
-                    .build();
-            HttpResponse<String> response =
-                    httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            JsonNode root = objectMapper.readTree(response.body());
-            if (root.has("Note") || root.has("Information") || root.has("Error Message")) {
-                throw new RuntimeException("Alpha Vantage limit hit for symbol: " + symbol);
-            }
+            JsonNode root=alphaVantageRequest(symbol, url);
 
             JsonNode metaData = root.path("Meta Data");
             JsonNode timeSeries = root.path("Time Series (Daily)");
@@ -110,7 +109,7 @@ public class PriceFetch {
                 prices.add(stockPrice);
             }
             stockPriceRepository.saveAll(prices);
-            return prices.stream().map(s -> new StockPriceDto(s.getSymbol(), s.getClose(), s.getDate(), s.getOpen(), s.getHigh(), s.getLow(), s.getVolume())).collect(Collectors.toCollection(ArrayList::new));
+            return new HistoricalPricesWrapperDto(prices.stream().map(s -> new StockPriceDto(s.getSymbol(), s.getClose(), s.getDate(), s.getOpen(), s.getHigh(), s.getLow(), s.getVolume())).collect(Collectors.toCollection(ArrayList::new)));
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch price for " + symbol, e);
         }
@@ -146,17 +145,7 @@ public class PriceFetch {
                 String apiKey = getNextApiKey();
                 String url = String.format(BASE_URL, "GLOBAL_QUOTE", symbol, apiKey);
 
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(url))
-                        .GET()
-                        .build();
-                HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-                JsonNode root = objectMapper.readTree(response.body());
-                if (root.has("Note") || root.has("Information") || root.has("Error Message")) {
-                    throw new RuntimeException("Alpha Vantage limit hit for symbol: " + symbol);
-                }
+                JsonNode root=alphaVantageRequest(symbol, url);
                 JsonNode globalQuote = root.path("Global Quote");
                 if (globalQuote.isMissingNode() || globalQuote.isEmpty()) {
                     throw new RuntimeException("Invalid global quote data for symbol: " + symbol);
@@ -179,6 +168,21 @@ public class PriceFetch {
         }catch (Exception e){
             throw new RuntimeException("Failed to fetch previous day prices", e);
         }
+    }
+
+    private JsonNode alphaVantageRequest(String symbol, String url) throws java.io.IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET()
+                .build();
+        HttpResponse<String> response =
+                httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        JsonNode root = objectMapper.readTree(response.body());
+        if (root.has("Note") || root.has("Information") || root.has("Error Message")) {
+            throw new RuntimeException("Alpha Vantage limit hit for symbol: " + symbol);
+        }
+        return root;
     }
 
     public List<StockChange> fetchUserStockChanges(UserDto u) {
