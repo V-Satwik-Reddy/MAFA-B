@@ -16,6 +16,8 @@ import majorproject.maf.model.user.UserPreferences;
 import majorproject.maf.model.user.UserProfile;
 import majorproject.maf.repository.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,23 +41,29 @@ public class ProfileService {
             this.portfolioService = portfolioService;
     }
 
-        public void createProfile(ProfileRequest request, int userId) {
+        @Transactional
+        public void createProfile(ProfileRequest request,UserDto userDto) {
             try {
-                User user = userRepo.getReferenceById(userId);
+                User user = userRepo.findByEmail(userDto.getEmail());
                 UserProfile userProfile = buildProfile(new UserProfile(),request);
                 userProfile.setUser(user);
                 user.setPhone(request.getPhone());
                 user.setStatus(UserStatus.ACTIVE);
                 user.setPhoneVerified(true);
                 userProfile.setBalance(0.0);
+                userRepo.save(user);
                 userProfileRepository.save(userProfile);
             }catch(Exception ex) {
                 throw new InvalidProfileDetailsException("Profile creation failed: " + ex.getMessage());
             }
         }
 
-        public void updateProfile(ProfileRequest request, int userId) {
-            UserProfile existingProfile = userProfileRepository.findByUserId(userId);
+        @Transactional
+        public void updateProfile(ProfileRequest request, UserDto userDto) {
+            User user = userRepo.findByEmail(userDto.getEmail());
+            UserProfile existingProfile = userProfileRepository.findByUserId(userDto.getId());
+            user.setPhone(request.getPhone());
+            userRepo.save(user);
             UserProfile userProfile = buildProfile(existingProfile, request);
             userProfileRepository.save(userProfile);
         }
@@ -76,7 +84,7 @@ public class ProfileService {
 
             EmploymentStatus employmentStatus = switch (request.getEmploymentStatus().toLowerCase()) {
                 case "employed" -> EmploymentStatus.EMPLOYED;
-                case "self-employed" -> EmploymentStatus.SELF_EMPLOYED;
+                case "self_employed" -> EmploymentStatus.SELF_EMPLOYED;
                 case "student" -> EmploymentStatus.STUDENT;
                 case "retired" -> EmploymentStatus.RETIRED;
                 default -> EmploymentStatus.UNEMPLOYED;
@@ -84,8 +92,8 @@ public class ProfileService {
 
             SalaryRange salaryRange = switch (request.getSalaryRange().toLowerCase()) {
                 case "50k_100k" -> SalaryRange.BETWEEN_50K_100K;
-                case "100k_150k" -> SalaryRange.BETWEEN_100K_200K;
-                case "150k_200k" -> SalaryRange.ABOVE_200K;
+                case "100k_200k" -> SalaryRange.BETWEEN_100K_200K;
+                case "above_200k" -> SalaryRange.ABOVE_200K;
                 default -> SalaryRange.BELOW_50K;
             };
 

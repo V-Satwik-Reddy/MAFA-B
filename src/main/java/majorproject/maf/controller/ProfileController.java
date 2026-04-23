@@ -21,7 +21,7 @@ public class ProfileController {
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<Void>> createProfile(@RequestBody ProfileRequest request,Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
-        pS.createProfile(request,u.getId());
+        pS.createProfile(request,u);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.successMessage("Profile created successfully"));
     }
 
@@ -63,7 +63,7 @@ public class ProfileController {
     @PutMapping("/update")
     public ResponseEntity<ApiResponse<Void>> updateUser(@RequestBody ProfileRequest request,Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
-        pS.updateProfile(request,u.getId());
+        pS.updateProfile(request,u);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.successMessage("User profile updated successfully"));
     }
 
