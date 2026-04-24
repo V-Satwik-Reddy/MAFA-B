@@ -22,10 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.temporal.WeekFields;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -135,7 +132,7 @@ public class PortfolioService {
             PortfolioDailySnapshot portfolioDailySnapshot = new PortfolioDailySnapshot();
             double investedValue = 0.0;
             if(!sharesByUser.containsKey(user.getId())){ investedValue=0;}
-            for(Stock stock:sharesByUser.get(user.getId())) {
+            for(Stock stock:sharesByUser.getOrDefault(user.getId(), Collections.emptyList())) {
                 investedValue += stock.getShares() * sharePrice.get(stock.getSymbol()).getClose();
             }
             portfolioDailySnapshot.setUser(user.getUser());
