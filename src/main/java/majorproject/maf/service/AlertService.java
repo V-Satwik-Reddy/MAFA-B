@@ -1,5 +1,6 @@
 package majorproject.maf.service;
 
+import majorproject.maf.cache.PriceCacheService;
 import majorproject.maf.dto.request.AlertRequestDto;
 import majorproject.maf.dto.response.AlertResponseDto;
 import majorproject.maf.dto.response.CompanyDto;
@@ -9,6 +10,7 @@ import majorproject.maf.model.Alert;
 import majorproject.maf.model.StockPrice;
 import majorproject.maf.model.enums.AlertCondition;
 import majorproject.maf.model.enums.AlertStatus;
+import majorproject.maf.model.serving.CompanyMaster;
 import majorproject.maf.repository.AlertRepository;
 import majorproject.maf.repository.CompanyMasterRepository;
 import majorproject.maf.repository.UserRepository;
@@ -28,13 +30,13 @@ public class AlertService {
     private final AlertRepository alertRepository;
     private final EmailService emailService;
     private final UserRepository userRepository;
-    private final MasterDataService masterDataService;
+    private final PriceCacheService priceCacheService;
 
-    public AlertService(AlertRepository alertRepository, EmailService emailService, UserRepository userRepository,MasterDataService masterDataService) {
+    public AlertService(AlertRepository alertRepository, EmailService emailService, UserRepository userRepository,PriceCacheService priceCacheService) {
         this.alertRepository = alertRepository;
         this.emailService = emailService;
         this.userRepository = userRepository;
-        this.masterDataService = masterDataService;
+        this.priceCacheService = priceCacheService;
     }
 
     private AlertResponseDto buildAlertResponse(Alert alert) {
@@ -51,7 +53,7 @@ public class AlertService {
     }
 
     public AlertResponseDto createAlert(UserDto user,AlertRequestDto alertRequestDto) {
-        CompanyDto c= masterDataService.getBySymbol(alertRequestDto.getSymbol());
+        CompanyDto c=priceCacheService.getBySymbol(alertRequestDto.getSymbol());
         if(c==null){
             throw new ResourseNotFoundException("Invalid stock symbol "+alertRequestDto.getSymbol());
         }
