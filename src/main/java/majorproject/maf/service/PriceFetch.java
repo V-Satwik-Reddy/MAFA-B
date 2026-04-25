@@ -198,6 +198,8 @@ public class PriceFetch {
                 stockPrices.put(symbol,stockPrice);
             }
             stockPriceRepository.saveAll(stockPrices.values());
+            priceCacheService.evictHistoricalPriceCache();
+            priceCacheService.evictCurrentPriceCache();
             alertService.checkAlerts(stockPrices);
         }catch (Exception e){
             throw new RuntimeException("Failed to fetch previous day prices", e);

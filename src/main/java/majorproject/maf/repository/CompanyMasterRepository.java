@@ -25,5 +25,10 @@ public interface CompanyMasterRepository extends JpaRepository<CompanyMaster, Lo
     List<CompanyMaster>  getAll();
 
     List<CompanyMaster> findByIdIn(Collection<Long> ids); // if frontend sends IDs
-
+    @Query("""
+    Select c from CompanyMaster c
+    join fetch c.sector s
+    where s.name = :sector
+""")
+    List<CompanyMaster> findBySector(String sector);
 }

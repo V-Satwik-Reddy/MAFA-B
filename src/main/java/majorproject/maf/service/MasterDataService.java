@@ -69,4 +69,17 @@ public class MasterDataService {
         CompanyMaster c=companyMasterRepository.findBySymbol(symbol);
         return new CompanyDto(c.getId(), c.getSymbol(), c.getName(), new SectorDto(c.getSector().getId(), c.getSector().getName()));
     }
+
+    public List<CompanyDto> getBySector(String sector) {
+        List<CompanyMaster> companies = companyMasterRepository.findBySector(sector);
+        return companies.stream().map(c -> new CompanyDto(c.getId(), c.getSymbol(), c.getName(), new SectorDto(c.getSector().getId(), c.getSector().getName()))).toList();
+    }
+
+    public CompanyDto getRandomCompany(List<CompanyDto> companies) {
+        if (companies.isEmpty()) {
+            return null; // or throw an exception
+        }
+        int randomIndex = (int) (Math.random() * companies.size());
+        return companies.get(randomIndex);
+    }
 }
