@@ -6,6 +6,9 @@ import majorproject.maf.exception.InsufficientBalanceException;
 import majorproject.maf.exception.InsufficientSharesException;
 import majorproject.maf.model.enums.TransactionType;
 import majorproject.maf.repository.UserProfileRepository;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.transaction.annotation.Transactional;
 import majorproject.maf.model.Stock;
 import majorproject.maf.model.Transaction;
@@ -33,6 +36,10 @@ public class ExecutionService {
     }
 
     @Transactional
+    @Retryable(
+            retryFor = {CannotAcquireLockException.class},
+            backoff = @Backoff(delay = 100)
+    )
     public TransactionDto buyShares(ExecuteRequest request, int id) {
         User user = userRepository.getReferenceById(id);
         double price=priceFetch.fetchCurrentPrice(request.getSymbol());
@@ -62,6 +69,10 @@ public class ExecutionService {
     }
 
     @Transactional
+    @Retryable(
+            retryFor = {CannotAcquireLockException.class},
+            backoff = @Backoff(delay = 100)
+    )
     public TransactionDto sellShares(ExecuteRequest request, int id) {
         User user = userRepository.getReferenceById(id);
         int res= stockRepository.decrementIfSufficientShares(id, request.getSymbol(), request.getQuantity());
