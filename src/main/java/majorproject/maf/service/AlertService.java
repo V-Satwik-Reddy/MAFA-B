@@ -2,6 +2,7 @@ package majorproject.maf.service;
 
 import majorproject.maf.dto.request.AlertRequestDto;
 import majorproject.maf.dto.response.AlertResponseDto;
+import majorproject.maf.dto.response.CompanyDto;
 import majorproject.maf.dto.response.UserDto;
 import majorproject.maf.exception.ResourseNotFoundException;
 import majorproject.maf.model.Alert;
@@ -9,6 +10,7 @@ import majorproject.maf.model.StockPrice;
 import majorproject.maf.model.enums.AlertCondition;
 import majorproject.maf.model.enums.AlertStatus;
 import majorproject.maf.repository.AlertRepository;
+import majorproject.maf.repository.CompanyMasterRepository;
 import majorproject.maf.repository.UserRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -26,11 +28,13 @@ public class AlertService {
     private final AlertRepository alertRepository;
     private final EmailService emailService;
     private final UserRepository userRepository;
+    private final MasterDataService masterDataService;
 
-    public AlertService(AlertRepository alertRepository, EmailService emailService, UserRepository userRepository) {
+    public AlertService(AlertRepository alertRepository, EmailService emailService, UserRepository userRepository,MasterDataService masterDataService) {
         this.alertRepository = alertRepository;
         this.emailService = emailService;
         this.userRepository = userRepository;
+        this.masterDataService = masterDataService;
     }
 
     private AlertResponseDto buildAlertResponse(Alert alert) {
@@ -47,6 +51,10 @@ public class AlertService {
     }
 
     public AlertResponseDto createAlert(UserDto user,AlertRequestDto alertRequestDto) {
+        CompanyDto c= masterDataService.getBySymbol(alertRequestDto.getSymbol());
+        if(c==null){
+            throw new ResourseNotFoundException("Invalid stock symbol "+alertRequestDto.getSymbol());
+        }
         Alert alert = new Alert();
         alert.setUserEmail(user.getEmail());
         alert.setUser(userRepository.getReferenceById(user.getId()));

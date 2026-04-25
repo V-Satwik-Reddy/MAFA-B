@@ -34,7 +34,7 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
             @Param("quantity") long quantity
     );
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true) // Add these two!
     @Query("""
     DELETE FROM Stock h
     WHERE h.user.id = :userId AND h.symbol = :symbol AND h.shares <= 0

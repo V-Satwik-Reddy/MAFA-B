@@ -80,7 +80,7 @@ public class PortfolioController {
     }
 
     @GetMapping("/portfolio/history")
-    public ResponseEntity<ApiResponse<List<PortfolioDailySnapshotDTO>>> getPortfolioHistory(@RequestParam Period period, @RequestParam(required = false) Interval interval, Authentication authentication) {
+    public ResponseEntity<ApiResponse<List<PortfolioDailySnapshotDTO>>> getPortfolioHistory(@RequestParam(defaultValue = "ALL") Period period, @RequestParam(required = false) Interval interval, Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
         List<PortfolioDailySnapshotDTO> snapshots=portfolioService.getPortfolioHistory(u.getId(), period, interval);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Portfolio history fetched", snapshots));
