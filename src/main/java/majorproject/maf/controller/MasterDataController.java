@@ -28,10 +28,22 @@ public class MasterDataController {
 
     @GetMapping("/companies/{symbol}")
     public ResponseEntity<ApiResponse<CompanyDto>> getCompanyBySymbol(@PathVariable String symbol) {
-        CompanyDto company = masterDataService.getBySymbol(symbol);
+        CompanyDto company = masterDataService.getBySymbol(symbol.toUpperCase());
         return ResponseEntity.ok(ApiResponse.success("Companies fetched successfully", company));
     }
 
+    @GetMapping("/companies/by-sector/{sector}")
+    public ResponseEntity<ApiResponse<List<CompanyDto>>> getCompaniesBySector(@PathVariable String sector) {
+        List<CompanyDto> companies = masterDataService.getBySector(sector);
+        return ResponseEntity.ok(ApiResponse.success("Companies fetched successfully", companies));
+    }
+
+    @GetMapping("/companies/random")
+    public ResponseEntity<ApiResponse<CompanyDto>> getRandomCompanies() {
+        List<CompanyDto> companies = masterDataService.getAllCompanies();
+        CompanyDto comp= masterDataService.getRandomCompany(companies);
+        return ResponseEntity.ok(ApiResponse.success("Companies fetched successfully", comp));
+    }
     @PostMapping("/companies/by-symbols")
     public ResponseEntity<ApiResponse<List<CompanyDto>>> getCompaniesBySymbols(
             @RequestBody SymbolsRequest request) {

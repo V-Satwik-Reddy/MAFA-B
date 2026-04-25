@@ -69,7 +69,7 @@ public class PortfolioController {
     @DeleteMapping("/watchlist/{symbol}")
     public ResponseEntity<ApiResponse<Map<String,Object>>> removeFromWatchlist(@PathVariable String symbol, Authentication authentication) {
         UserDto u= (UserDto) authentication.getPrincipal();
-        portfolioService.removeFromWatchlist(u.getId(), symbol);
+        portfolioService.removeFromWatchlist(u.getId(), symbol.toUpperCase());
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Company removed from watchlist", Map.of("symbol",symbol,"removed",true)));
     }
 

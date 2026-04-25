@@ -17,4 +17,11 @@ public class AlertRequestDto {
 
     private Channel channel;
 
+    public void setSymbol(String symbol) {
+        if (symbol != null) {
+            this.symbol = symbol.trim().toUpperCase();
+        } else {
+            this.symbol = null;
+        }
+    }
 }

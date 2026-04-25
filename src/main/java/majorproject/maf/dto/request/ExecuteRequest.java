@@ -10,4 +10,11 @@ import lombok.NoArgsConstructor;
 public class ExecuteRequest {
     private long quantity;
     private String symbol;
+    public void setSymbol(String symbol) {
+        if (symbol != null) {
+            this.symbol = symbol.trim().toUpperCase();
+        } else {
+            this.symbol = null;
+        }
+    }
 }

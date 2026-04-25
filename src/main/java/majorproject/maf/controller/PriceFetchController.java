@@ -22,7 +22,7 @@ public class PriceFetchController {
 
     @GetMapping("/stockprice")
     public ResponseEntity<Double> getStockPrice(@RequestParam String symbol) {
-        double stockPrice = priceFetch.fetchCurrentPrice(symbol);
+        double stockPrice = priceFetch.fetchCurrentPrice(symbol.toUpperCase());
         return ResponseEntity.ok(stockPrice);
     }
 
@@ -42,13 +42,13 @@ public class PriceFetchController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beforeDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate afterDate) {
-        HistoricalPricesWrapperDto allPrices = priceFetch.fetchLast100DailyPrice(symbol, limit, offset, startDate, endDate, beforeDate, afterDate);
+        HistoricalPricesWrapperDto allPrices = priceFetch.fetchLast100DailyPrice(symbol.toUpperCase(), limit, offset, startDate, endDate, beforeDate, afterDate);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Fetched last 30 days prices", allPrices.getHistoricalPrices()));
     }
 
     @GetMapping("/stockchange")
     public ResponseEntity<ApiResponse<StockChange>> getStockChange(@RequestParam String symbol) {
-        StockChange stockChange = priceFetch.fetchPriceChange(symbol);
+        StockChange stockChange = priceFetch.fetchPriceChange(symbol.toUpperCase());
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Fetched stock change", stockChange));
     }
 
