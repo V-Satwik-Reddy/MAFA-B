@@ -1,5 +1,6 @@
 package majorproject.maf.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import majorproject.maf.dto.request.EmailVerifyRequest;
@@ -17,6 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
+@SecurityRequirements()
 public class AuthController {
 
     AuthService auth;
