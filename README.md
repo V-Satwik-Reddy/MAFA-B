@@ -94,95 +94,45 @@ MAFA is a distributed multi-service architecture. MAFA-B is the central orchestr
 
 ## 🏛️ System Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                          Frontend (React + JavaScript)                          │
-│                    (MCP_Financial_analyst_frontend)                             │
-│                                                                                 │
-│  User Actions: Login → Chat → Buy/Sell → View Portfolio → Set Alerts            │
-└────────────────────────────────────┬────────────────────────────────────────────┘
-                                      │
-                                      │ HTTP/REST + JWT
-                                      ↓
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                      MAFA-B (Spring Boot Backend)                               │
-│                                                                                 │
-│  ┌──────────────────────┐      ┌──────────────────────┐    ┌─────────────────┐  │
-│  │  REST API Layer      │      │  Authentication &    │    │  Chat Service   │  │
-│  │                      │      │  User Management     │    │                 │  │
-│  │  • /auth/*           │      │  (JWT, Sessions)     │    │  Routes queries │  │
-│  │  • /portfolio        │      │                      │    │  to agents or   │  │
-│  │  • /transactions     │      │                      │    │  Gemini LLM     │  │
-│  │  • /execute/buy|sell │      │                      │    │                 │  │
-│  │  • /general-chat     │      |                      │    └────────┬────────┘  │
-│  │  • /stockprice       │      └──────────────────────┘             │           │
-│  │  • /alerts           │                                           │           │
-│  └──────────┬───────────┘      ┌──────────────────────┐             │           │
-│             │                  │  Data Access Layer   │             │           │
-│             │                  │  (JPA/Hibernate)     │             │           │
-│             │                  │                      │             │           │
-│             │                  │  • User Repository   │             │           │
-│             │                  │  • Transaction Repo  │             │           │
-│             │                  │  • Holdings Repo     │             │           │
-│             │                  │  • Alert Repository  │             │           │
-│             │                  │  • Chat Repository   │             │           │
-│             │                  │  • Stock Price Repo  │             │           │
-│             │                  └──────────┬───────────┘             │           │
-│             │                             │                         │           │
-│             └─────────────────────────────┼─────────────────────────┘           │
-│                                           │                                     │
-└───────────────────────────────────────────┼─────────────────────────────────────┘
-                                            │
-                                            ↓
-                           ┌─────────────────────────────────┐
-                           │   PostgreSQL Database           │
-                           │   (User, Holdings, Alerts,      │
-                           │    Transactions, Chats)         │
-                           └─────────────────────────────────┘
-
-
-                           ┌─────────────────────────────────────────────────┐
-                           │  MAFA-Agents (Python MCP System)                │
-                           │                                                 │
-                           │  Market Research Agent                          │
-                           │  ├─→ Alpha Vantage API (Stock Fundamentals)     │
-                           │  ├─→ NewsAPI (Market News & Sentiment)          │
-                           │  ├─→ LSTM Models (Price Forecasting)            │
-                           │  └─→ Fetches Stock Data from MAFA-B Backend     │
-                           │                                                 │
-                           │  Portfolio Analysis Agent                       │
-                           │  ├─→ Risk Calculations                          │
-                           │  ├─→ Diversification Analysis                   │
-                           │  └─→ Uses Holdings Data from MAFA-B Backend     │
-                           │                                                 │
-                           │  Trade Execution Agent                          │
-                           │  ├─→ Validates Orders                           │
-                           │  ├─→ Recommends Quantities & Prices             │
-                           │  └─→ Executes via MAFA-B Backend                │
-                           │                                                 │
-                           │  Strategy Agent                                 │
-                           │  ├─→ Generates Trading Strategies               │
-                           │  └─→ Stores/Updates via MAFA-B Backend          │
-                           │                                                 │
-                           │  MCP Orchestrator                               │
-                           │  └─→ Coordinates All Agents                     │
-                           │                                                 │
-                           │  Event Bus (Redis Pub/Sub)                      │
-                           │  └─→ Real-time Agent Communication              │
-                           └─────────────────────────────────────────────────┘
-                                           │
-                    ┌──────────────────────┼──────────────────────┐
-                    │                      │                      │
-                    ↓                      ↓                      ↓
-        ┌─────────────────────┐  ┌─────────────────────┐  ┌──────────────────┐
-        │  External Services  │  │  Google Services    │  │  Data Storage    │
-        │                     │  │                     │  │                  │
-        │ • Alpha Vantage     │  │ • Google Gemini LLM │  │ • Supabase       │
-        │   (Stock Data)      │  │   (LLM Responses)   │  │   (Vector DB)    │
-        │                     │  │ • Google Custom     │  │                  │
-        │ • NewsAPI           │  │   Search (News)     │  │ • Redis          │
-        │   (Market News)     │  │                     │  │   (Cache/Events) │
-        └─────────────────────┘  └─────────────────────┘  └──────────────────┘
+```text
+                        ┌─────────────────────────────────────────────────────────────────────────────────┐
+                        │                          Frontend (React + JavaScript)                          │
+                        │                    (MCP_Financial_analyst_frontend)                             │
+                        └────────────────────────────────────┬────────────────────────────────────────────┘
+                                                             │ HTTP/REST + JWT
+                                                             ↓
+                        ┌─────────────────────────────────────────────────────────────────────────────────┐
+                        │                      MAFA-B (Spring Boot Backend)                               │
+                        │                                                                                 │
+                        │  ┌──────────────────────┐      ┌──────────────────────┐    ┌─────────────────┐  │
+                        │  │  REST API Layer      │◄─────┤  Authentication &    │    │  Chat Service   │  │
+                        │  │  • /auth, /portfolio,│      │  User Management     │    │  (Routes        │  │
+                        │  │    /execute, /chats  │      └──────────────────────┘    │  queries)       │  │
+                        │  └──────────┬───────────┘◄─────────────────────────────────┴────────┬────────┘  │
+                        │             │      ▲                                                │           │
+                        │             │      │ (Fetches Data via REST API)                    │           │
+                        │             │      └─────────────────────────────────────────┐      │           │
+                        │             ↓                                                │      │           │
+                        │  ┌──────────────────────┐                                    │      │           │
+                        │  │  Data Access Layer   │                                    │      │           │
+                        │  │  (JPA/Hibernate)     │                                    │      │           │
+                        │  └──────────┬───────────┘                                    │      │           │
+                        │             │                                                │      │           │
+                        └─────────────┼────────────────────────────────────────────────┼──────┼───────────┘
+                                      │                                                │      │
+                                      ↓                                                │      ↓
+                             ┌─────────────────┐                       ┌───────────────┴──────┴──────────┐
+                             │ MySQL Database  │                       │  MAFA-Agents (Python MCP)       │
+                             │ (Users, Holdings│                       │                                 │
+                             │  Chats, Alerts) │                       │  • Multi-Agent Orchestrator     │
+                             └─────────────────┘                       │  • Event Bus (Redis)            │
+                                                                       └───────────┬───────────┬─────────┘
+                                                                                   │           │
+                                                                                   ↓           ↓
+                                                                      ┌──────────────┐   ┌───────────────┐
+                                                                      │ Google / LLM │   │ Data Storage  │
+                                                                      │ Services     │   │ (Vector DB)   │
+                                                                      └──────────────┘   └───────────────┘
 ```
 
 ### Data Flow Example: "Should I buy AAPL?"
@@ -202,11 +152,11 @@ MAFA is a distributed multi-service architecture. MAFA-B is the central orchestr
 6. **MAFA-B** receives agent response, saves to chat history in PostgreSQL
 7. **Frontend** displays recommendation to user
 
-### Data Storage: Stock Prices
+<!-- ### Data Storage: Stock Prices
 
 - **Real-time prices**: Fetched from Alpha Vantage → stored in MAFA-B PostgreSQL (cache layer)
 - **Historical prices**: Accumulated in MAFA-B over time → used by agents for LSTM training
-- **MAFA-Agents** can query MAFA-B backend to fetch any stock's price data for analysis
+- **MAFA-Agents** can query MAFA-B backend to fetch any stock's price data for analysis -->
 
 ---
 
@@ -214,139 +164,112 @@ MAFA is a distributed multi-service architecture. MAFA-B is the central orchestr
 
 ### Prerequisites
 
-- **Java 17+** ([download](https://www.oracle.com/java/technologies/downloads/))
-- **Maven 3.8+** (or use included `mvnw.cmd` / `mvnw`)
-- **Docker** (for PostgreSQL, Redis, Prometheus, Grafana)
-- **PostgreSQL 15+** (can run in Docker)
-- **API Keys**:
-  - Google Gemini API key (for LLM integration)
-  - MAFA-agents base URL (e.g., `http://localhost:8081`)
+| Requirement | Notes |
+|---|---|
+| **Java 17+** | [Download](https://www.oracle.com/java/technologies/downloads/) |
+| **IntelliJ IDEA** (Recommended) | [Download](https://www.jetbrains.com/idea/download/). Makes dependency install and running the project a 2-button process |
+| **MySQL 8+** | [Download MySQL Server](https://dev.mysql.com/downloads/mysql/). Create a database (e.g., `mafa_db`) |
+| **Docker Desktop** | [Download](https://www.docker.com/products/docker-desktop/). Used to run the Redis container image — start/stop via the Docker Desktop UI, no command-line needed |
+| **Redis Docker Image** | Pull via Docker Desktop or `docker pull redis:7`. Used for caching and event bus |
+| **Prometheus** *(optional)* | [Download](https://prometheus.io/download/). Manually downloaded and configured for metrics scraping |
+| **Grafana** *(optional)* | [Download](https://grafana.com/grafana/download). Manually downloaded and configured for dashboards |
 
-### 1. Clone & Navigate
+### Setup Steps
+
+#### 1. Clone & Open in IntelliJ
 
 ```bash
 git clone https://github.com/V-Satwik-Reddy/MAFA-B.git
-cd MAFA-B
 ```
 
-### 2. Configure Environment Variables
+Open the cloned `MAFA-B` folder in **IntelliJ IDEA**.
 
-Create a `.env` file or set environment variables:
+#### 2. Configure Application Properties
 
-```bash
-# Security
-JWT_SECRET=your-base64-encoded-secret-key-here
+Create a new file at `src/main/resources/application.properties` and copy the contents of [`application-prod.properties`](src/main/resources/application-prod.properties) into it.
 
-# Database (PostgreSQL)
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/mafa_db
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=postgres_password
-SPRING_JPA_HIBERNATE_DDL_AUTO=update
-
-# CORS (for frontend)
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5000
-
-# LLM Integration (optional, but recommended)
-GEMINI_API_KEY=your_google_gemini_api_key
-
-# Multi-Agent System (required for full functionality)
-AGENTS_ENDPOINT=http://localhost:8081/
-
-# Redis (optional, caching disabled by default)
-SPRING_REDIS_HOST=localhost
-SPRING_REDIS_PORT=6379
-
-# Observability
-MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,prometheus
-```
-
-Or add to `src/main/resources/application.properties`:
+Then fill in every value that has `${}` placeholders. Here's the full template with guidance:
 
 ```properties
-# Security
-jwt.secret=${JWT_SECRET:fallback-secret}
-allowed_origins=${ALLOWED_ORIGINS:http://localhost:3000}
+spring.application.name=MAF
 
-# Database
-spring.datasource.url=${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/mafa_db}
-spring.datasource.username=${SPRING_DATASOURCE_USERNAME:postgres}
-spring.datasource.password=${SPRING_DATASOURCE_PASSWORD:postgres}
-spring.jpa.hibernate.ddl-auto=update
+# ── Database (MySQL) ──────────────────────────────────────────────
+spring.datasource.url=jdbc:mysql://localhost:3306/mafa_db          # ← your MySQL URL
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.username=root
+spring.datasource.password=your_mysql_password                     # ← your MySQL password
 
-# LLM & Agents
-gemini.api.key=${GEMINI_API_KEY:}
-agents_endpoint=${AGENTS_ENDPOINT:http://localhost:8081/}
+spring.datasource.hikari.maximum-pool-size=30
+spring.datasource.hikari.minimum-idle=10
+spring.jpa.properties.hibernate.jdbc.batch_size=100
 
-# Actuator
-management.endpoints.web.exposure.include=health,info,prometheus
-management.endpoint.prometheus.enabled=true
+spring.jpa.hibernate.ddl-auto=update                               # ← use "update" for development
+management.endpoints.web.exposure.include=health
+#spring.jpa.show-sql=true
+
+# ── Security ──────────────────────────────────────────────────────
+jwt.secret=your-base64-encoded-secret-key                          # ← any strong base64 string
+
+# ── MAFA-Agents ───────────────────────────────────────────────────
+agents_endpoint=http://localhost:5000/                              # ← URL where MAFA-Agents is running
+
+# ── CORS ──────────────────────────────────────────────────────────
+allowed_origins=http://localhost:3000,http://localhost:5000         # ← frontend & agents URLs
+
+# ── Docker Compose ────────────────────────────────────────────────
+spring.docker.compose.enabled=false
+
+# ── Redis ─────────────────────────────────────────────────────────
+spring.cache.type=redis
+spring.data.redis.host=localhost                                   # ← Redis host
+spring.data.redis.port=6379                                        # ← Redis port (check Docker Desktop)
+
+# ── Email (SMTP via Gmail) ────────────────────────────────────────
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=your_email@gmail.com                          # ← your Gmail address
+spring.mail.password=your_app_password                             # ← Gmail App Password (not regular password)
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.connectiontimeout=5000
+spring.mail.properties.mail.smtp.timeout=5000
+spring.mail.properties.mail.smtp.writetimeout=5000
 ```
 
-### 3. Start Docker Services (Required)
+> **Note:** The `application.properties` file is gitignored — it stays on your local machine only. Never commit secrets to version control.
 
-```bash
-# PostgreSQL (required)
-docker run -d \
-  --name postgres \
-  -e POSTGRES_DB=mafa_db \
-  -e POSTGRES_PASSWORD=postgres \
-  -p 5432:5432 \
-  postgres:15
+#### 3. Install Dependencies
 
-# Redis (optional, for caching and event bus)
-docker run -d --name redis -p 6379:6379 redis:7
+In IntelliJ, open `pom.xml` → click the **Maven reload button** (🔄 icon in the top-right of the editor or in the Maven tool window) to download and install all dependencies.
 
-# Prometheus (optional, for metrics)
-docker run -d \
-  -p 9090:9090 \
-  -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml \
-  --name prometheus \
-  prom/prometheus
+#### 4. Start Required Services
 
-# Grafana (optional, for dashboards)
-docker run -d \
-  -p 3000:3000 \
-  --name grafana \
-  grafana/grafana
+1. **MySQL**: Ensure your MySQL server is running and the database (e.g., `mafa_db`) exists
+2. **Redis**: Open **Docker Desktop** → start the Redis container image. If you haven't pulled it yet:
+   ```bash
+   docker pull redis:7
+   docker run -d --name redis -p 6379:6379 redis:7
+   ```
+   After the first run, you can start/stop it directly from the Docker Desktop UI.
+
+3. Verify the `spring.data.redis.port` and `spring.datasource.url` port in your `application.properties` match the actual running services.
+
+#### 5. Run the Application
+
+Click the **Run/Start** button (▶️) in IntelliJ IDEA — it will build and start the Spring Boot application.
+
+#### 6. Verify
+
+Open your browser and visit **http://localhost:8080/**. If the page loads without errors, the backend is running successfully.
+
+---
+
+### Quick Reference: Setup Flow
+
 ```
-
-### 4. Install Dependencies
-
-```bash
-# Using Maven wrapper (Windows)
-mvnw.cmd clean install
-
-# Using Maven wrapper (Linux/Mac)
-./mvnw clean install
-
-# Or use system Maven
-mvn clean install
-```
-
-### 5. Run the Application
-
-```bash
-# Using Maven wrapper (Windows)
-mvnw.cmd spring-boot:run
-
-# Using Maven wrapper (Linux/Mac)
-./mvnw spring-boot:run
-
-# Or build and run JAR
-mvnw.cmd package
-java -jar target/MAFA-0.0.1-SNAPSHOT.jar
-```
-
-The application starts on **http://localhost:8080**
-
-### 6. Verify It's Running
-
-```bash
-# Health check
-curl http://localhost:8080/actuator/health
-
-# Prometheus metrics
-curl http://localhost:8080/actuator/prometheus
+Clone repo → Open in IntelliJ → Copy application-prod.properties to application.properties
+→ Fill ${} values → Maven reload (pom.xml) → Start Redis (Docker Desktop)
+→ Confirm ports in properties → Click Run ▶️ → Visit http://localhost:8080/
 ```
 
 ---
@@ -403,48 +326,37 @@ All other endpoints require `Authorization: Bearer <accessToken>` header:
 
 ---
 
-## 🔧 Configuration Details
+## 🔧 Technical Details
 
 ### JWT Authentication
-
-- **Secret**: Configure `jwt.secret` in properties (use a strong base64-encoded key for production)
-- **Access Token**: Short-lived JWT (~15 minutes) in response body
-- **Refresh Token**: Long-lived token (~7 days) stored as HttpOnly cookie
-- **Flow**: Login → receive accessToken + set refresh_token cookie → use accessToken for all requests → call `/auth/refresh` when expired
+- **Signing**: HS256 with `jwt.secret` from `application.properties`
+- **Access Token**: Short-lived JWT (~15 minutes) returned in response body
+- **Refresh Token**: Long-lived token (~7 days) stored as HttpOnly cookie (XSS-safe)
+- **Flow**: Login → receive `accessToken` + `refresh_token` cookie → use `accessToken` for all requests → call `/auth/refresh` when expired
 
 ### Database
-
-- **Engine**: PostgreSQL 15+
+- **Engine**: MySQL 8+
+- **Driver**: `com.mysql.cj.jdbc.Driver`
 - **Auto-Migrations**: Hibernate (set `spring.jpa.hibernate.ddl-auto=update` for development)
 - **Core Tables**: User, Chat, Transaction, Holdings, Alert, Strategy, Stock, StockPrice
-- **Indexes**: Optimized for fast lookups on (userId, timestamp) and (symbol, date)
-
-### LLM Integration
-
-**If `gemini.api.key` is configured:**
-- `/general-chat` calls Google Gemini API directly
-- Responses are immediately returned and persisted to chat history
-- No dependency on MAFA-agents
-
-**If `gemini.api.key` is NOT configured:**
-- `/general-chat` forwards requests to `agents_endpoint/general-agent`
-- The MAFA-agents system handles AI responses using its own models
-- JWT token is forwarded for user context
+- **Connection Pool**: HikariCP (max 30 connections, min 10 idle)
 
 ### Multi-Agent Communication
-
 - **Protocol**: HTTP REST + JWT token forwarding
-- **Agents Supported**: General (market research), Execution, Market Research
-- **Event Bus**: Redis Pub/Sub (used by MAFA-agents for inter-agent communication)
-- **Timeout**: Configure connection timeout in `application.properties`
+- **Agents Endpoint**: Configured via `agents_endpoint` in `application.properties`
+- **Supported Agents**: General (market research), Execution, Market Research
+- **Event Bus**: Redis Pub/Sub (used by MAFA-Agents for inter-agent communication)
+- **Data Flow**: Chat Service forwards queries to agents → Agents call back to MAFA-B REST API for user data, holdings, and trade execution
 
 ---
 
-## 📊 Observability: Prometheus & Grafana
+## 📊 Observability (Optional)
+
+Prometheus and Grafana are **manually downloaded and configured** — they are not run via Docker.
 
 ### Prometheus Setup
-
-1. Create `prometheus.yml`:
+1. [Download Prometheus](https://prometheus.io/download/) and extract it
+2. Create/edit `prometheus.yml` in the Prometheus directory:
 
 ```yaml
 global:
@@ -452,36 +364,20 @@ global:
 
 scrape_configs:
   - job_name: 'mafa-backend'
+    metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:8080']
+      - targets: ['localhost:8080']
 ```
 
-2. Run Prometheus:
-
-```bash
-docker run -d \
-  -p 9090:9090 \
-  -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml \
-  --name prometheus \
-  prom/prometheus
-```
-
-3. Access: **http://localhost:9090**
+3. Run Prometheus and access it at **http://localhost:9090**
 
 ### Grafana Setup
-
-1. Run Grafana:
-
-```bash
-docker run -d -p 3000:3000 --name grafana grafana/grafana
-```
-
-2. Access: **http://localhost:3000** (default: admin/admin)
-3. Add Prometheus as data source: `http://host.docker.internal:9090`
+1. [Download Grafana](https://grafana.com/grafana/download) and install it
+2. Access at **http://localhost:3000** (default login: admin/admin)
+3. Add Prometheus as a data source: `http://localhost:9090`
 4. Create dashboards to monitor request latency, error rates, and JVM metrics
 
 ### Key Metrics
-
 - `http_requests_seconds` — Request latency percentiles (p50/p95/p99)
 - `http_requests_total` — Request count by endpoint
 - `jvm_memory_used_bytes` — JVM memory consumption
@@ -489,15 +385,21 @@ docker run -d -p 3000:3000 --name grafana grafana/grafana
 
 ---
 
-## 🛠️ Development
+## 🔐 Security
+- **JWT Signing**: HS256 with `jwt.secret` property
+- **CORS**: Configurable via `allowed_origins` (comma-separated frontend and agent URLs)
+- **Refresh Token**: HttpOnly cookie prevents JavaScript access (XSS-safe)
+- **HTTPS**: Configure in production (enable Spring Security SSL)
+- **Secrets Management**: All secrets live in `application.properties` (gitignored) — never commit them
 
-### Project Structure
+---
 
+## 📁 Project Structure
 ```
 src/main/java/majorproject/maf/
 ├── controller/        # REST endpoint handlers
 │   ├── AuthController           (signup, login, refresh, logout)
-│   ├── ChatController           (chat routing to agents/Gemini)
+│   ├── ChatController           (chat routing to agents)
 │   ├── ExecutionController      (buy/sell orders)
 │   ├── PriceFetchController     (stock prices)
 │   ├── ProfileController        (user info)
@@ -507,7 +409,7 @@ src/main/java/majorproject/maf/
 │   └── StrategyController       (trading strategies)
 ├── service/           # Business logic
 │   ├── AuthService              (JWT, user auth)
-│   ├── ChatService              (agent routing, LLM calls)
+│   ├── ChatService              (agent routing)
 │   ├── ExecutionService         (trade logic)
 │   ├── PriceFetchService        (market data)
 │   ├── UserService              (profile management)
@@ -537,52 +439,11 @@ src/main/java/majorproject/maf/
 └── util/              # Utility classes
 ```
 
-### Building
-
-```bash
-# Build JAR
-mvnw.cmd package
-
-# Run JAR
-java -jar target/MAFA-0.0.1-SNAPSHOT.jar
-
-# Run with custom properties
-java -Djwt.secret=my-secret -jar target/MAFA-0.0.1-SNAPSHOT.jar
-```
-
 ---
 
-## 🔐 Security
-
-- **JWT Signing**: HS256 with `jwt.secret` environment variable
-- **CORS**: Configurable via `allowed_origins` (e.g., frontend URL)
-- **HTTPS**: Configure in production (enable Spring Security SSL)
-- **Secrets Management**: Use environment variables, never hardcode sensitive data
-- **OWASP**: Standard Spring Security defaults applied (CSRF protection, XSS prevention, etc.)
-- **Refresh Token**: HttpOnly cookie prevents JavaScript access (XSS-safe)
-
----
-
-## 📌 Environment Variables Summary
-
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `JWT_SECRET` | ✅ | None | JWT signing secret (base64-encoded) |
-| `SPRING_DATASOURCE_URL` | ✅ | None | PostgreSQL connection string |
-| `SPRING_DATASOURCE_USERNAME` | ✅ | None | Database username |
-| `SPRING_DATASOURCE_PASSWORD` | ✅ | None | Database password |
-| `ALLOWED_ORIGINS` | ❌ | http://localhost:3000 | CORS origins (comma-separated) |
-| `GEMINI_API_KEY` | ❌ | None | Google Gemini API key (if using LLM directly) |
-| `AGENTS_ENDPOINT` | ❌ | http://localhost:8081/ | MAFA-agents base URL |
-| `SPRING_REDIS_HOST` | ❌ | localhost | Redis host (for event bus) |
-| `SPRING_REDIS_PORT` | ❌ | 6379 | Redis port |
-
----
-
-## 📖 Example Requests
+## 💬 API Usage Examples
 
 ### Signup
-
 ```bash
 curl -X POST http://localhost:8080/auth/signup \
   -H "Content-Type: application/json" \
@@ -595,7 +456,6 @@ curl -X POST http://localhost:8080/auth/signup \
 ```
 
 ### Login
-
 ```bash
 curl -X POST http://localhost:8080/auth/login \
   -H "Content-Type: application/json" \
@@ -608,14 +468,12 @@ curl -X POST http://localhost:8080/auth/login \
 Response includes `accessToken` and sets `refresh_token` cookie.
 
 ### Get Balance (Protected)
-
 ```bash
 curl -X GET http://localhost:8080/profile/balance \
   -H "Authorization: Bearer <accessToken>"
 ```
 
 ### Buy Stock
-
 ```bash
 curl -X POST http://localhost:8080/execute/buy \
   -H "Authorization: Bearer <accessToken>" \
@@ -628,7 +486,6 @@ curl -X POST http://localhost:8080/execute/buy \
 ```
 
 ### General Chat (AI Assistant)
-
 ```bash
 curl -X POST http://localhost:8080/general-chat \
   -H "Authorization: Bearer <accessToken>" \
@@ -636,25 +493,25 @@ curl -X POST http://localhost:8080/general-chat \
   -d '{"query": "Should I buy TSLA? I have $2000."}'
 ```
 
-Returns a natural language response from either Google Gemini or MAFA-agents.
+Returns a natural language response from MAFA-Agents.
 
 ---
 
 ## 🐛 Troubleshooting
-
 | Issue | Solution |
 |---|---|
 | **401 Unauthorized** | JWT token expired. Call `/auth/refresh` with the refresh_token cookie to get a new one |
-| **500 Internal Server Error** | Check server logs. Verify PostgreSQL is running and accessible |
-| **Chat returning 503** | Verify `agents_endpoint` is reachable, or ensure `GEMINI_API_KEY` is set as a fallback |
-| **Prometheus not scraping** | Check `prometheus.yml` target address and verify network connectivity to the backend |
-| **Database connection fails** | Ensure PostgreSQL container is running, credentials are correct, and `SPRING_DATASOURCE_URL` is set |
+| **500 Internal Server Error** | Check server logs in IntelliJ console. Verify MySQL is running and accessible |
+| **Chat returning 503** | Verify `agents_endpoint` is reachable and MAFA-Agents is running |
+| **Database connection fails** | Ensure MySQL server is running, credentials are correct, and `spring.datasource.url` is set properly in `application.properties` |
+| **Redis connection refused** | Start the Redis container in Docker Desktop. Verify port matches `spring.data.redis.port` |
+| **Prometheus not scraping** | Check `prometheus.yml` target address matches `localhost:8080` |
 | **Stock prices not updating** | Verify frontend or agents are calling `/stockprice` endpoint to fetch and cache new data |
+| **Email not sending** | Verify Gmail App Password (not regular password) in `spring.mail.password`. Enable "Less secure apps" or use App Passwords |
 
 ---
 
 ## 📞 Support & Documentation
-
 - **Chat Integration**: See `majorproject.maf.service.ChatService` for agent routing logic
 - **Trade Execution**: See `majorproject.maf.service.ExecutionService` for order validation and processing
 - **Database Schema**: Auto-generated from JPA entities in `majorproject.maf.model` package
@@ -663,18 +520,16 @@ Returns a natural language response from either Google Gemini or MAFA-agents.
 ---
 
 ## 📄 License
-
 [Add your license here]
 
 ---
 
 ## 🙋 Contributing
-
 [Add contribution guidelines here]
 
 ---
 
-**Last Updated**: 2026-06-16  
-**Backend Version**: Spring Boot 3.x  
-**Java Version**: 17+  
-**Database**: PostgreSQL 15+
+**Last Updated**: 2026-06-16
+**Backend Version**: Spring Boot 3.x
+**Java Version**: 17+
+**Database**: MySQL 8+
