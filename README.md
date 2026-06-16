@@ -96,17 +96,17 @@ MAFA is a distributed multi-service architecture. MAFA-B is the central orchestr
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                          Frontend (React + JavaScript)                           │
-│                    (MCP_Financial_analyst_frontend)                              │
-│                                                                                   │
+│                          Frontend (React + JavaScript)                          │
+│                    (MCP_Financial_analyst_frontend)                             │
+│                                                                                 │
 │  User Actions: Login → Chat → Buy/Sell → View Portfolio → Set Alerts            │
 └────────────────────────────────────┬────────────────────────────────────────────┘
                                       │
                                       │ HTTP/REST + JWT
                                       ↓
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│                      MAFA-B (Spring Boot Backend)                                 │
-│                                                                                    │
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                      MAFA-B (Spring Boot Backend)                               │
+│                                                                                 │
 │  ┌──────────────────────┐      ┌──────────────────────┐    ┌─────────────────┐  │
 │  │  REST API Layer      │      │  Authentication &    │    │  Chat Service   │  │
 │  │                      │      │  User Management     │    │                 │  │
@@ -114,9 +114,9 @@ MAFA is a distributed multi-service architecture. MAFA-B is the central orchestr
 │  │  • /portfolio        │      │                      │    │  to agents or   │  │
 │  │  • /transactions     │      │                      │    │  Gemini LLM     │  │
 │  │  • /execute/buy|sell │      │                      │    │                 │  │
-│  │  • /general-chat     │      ���                      │    └────────┬────────┘  │
+│  │  • /general-chat     │      |                      │    └────────┬────────┘  │
 │  │  • /stockprice       │      └──────────────────────┘             │           │
-│  │  • /alerts           │                                            │           │
+│  │  • /alerts           │                                           │           │
 │  └──────────┬───────────┘      ┌──────────────────────┐             │           │
 │             │                  │  Data Access Layer   │             │           │
 │             │                  │  (JPA/Hibernate)     │             │           │
@@ -128,47 +128,47 @@ MAFA is a distributed multi-service architecture. MAFA-B is the central orchestr
 │             │                  │  • Chat Repository   │             │           │
 │             │                  │  • Stock Price Repo  │             │           │
 │             │                  └──────────┬───────────┘             │           │
-│             │                             │                        │           │
-│             └─────────────────────────────┼────────────────────────┘           │
-│                                           │                                    │
-└───────────────────────────────────────────┼────────────────────────────────────┘
+│             │                             │                         │           │
+│             └─────────────────────────────┼─────────────────────────┘           │
+│                                           │                                     │
+└───────────────────────────────────────────┼─────────────────────────────────────┘
                                             │
                                             ↓
                            ┌─────────────────────────────────┐
                            │   PostgreSQL Database           │
-                           │   (User, Holdings, Alerts,     │
-                           │    Transactions, Chats)        │
+                           │   (User, Holdings, Alerts,      │
+                           │    Transactions, Chats)         │
                            └─────────────────────────────────┘
 
 
                            ┌─────────────────────────────────────────────────┐
                            │  MAFA-Agents (Python MCP System)                │
-                           │                                                  │
+                           │                                                 │
                            │  Market Research Agent                          │
-                           │  ├─→ Alpha Vantage API (Stock Fundamentals)    │
-                           │  ├─→ NewsAPI (Market News & Sentiment)         │
-                           │  ├─→ LSTM Models (Price Forecasting)           │
-                           │  └─→ Fetches Stock Data from MAFA-B Backend   │
-                           │                                                  │
+                           │  ├─→ Alpha Vantage API (Stock Fundamentals)     │
+                           │  ├─→ NewsAPI (Market News & Sentiment)          │
+                           │  ├─→ LSTM Models (Price Forecasting)            │
+                           │  └─→ Fetches Stock Data from MAFA-B Backend     │
+                           │                                                 │
                            │  Portfolio Analysis Agent                       │
                            │  ├─→ Risk Calculations                          │
                            │  ├─→ Diversification Analysis                   │
-                           │  └─→ Uses Holdings Data from MAFA-B Backend    │
-                           │                                                  │
+                           │  └─→ Uses Holdings Data from MAFA-B Backend     │
+                           │                                                 │
                            │  Trade Execution Agent                          │
                            │  ├─→ Validates Orders                           │
-                           │  ├─→ Recommends Quantities & Prices            │
-                           │  └─→ Executes via MAFA-B Backend               │
-                           │                                                  │
+                           │  ├─→ Recommends Quantities & Prices             │
+                           │  └─→ Executes via MAFA-B Backend                │
+                           │                                                 │
                            │  Strategy Agent                                 │
-                           │  ├─→ Generates Trading Strategies              │
-                           │  └─→ Stores/Updates via MAFA-B Backend         │
-                           │                                                  │
+                           │  ├─→ Generates Trading Strategies               │
+                           │  └─→ Stores/Updates via MAFA-B Backend          │
+                           │                                                 │
                            │  MCP Orchestrator                               │
-                           │  └─→ Coordinates All Agents                    │
-                           │                                                  │
-                           │  Event Bus (Redis Pub/Sub)                     │
-                           │  └─→ Real-time Agent Communication             │
+                           │  └─→ Coordinates All Agents                     │
+                           │                                                 │
+                           │  Event Bus (Redis Pub/Sub)                      │
+                           │  └─→ Real-time Agent Communication              │
                            └─────────────────────────────────────────────────┘
                                            │
                     ┌──────────────────────┼──────────────────────┐
